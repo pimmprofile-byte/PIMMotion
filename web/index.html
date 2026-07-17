@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIMMotion</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>PIMMotion <span class="tag">워크툴</span></h1>
+    <div id="status" class="status"></div>
+  </header>
+
+  <main>
+    <section id="sidebar">
+      <div class="panel">
+        <h2>새 프로젝트보드</h2>
+        <select id="category"></select>
+        <input id="title" placeholder="프로젝트명" />
+        <button id="create">보드 생성</button>
+      </div>
+      <div class="panel">
+        <h2>보드 목록</h2>
+        <ul id="board-list"></ul>
+      </div>
+    </section>
+
+    <section id="board">
+      <p class="empty">보드를 선택하거나 생성하세요.</p>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

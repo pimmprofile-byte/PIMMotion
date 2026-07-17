@@ -1,0 +1,24 @@
+{
+  "label": "피머시브 (상설)",
+  "kind": "procedural",
+  "note": "현장시공형. 핌업 구조 복제 후 상설 맞춤: 100% 현장시공(원데이 컨스트럭트 폐기), 부동산·입지 탐색축, 운영편의 4축, 클라이언트=B2B/B2C 상업 + 핌 자체 상설(B2G 제외). STEP3 전면수정 진행 중 → 상세로직 향후 인터뷰로 축적.",
+  "steps": [
+    { "key": "p1_intake", "phase": "Phase1 사전", "title": "이니셜 미팅·니즈 파악", "guide": "상설=매출로 증명. 콘텐츠 강+비즈니스 접근. 까탈 점주 드랍 판단." },
+    { "key": "p1_site", "phase": "Phase1 사전", "title": "부동산·입지 탐색", "guide": "상설 특화축. 유지보수까지 고려한 설계·품·금액 산정." },
+    { "key": "p2_note", "phase": "Phase2 시안", "title": "기획안(Note) 작성", "guide": "장기운영 전제. 물리가변장치 모듈화." },
+    { "key": "p2_contract", "phase": "Phase2 시안", "title": "계약 확정", "guide": "외부공사(누수·간판·소방) 책임경계 배제. 중개만." },
+    { "key": "p2_render", "phase": "Phase2 시안", "title": "상세 설계(Render)", "guide": "PC규격·내구성·자동화(Low Maintenance) 중심." },
+    { "key": "p2_boq", "phase": "Phase2 시안", "title": "실측 BOQ·견적", "guide": "기존벽 활용 절감. 총견적≈콘크리트×2." },
+    { "key": "p2_permit", "phase": "Phase2 시안", "title": "인허가·안전·소방", "guide": "운영편의 4축 ①. 상설 필수 관문." },
+    { "key": "p3_order", "phase": "Phase3 제작", "title": "발주", "guide": "" },
+    { "key": "p3_make", "phase": "Phase3 제작", "title": "제작", "guide": "" },
+    { "key": "p4_construct", "phase": "Phase4 현장", "title": "현장 시공 (100%)", "guide": "원데이 컨스트럭트 폐기 → 전면 현장시공." },
+    { "key": "p4_qc", "phase": "Phase4 현장", "title": "검수", "guide": "" },
+    { "key": "p5_open", "phase": "Phase5 운영", "title": "오픈·티켓팅·정산", "guide": "운영편의 4축 ③ 티켓팅·예약·정산 시스템." },
+    { "key": "p5_staff", "phase": "Phase5 운영", "title": "운영인력·무인화", "guide": "운영편의 4축 ②. 숙련 스태프 안정 배치." },
+    { "key": "p6_maintain", "phase": "Phase6 유지보수", "title": "유지보수·정기점검", "guide": "운영편의 4축 ④. 상설 장기운영 핵심." },
+    { "key": "p6_renew", "phase": "Phase6 유지보수", "title": "리뉴얼", "guide": "테마 평점·재방문율 기반." },
+    { "key": "p6_relation", "phase": "Phase6 유지보수", "title": "관계관리", "guide": "매장 안정화 + 매출 증명." },
+    { "key": "p6_max", "phase": "Phase6 유지보수", "title": "Max (IP활용)", "guide": "누적 마스터브랜드. 회수 없음(상설 특성)." }
+  ]
+}

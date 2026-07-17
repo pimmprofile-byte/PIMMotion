@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PIMMotion 카테고리 스키마",
+  "description": "코어 1개 위에 얹히는 카테고리 보드 스키마의 형태. 코어는 이 스키마를 데이터로 읽어 스텝을 생성한다(코드 수정 0).",
+  "type": "object",
+  "required": ["label", "kind", "steps"],
+  "properties": {
+    "label": { "type": "string", "description": "카테고리 표시명" },
+    "kind": {
+      "type": "string",
+      "enum": ["generative", "procedural"],
+      "description": "생성형 forge(머더미스터리) vs 절차형 forge(핌업·피머시브)"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "title"],
+        "properties": {
+          "key": { "type": "string" },
+          "title": { "type": "string" },
+          "phase": { "type": "string" },
+          "guide": { "type": "string", "description": "Partwork 워크로직 + Plogic 판단기준" }
+        }
+      }
+    }
+  }
+}

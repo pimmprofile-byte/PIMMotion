@@ -1,0 +1,9 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+anthropic>=0.116
+pydantic>=2.7
+python-multipart>=0.0.9
+python-dotenv>=1.0
+# Google Drive 백엔드 사용 시:
+google-api-python-client>=2.130
+google-auth>=2.30

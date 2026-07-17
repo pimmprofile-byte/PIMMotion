@@ -1,0 +1,23 @@
+# env / secrets
+.env
+*.key
+service-account*.json
+credentials*.json
+token*.json
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# local storage fallback (실파일 저장소 — git에 올리지 않음)
+storage/
+_drive/
+
+# os / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

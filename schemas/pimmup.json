@@ -1,0 +1,24 @@
+{
+  "label": "핌업 (PIMM-UP)",
+  "kind": "procedural",
+  "note": "구 피머셜+핌벤션 통일. 각 단계에서 B2B·B2C / B2G 섹터 플래그로 분기. 17단계 6페이즈.",
+  "steps": [
+    { "key": "p1_intake", "phase": "Phase1 사전", "title": "이니셜 미팅·니즈 파악", "guide": "판별 1차축=클라이언트 성향·주도권(스펙 아님). 상설/팝업은 니즈로 선결정." },
+    { "key": "p1_track", "phase": "Phase1 사전", "title": "트랙·섹터 선정 (B2B·B2C / B2G)", "guide": "팝업=홍보, 상설=매출. 킬스위치=월수익500↓ or 기간1년↑." },
+    { "key": "p2_note", "phase": "Phase2 시안", "title": "기획안(Note) 작성", "guide": "맥락→판단기준→산출형태 3요소. 스낵스토리텔링 원칙." },
+    { "key": "p2_contract", "phase": "Phase2 시안", "title": "계약 확정", "guide": "잔금 기준 명확화(체험 완료 시점). 변경·추가금 조항 선점." },
+    { "key": "p2_render", "phase": "Phase2 시안", "title": "상세 설계(Render)", "guide": "시퀀스 시나리오 + 나레이션·BGM·조명 + 핵심장치 물리형태 명시." },
+    { "key": "p2_boq", "phase": "Phase2 시안", "title": "실측 BOQ·견적", "guide": "총견적≈콘크리트×2. 마진협상은 진행비에서만. 실측변동 사전고지." },
+    { "key": "p3_order", "phase": "Phase3 제작", "title": "발주", "guide": "발주 자금스케줄. 선금 극대화(대금 1:7:2)." },
+    { "key": "p3_make", "phase": "Phase3 제작", "title": "제작", "guide": "직접인력·기획회피·장치개발전환으로 원가절감." },
+    { "key": "p3_pack", "phase": "Phase3 제작", "title": "패킹", "guide": "자동복귀 하드웨어 검증(전자락·물리복귀·자석센서)." },
+    { "key": "p4_transport", "phase": "Phase4 현장", "title": "운반", "guide": "" },
+    { "key": "p4_install", "phase": "Phase4 현장", "title": "설치", "guide": "휴먼 바이패스 준비. 단기 고집약 인력 투여." },
+    { "key": "p4_qc", "phase": "Phase4 현장", "title": "검수", "guide": "수식 오류 0건·하이라이트 배선 완료 등 검증결과 제시." },
+    { "key": "p5_operate", "phase": "Phase5 운영", "title": "현장 운영", "guide": "병렬형 플레이 로직(병목 방지). 다인원/워크인 대응." },
+    { "key": "p5_archive", "phase": "Phase5 운영", "title": "아카이빙 준비", "guide": "스케치필름 계약 명문화. 고객반응 피드백 수집." },
+    { "key": "p6_teardown", "phase": "Phase6 철거", "title": "철거", "guide": "" },
+    { "key": "p6_relation", "phase": "Phase6 철거", "title": "관계관리", "guide": "차기 프로젝트 타진(Next Step Intent). Client Echo Points 포착." },
+    { "key": "p6_max", "phase": "Phase6 철거", "title": "Max (IP활용·사업화)", "guide": "원본1본→다채널. UGC회수. Max→Beat 순환. ROI측정." }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "label": "머더미스터리",
+  "kind": "generative",
+  "note": "생성형 forge. 비트시트 파이프라인 → Forge Loop(Generator→Validator→Critic→Reviser 무인반복) → 대화형 검수 → 승인 → 에셋 생성 → StreamingAssets 이식 → Unity 빌드(PIMMplayer). Forge Gate/Loop 명칭 미확정(후보: PIMMloom, PIMMcrucible).",
+  "steps": [
+    { "key": "brief", "phase": "입력", "title": "브리프 (스키마화)", "guide": "타겟·플레이시간·목표승률·필수/금지 요소. 니즈를 브리프 템플릿으로 스키마화." },
+    { "key": "style", "phase": "Forge Loop", "title": "Style Extractor", "guide": "레퍼런스→스타일 스펙 추출. 파인튜닝 아닌 컨텍스트 엔지니어링." },
+    { "key": "generate", "phase": "Forge Loop", "title": "Generator", "guide": "브리프+스펙→초안. 모델 이원화: 고난도 생성은 Fable 5." },
+    { "key": "validate", "phase": "Forge Loop", "title": "Validator (결정론적)", "guide": "스키마·경로·기존 Python 시뮬레이터 검증. 전항목 PASS 종료조건." },
+    { "key": "critic", "phase": "Forge Loop", "title": "Critic (LLM 루브릭)", "guide": "루브릭 채점. 임계치 이상 종료조건." },
+    { "key": "revise", "phase": "Forge Loop", "title": "Reviser (diff 패치)", "guide": "부분수정만. 전체 재생성 금지. 반복은 코드(Python 하네스)." },
+    { "key": "review", "phase": "검수", "title": "대화형 검수 (프리뷰+패치)", "guide": "최종 승인만 사람. 브리프·루브릭 설계·최종검토=Cowork." },
+    { "key": "approve", "phase": "검수", "title": "승인 게이트", "guide": "3-Gate: 체크리스트+산출물+PD승인." },
+    { "key": "assets", "phase": "빌드", "title": "에셋 생성", "guide": "GPT-image·Nano Banana·힉스필드 등." },
+    { "key": "streaming", "phase": "빌드", "title": "StreamingAssets 이식", "guide": "PIMMplayer / pimm-unitygamecreator 연계." },
+    { "key": "build", "phase": "빌드", "title": "Unity 빌드", "guide": "유니티=게임 런타임 전용(툴 UI 아님)." }
+  ]
+}
