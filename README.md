@@ -74,8 +74,36 @@ uvicorn server.main:app --reload --port 8787
 
 ---
 
+## PIMM UnityGameCreator (핌플레이어 게임크리에이터 툴)
+
+핌플레이어(Unity 런타임)용 **콘티/레이아웃/핸드오프 툴**. 단일 HTML(외부 의존성 0, localStorage 자동저장)로,
+개발지식 없이 그래픽 에셋만 준비하면 유니티로 핌플레이어를 빌드·수정할 수 있게 하는 것이 목표.
+
+- 산출물: `scratchpad/PIMM_UnityGameCreator.ver1.0.html`
+- 유니티 에디터형 3분할 UI(하이어라키 / 씬 1920×1080 / 인스펙터) + 다크그레이·`#00FF99`
+- 8단계 파이프라인(BEATSHEET→ASSET→MANAGE→LAYOUT→INTEGRATE→SIMULATE→BUILD&TEST→COMPLETE)
+- 프리미어식 시퀀스 탭(코드명 SEQ# 자동·불변, 라벨만 수정) · 하이어라키 락/가시성
+- 텍스트(static/dynamic) · 에셋(button/image) · 배경 · SFX/BGM · 인스펙터 논코딩 메모
+- 내보내기: **핸드오프 JSON** + **SVG 아트보드**(박스별 인덱스) + config 9종(repo 스키마 정합)
+
+### 연동 (선택 — 서버 켰을 때)
+
+- **툴 내 Claude 챗**: `POST /api/chat` (키는 서버 보관). 툴 안에서 기획/프롬프트/맵핑 상담.
+- **Drive 로컬폴더 저장**: `POST /api/export/save` → `.env`의 `PIMM_DRIVE_EXPORT_DIR`(구글드라이브 앱 동기폴더
+  `옐로필드/아웃풋섹터/PIMMplayer_JSON`)에 핸드오프를 바로 저장. Drive API 불필요, **로컬 경로면 충분**.
+- 서버가 없어도 툴은 오프라인으로 동작(내보내기는 브라우저 저장/다운로드 폴백).
+
+### 문서
+
+- `docs/guide-nodev-build.md` — 무개발 사용자용 빌드/수정 가이드
+- `docs/guide-cowork-unity.md` — Cowork+Unity 실전 워크플로우(이미지 프롬프트→입력맵핑→런타임 검수)
+- `docs/backend-architecture.md` — 에셋·Unity·Cowork·Drive 연동 백엔드/DB 설계
+
+---
+
 ## 상태
 
 R&D 스캐폴드 (Partwork STEP 4 착수분). 빌드 플랜 Bible §8:
 ①보드 스키마 v1 → ②로컬 서버 → ③코어 → ④카테고리 스키마 → ⑤최소 프로토타입.
-현재 ①~③ 골격 + ④ 스키마 3종 + 최소 프런트 구현. 미확정: 배포 모델(로컬앱 vs 호스팅).
+현재 ①~③ 골격 + ④ 스키마 3종 + 최소 프런트 구현 + **게임크리에이터 툴 ver1.0** + 연동/가이드.
+미확정: 배포 모델(로컬앱 vs 호스팅).
