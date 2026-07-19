@@ -10,11 +10,15 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+import unicodedata
+
 from . import claude_client
 from .config import settings
 from .models import (
     Board,
+    ChatReq,
     CreateBoardReq,
+    ExportSaveReq,
     ForgeReq,
     Gate,
     Status,
@@ -59,6 +63,8 @@ def health() -> dict:
         "model": settings.model,
         "claude": settings.has_claude,
         "storage": settings.storage_backend,
+        "chat": settings.has_claude,          # 툴 내 챗 가능 여부
+        "drive_export": bool(settings.drive_export_dir),  # Drive 로컬폴더 연동 여부
     }
 
 
@@ -219,6 +225,47 @@ def forge(req: ForgeReq) -> dict:
         return claude_client.generate_json(system, user, schema=schema)
     except claude_client.ClaudeError as e:
         raise HTTPException(503, str(e))
+
+
+# --- 게임크리에이터: 툴 내 Claude 챗 (키는 서버 보관) ---
+@app.post("/api/chat")
+def chat(req: ChatReq) -> dict:
+    if not req.messages:
+        raise HTTPException(400, "messages 비어있음")
+    try:
+        reply = claude_client.chat(
+            [m.model_dump() for m in req.messages], system=req.system
+        )
+    except claude_client.ClaudeError as e:
+        raise HTTPException(503, str(e))
+    return {"reply": reply}
+
+
+# --- 게임크리에이터: 핸드오프 산출물을 Drive 로컬 동기폴더로 저장 ---
+@app.post("/api/export/save")
+def export_save(req: ExportSaveReq) -> dict:
+    base = settings.drive_export_dir
+    if not base:
+        raise HTTPException(
+            503,
+            "PIMM_DRIVE_EXPORT_DIR 미설정 — Drive 동기폴더(PIMMplayer_JSON) 경로를 .env에 지정하세요.",
+        )
+    base_path = Path(base).resolve()
+    # 경로 traversal 방지: 파일명/서브디렉토리는 basename 성분만 허용
+    safe_name = unicodedata.normalize("NFC", Path(req.filename).name)
+    if not safe_name:
+        raise HTTPException(400, "잘못된 파일명")
+    parts = [unicodedata.normalize("NFC", Path(p).name) for p in req.subdir.split("/") if p.strip()]
+    dest_dir = base_path.joinpath(*parts) if parts else base_path
+    dest_dir = dest_dir.resolve()
+    if base_path not in dest_dir.parents and dest_dir != base_path:
+        raise HTTPException(400, "경로 이탈 감지")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / safe_name
+    tmp = dest.with_suffix(dest.suffix + ".tmp")
+    tmp.write_text(req.content, encoding="utf-8")
+    tmp.replace(dest)
+    return {"saved": str(dest), "bytes": len(req.content.encode("utf-8"))}
 
 
 # --- 프런트 정적 서빙 ---

@@ -22,6 +22,9 @@ class Settings:
     storage_root: Path = Path(os.getenv("STORAGE_ROOT", "./storage")).resolve()
     gdrive_service_account: str = os.getenv("GDRIVE_SERVICE_ACCOUNT", "")
     gdrive_root_folder_id: str = os.getenv("GDRIVE_ROOT_FOLDER_ID", "")
+    # Google Drive 데스크톱 앱 동기 폴더의 로컬 경로 (옐로필드/아웃풋섹터/PIMMplayer_JSON).
+    # 여기에 쓰면 Drive 앱이 자동 업로드 → 별도 API 불필요.
+    drive_export_dir: str = os.getenv("PIMM_DRIVE_EXPORT_DIR", "")
 
     # 서버
     host: str = os.getenv("PIMM_HOST", "127.0.0.1")

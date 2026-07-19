@@ -77,3 +77,22 @@ class ForgeReq(BaseModel):
     """생성형 forge(머더미스터리) 초안 생성 요청."""
     board_id: str
     instruction: str = ""
+
+
+# --- 게임크리에이터 연동 (챗 + 핸드오프 저장) ---
+class ChatMsg(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class ChatReq(BaseModel):
+    """툴 내 'Claude 챗' 패널 — 서버가 키를 쥐고 릴레이한다."""
+    messages: list[ChatMsg] = Field(default_factory=list)
+    system: str | None = None
+
+
+class ExportSaveReq(BaseModel):
+    """핸드오프 산출물(JSON/SVG 등)을 Drive 로컬 동기폴더에 저장."""
+    filename: str
+    content: str
+    subdir: str = ""  # 예: 프로젝트명/SEQ1

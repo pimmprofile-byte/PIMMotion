@@ -91,6 +91,45 @@ def generate_json(
     raise ClaudeError(f"Claude 호출 실패 ({max_retries}회): {last_err}")
 
 
+def chat(
+    messages: list[dict[str, str]],
+    system: str | None = None,
+    max_tokens: int = 4000,
+    max_retries: int = 3,
+) -> str:
+    """대화형 릴레이 — 툴 내 'Claude 챗' 패널용. 평문 텍스트를 반환.
+
+    messages: [{"role":"user"|"assistant","content":str}, ...]
+    키는 서버에만 있으므로 브라우저가 아니라 이 엔드포인트로만 호출한다 (원칙 ③).
+    """
+    client = _client()
+    sys = system or (
+        "너는 핌코프 PIMMotion(핌플레이어 게임크리에이터 툴) 안에 들어있는 조수다. "
+        "게임 기획·에셋 프롬프트·인풋 버튼 맵핑·유니티 핸드오프를 돕는다. "
+        "간결한 한국어로, 실행가능한 조언을 준다. 발명하지 말고 사용자의 맥락에서 추출하라."
+    )
+    kwargs: dict[str, Any] = {
+        "model": settings.model,
+        "max_tokens": max_tokens,
+        "thinking": {"type": "adaptive"},
+        "system": sys,
+        "messages": [
+            {"role": m["role"], "content": m["content"]} for m in messages
+        ],
+    }
+    last_err: Exception | None = None
+    for attempt in range(max_retries):
+        try:
+            msg = client.messages.create(**kwargs)
+            return _extract_text(msg)
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            if attempt < max_retries - 1:
+                time.sleep((2 ** attempt) + random.uniform(0, 0.5))
+            continue
+    raise ClaudeError(f"Claude 챗 실패 ({max_retries}회): {last_err}")
+
+
 def review_asset(text_content: str, criteria: str) -> dict[str, Any]:
     """업로드 산출물(텍스트)을 검수 루브릭으로 채점 (업로드→검수 파이프라인).
 
