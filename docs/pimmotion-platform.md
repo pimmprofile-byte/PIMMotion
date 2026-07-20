@@ -13,7 +13,7 @@
 "어떻게 만드는지"는 에디터+코워크가 돕는다.
 
 - 지금 가동(LIVE) 중인 에디터: **게임 에디터 에이전트**(Unity/PIMMplayer 콘티·레이아웃·인코딩)
-  = `tool/PIMM_UnityGameCreator.ver1.1.html`.
+  = `tool/PIMM_UnityGameCreator.ver1.4.html`.
 - 향후: 어도비 에디터, 스케치업 에디터 등(🚧).
 
 ---
@@ -82,7 +82,7 @@
   ```json
   { "id":"gamecreator", "name":"게임 에디터 에이전트",
     "desc":"유니티/핌플레이어 콘티·레이아웃·인코딩", "status":"live",
-    "launch":"./PIMM_UnityGameCreator.ver1.1.html" }
+    "launch":"./PIMM_UnityGameCreator.ver1.4.html" }
   ```
 - 각 에디터는 **자체완결 산출(핸드오프/인코딩)** 을 내고 → 코워크가 바이브코딩으로 실제 빌드
   (게임에디터의 경우 `docs/encoding-and-build.md`). 다른 에디터도 같은 패턴(설계→핸드오프→코워크 빌드).
