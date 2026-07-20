@@ -19,7 +19,7 @@
   .themebadge{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:3px 7px;white-space:nowrap}
   .themebadge b{color:var(--accent)}
   .spacer{flex:1}
-  button{cursor:pointer;background:var(--panel2);color:var(--fg);border:1px solid var(--line2);border-radius:4px;padding:5px 9px;font-size:11px;font-family:inherit}
+  button{cursor:pointer;background:var(--panel2);color:var(--fg);border:1px solid var(--line2);border-radius:4px;padding:5px 9px;font-size:11px;font-family:inherit;white-space:nowrap}
   button:hover{border-color:var(--accent);color:var(--accent)}
   button.p{background:var(--accent);color:#07130d;border-color:var(--accent);font-weight:700}
   button.p:hover{color:#07130d}
@@ -28,14 +28,26 @@
   button:active{transform:translateY(1px)}
   /* PART8 · 키보드 포커스 가시성(WCAG 2.4.7) — 마우스클릭엔 안 뜨고 Tab 이동 시만 */
   button:focus-visible,.tab:focus-visible,.ichip:focus-visible,.flownode:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-  /* pipeline tabs */
-  .tabs{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2px;overflow:auto}
-  .tab{padding:5px 8px;border-radius:4px;font-size:10.5px;white-space:nowrap;border:1px solid transparent;background:transparent;color:var(--muted)}
+  /* pipeline tabs — UI1: 헤더 밖 풀폭 전용 스트립 → 8개 탭이 한눈에(드래그 불필요) */
+  #tabstrip{display:flex;align-items:center;background:var(--header);border-bottom:1px solid var(--line);padding:4px 10px;height:34px;overflow:hidden}
+  .tabs{display:flex;gap:2px;max-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--accent-dim) transparent}
+  .tabs::-webkit-scrollbar{height:6px}
+  .tabs::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:3px}
+  .tabs::-webkit-scrollbar-track{background:transparent}
+  .tab{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;padding:5px 8px;border-radius:4px;font-size:10.5px;line-height:1;white-space:nowrap;border:1px solid transparent;background:transparent;color:var(--muted)}
   .tab:hover{color:var(--fg)}
   .tab.active{background:var(--accent);color:#07130d;font-weight:700;border-color:var(--accent)}
-  .tab .n{opacity:.6;margin-right:3px}
+  .tab .n{opacity:.6}
+  .tab .ti{font-size:12px;line-height:1}
+  .tab .tl{white-space:nowrap}
+  /* 2a — 점진적 복잡도: 뒷단(고급·핸드오프) 탭 접기 토글. 앞단=레이아웃만 기본 노출 */
+  .advtoggle{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:6px;padding:5px 9px;border-radius:4px;font-size:10.5px;line-height:1;white-space:nowrap;border:1px dashed var(--line2);background:transparent;color:var(--muted)}
+  .advtoggle:hover{color:var(--fg);border-color:var(--accent-dim)}
+  .advtoggle.open{color:var(--accent);border-style:solid;border-color:var(--accent-dim)}
+  .advgroup{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;margin-left:4px;padding-left:6px;border-left:1px solid var(--line2)}
+  .advgroup .tab{opacity:.92}
   /* ---------- main grid ---------- */
-  main{display:grid;grid-template-columns:250px 1fr 300px;height:calc(100% - 75px);transition:grid-template-rows .15s}
+  main{display:grid;grid-template-columns:250px 1fr 300px;height:calc(100% - 104px);transition:grid-template-rows .15s}
   main.console-open{grid-template-rows:1fr 150px;grid-template-areas:"l c r" "cons cons cons"}
   main.console-open .side.left{grid-area:l}
   main.console-open #scene{grid-area:c}
@@ -44,7 +56,14 @@
   .side{background:var(--panel);overflow:auto;padding:0}
   .side.left{border-right:1px solid var(--line)}
   .side.right{border-left:1px solid var(--line)}
-  .panelhdr{position:sticky;top:0;background:var(--header);border-bottom:1px solid var(--line);padding:6px 10px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;z-index:5;font-weight:700}
+  /* UI1 — 좌/우 패널 접기: 폭 0으로 접고 중앙 캔버스가 그 폭을 차지(하단 타임라인 토글과 일관 스타일) */
+  main.left-collapsed{grid-template-columns:0 1fr 300px}
+  main.right-collapsed{grid-template-columns:250px 1fr 0}
+  main.left-collapsed.right-collapsed{grid-template-columns:0 1fr 0}
+  main.left-collapsed .side.left,main.right-collapsed .side.right{overflow:hidden;border:none}
+  .panelhdr{position:sticky;top:0;display:flex;align-items:center;gap:6px;background:var(--header);border-bottom:1px solid var(--line);padding:6px 10px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;z-index:5;font-weight:700}
+  .panelhdr .pcol{margin-left:auto;flex:0 0 auto;padding:1px 6px;font-size:12px;line-height:1;background:var(--panel2);color:var(--muted);border:1px solid var(--line2);border-radius:4px}
+  .panelhdr .pcol:hover{border-color:var(--accent);color:var(--accent)}
   /* ---------- hierarchy tree ---------- */
   #tree{padding:4px 0}
   .tnode{display:flex;align-items:center;gap:4px;padding:3px 6px;cursor:pointer;font-size:11.5px;white-space:nowrap;border-left:2px solid transparent}
@@ -177,6 +196,36 @@
   .lockhint{font-size:10px;color:var(--warn);background:#3a2a2a;border:1px solid #5a3a3a;border-radius:4px;padding:4px 6px;margin-bottom:6px;font-weight:700}
   .eduhint{font-size:9.5px;color:var(--muted);line-height:1.5;background:#2f2f2f;border:1px dashed var(--line2);border-radius:4px;padding:5px 6px;margin-top:4px}
   .eduhint b{color:var(--cyan)}
+  /* 2b — 기능 인스펙터 (동작 블록) */
+  .fnpanel-hdr{margin:8px;padding:8px 10px;border:1px solid var(--accent-dim);border-radius:6px;background:#0c8f5614}
+  .fnpanel-hdr .fnp-title{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.3px}
+  .fnpanel-hdr .hint{margin-top:3px}
+  .fnpanel-hdr button.mini.p{margin-top:7px;font-size:11px;padding:4px 10px}
+  .fncard{margin:8px;border:1px solid var(--accent-dim);border-radius:6px;background:var(--panel2);overflow:hidden}
+  .fncard>h3{margin:0;padding:6px 9px;font-size:11.5px;background:var(--header);color:var(--accent);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line)}
+  .fncard>h3 .fnname{flex:1;cursor:text}
+  .fncard>h3 .gi{color:var(--muted);font-size:10px;font-weight:400}
+  .fncard .body{padding:8px 9px}
+  .fncard.dragover{border-color:var(--cyan);box-shadow:0 0 0 2px var(--cyan) inset}
+  .cmdrow{display:flex;align-items:flex-start;gap:6px;padding:5px 7px;margin-bottom:5px;border:1px solid var(--line);border-radius:5px;background:var(--panel)}
+  .cmdrow .cmdtx{flex:1;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;cursor:pointer;min-height:15px}
+  .cmdrow .cmdtx:hover{color:var(--accent)}
+  .boxchips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+  .boxchip{font-size:10px;padding:2px 7px;border:1px solid var(--cyan);border-radius:10px;color:var(--cyan);background:#00e5ff11;display:inline-flex;align-items:center;gap:5px}
+  .boxchip .x{cursor:pointer;opacity:.7}
+  .boxchip .x:hover{opacity:1;color:var(--warn)}
+  .boxmaplist{display:flex;flex-direction:column;gap:1px;margin-top:4px;max-height:170px;overflow:auto}
+  .boxmaplist label{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--fg);cursor:pointer;padding:2px 4px;margin:0;border-radius:3px}
+  .boxmaplist label:hover{background:#0c8f5614}
+  .boxmaplist input[type=checkbox]{width:auto;margin:0;flex:none}
+  /* 기능명령 팝업(모달) */
+  #fnCmdModal{position:fixed;inset:0;z-index:9660;background:#000a;display:none;align-items:center;justify-content:center}
+  #fnCmdModal.show{display:flex}
+  #fnCmdModal .ebox{width:480px;max-width:94vw;background:var(--panel);border:1px solid var(--accent-dim);border-radius:10px;box-shadow:0 10px 40px #000c}
+  #fnCmdModal .ebox h3{margin:0;padding:12px 14px;background:var(--header);color:var(--accent);font-size:13px;border-bottom:1px solid var(--line)}
+  #fnCmdModal .ebody{padding:14px;font-size:12px;color:var(--fg)}
+  #fnCmdModal .ebody textarea{width:100%;min-height:120px;box-sizing:border-box}
+  #fnCmdModal .ef{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);justify-content:flex-end}
   /* U1 save-failure banner */
   #topBanner{display:none;position:fixed;top:0;left:0;right:0;z-index:9999;align-items:center;gap:10px;
     background:#7a1f1f;color:#ffdede;border-bottom:2px solid #ff6b6b;padding:8px 14px;font-size:12px;font-weight:700;box-shadow:0 2px 10px #000a}
@@ -433,27 +482,29 @@
 </div>
 <header>
   <h1>PIMM <b>UnityGameCreator</b> <span style="font-size:10px;color:var(--muted)">ver1.0</span></h1>
-  <button id="btnHome" class="mini" title="시작화면(프로젝트 런처)으로">🏠 시작화면</button>
+  <button id="btnHome" class="mini" title="시작화면(프로젝트 런처)으로">🏠</button>
   <span id="projName" title="현재 프로젝트"></span>
   <span class="themebadge" id="themeBadge">테마</span>
-  <div class="tabs" id="tabs"></div>
   <div class="spacer"></div>
   <span id="autosaveInd" title="마지막 자동저장 시각"></span>
   <button id="btnUndo" title="실행취소 (Ctrl+Z)" disabled>↶</button>
   <button id="btnRedo" title="다시실행 (Ctrl+Shift+Z / Ctrl+Y)" disabled>↷</button>
   <span class="srvstat" id="srvStat">서버 ○off</span>
   <button id="btnShortcuts" title="단축키 도움말 (?)">⌨</button>
-  <button id="btnTutorial" title="단계별 사용법 가이드 열기">❔ 도움말</button>
-  <button id="btnChat" title="툴 내 Claude 챗">💬 챗</button>
-  <button id="btnTimeline" title="하단 타임라인(인터랙션 순서) 열기/닫기">🎞 타임라인</button>
-  <button id="btnConsole">콘솔</button>
-  <button id="btnValidate">검증</button>
-  <button id="btnEncode" class="p" title="시퀀스를 골라 자체완결 게임파일(.pimmgame.json)로 인코딩(내보내기)">🎬 인코딩</button>
+  <button id="btnTutorial" title="단계별 사용법 가이드 열기">❔</button>
+  <button id="btnChat" title="툴 내 Claude 챗">💬</button>
+  <button id="btnLeftPanel" title="좌패널(레이어·하이어라키) 접기/펼치기">◧</button>
+  <button id="btnRightPanel" title="우패널(속성·인스펙터) 접기/펼치기">◨</button>
+  <button id="btnTimeline" title="하단 타임라인(인터랙션 순서) 열기/닫기">🎞</button>
+  <button id="btnConsole" title="콘솔(로그) 열기/닫기">🖥</button>
+  <button id="btnValidate" title="프로젝트 검증(무결성 체크)">✔ 검증</button>
   <button id="btnSaveProj" class="p">저장</button>
   <button id="btnLoadProj">불러오기</button>
   <button id="btnReset" title="초기화">↺</button>
   <input type="file" id="fileProj" accept=".json,application/json" style="display:none"/>
 </header>
+<!-- UI1 — 파이프라인 탭 전용 풀폭 스트립: 8개 탭이 한눈에(드래그 불필요), 넘칠 때만 가로 스크롤 힌트 -->
+<div id="tabstrip"><div class="tabs" id="tabs"></div></div>
 <div id="seqbar"></div>
 
 <main id="main">
@@ -462,12 +513,12 @@
       <div class="scnlabel">씬 (Scenes) — 현재 시퀀스</div>
       <div class="scnrow" id="scnRow"></div>
     </div>
-    <div class="panelhdr" title="레이어 패널 — 프리미어의 트랙 레이어 / Unity 하이어라키. 현재 씬 구성요소의 z-순서(위=앞) 계층">레이어 <span style="opacity:.6">(하이어라키 · z-순서)</span></div>
+    <div class="panelhdr" title="레이어 패널 — 프리미어의 트랙 레이어 / Unity 하이어라키. 현재 씬 구성요소의 z-순서(위=앞) 계층">레이어 <span style="opacity:.6">(하이어라키 · z-순서)</span><button class="pcol" id="btnColLeft" title="레이어 패널 접기(중앙 캔버스 넓게)">‹</button></div>
     <div id="tree"></div>
   </div>
   <div id="scene"></div>
   <div class="side right">
-    <div class="panelhdr" title="속성 패널 — 프리미어의 이펙트 컨트롤 / Unity 인스펙터. 선택 항목의 속성·상태·전환을 편집">속성 · 이펙트 컨트롤 <span style="opacity:.6">(인스펙터)</span></div>
+    <div class="panelhdr" title="속성 패널 — 프리미어의 이펙트 컨트롤 / Unity 인스펙터. 선택 항목의 속성·상태·전환을 편집">속성 · 이펙트 컨트롤 <span style="opacity:.6">(인스펙터)</span><button class="pcol" id="btnColRight" title="속성 패널 접기(중앙 캔버스 넓게)">›</button></div>
     <div id="inspector"></div>
   </div>
   <div id="console">
@@ -538,8 +589,13 @@
     <div class="brand"><span class="logo">🎮</span><div><h1>PIMM <b>UnityGameCreator</b></h1><span class="ver">ver1.0 · 비개발자용 Unity 게임 제작 툴</span></div></div>
     <p class="lead">시퀀스(게임씬)·이미지·프리팹·텍스트·소리를 하나의 <b>프로젝트</b>로 묶어 편집하고, 코드 없이 <b>데이터/좌표이미지</b>로 내보내 Unity에 넘깁니다.</p>
     <div class="bigrow">
-      <button class="bigbtn" id="homeNew"><div class="t">＋ 새 프로젝트</div><div class="d">이름·저장 위치를 정하고 새 편집을 시작합니다.</div></button>
+      <button class="bigbtn" id="homeNew"><div class="t">＋ 새 프로젝트</div><div class="d">빈(최소) 프로젝트로 시작합니다 · 시퀀스 1개·씬 1개부터.</div></button>
       <button class="bigbtn open" id="homeOpen"><div class="t">📂 프로젝트 열기</div><div class="d">저장된 프로젝트 파일(.json)을 불러와 이어서 작업합니다.</div></button>
+    </div>
+    <h2>예제로 시작</h2>
+    <div class="bigrow">
+      <button class="bigbtn" id="homeExampleCombo"><div class="t">📦 예제 불러오기 — 콤보(COM60)</div><div class="d">17개 시퀀스 콤보 아케이드 예제(example_combo_COM60.project.json)를 불러옵니다 · 오프라인이면 파일을 직접 선택합니다.</div></button>
+      <button class="bigbtn" id="homeExampleMini"><div class="t">✨ 간단 예제</div><div class="d">배경 1 + 텍스트 1의 최소 예제로 빠르게 감을 잡습니다.</div></button>
     </div>
     <h2>최근 프로젝트</h2>
     <div class="recent" id="recentList"></div>
@@ -601,6 +657,17 @@
       <div class="elog" id="encLog" style="display:none"></div>
     </div>
     <div class="ef"><button id="encCancel">취소</button><button class="p" id="encRun">인코딩 실행</button></div>
+  </div>
+</div>
+
+<div id="fnCmdModal">
+  <div class="ebox">
+    <h3 id="fnCmdTitle">프롬프트 혹은 기능명령 추가</h3>
+    <div class="ebody">
+      <p class="desc" style="margin:0 0 8px">이 인스펙터(기능 블록)가 무슨 동작을 하는지 자유롭게 적으세요. 코드가 아니라 자연어면 됩니다.<br><span class="hint">예: "눌렀을 때 게임이 시작된다. 게임이 시작되면 인스펙터2가 활성화"</span></p>
+      <textarea id="fnCmdText" placeholder="예: 눌렀을 때 게임이 시작된다. 게임이 시작되면 인스펙터2가 활성화"></textarea>
+    </div>
+    <div class="ef"><button id="fnCmdCancel">취소</button><button class="p" id="fnCmdSave">저장</button></div>
   </div>
 </div>
 
@@ -670,129 +737,98 @@ const COMPLETE_CHECK=[
   "불필요한 디버그 코드가 제거되었는가?",
   "theme_config.json이 최종 상태로 업데이트되었는가?"
 ];
+/* UI1 — LAYOUT을 첫 번째·기본 탭으로. n=파이프라인 단계번호(고정), ic=아이콘, ko=한글설명(툴팁).
+   순서만 재배치(LAYOUT 맨 앞), 나머지 파이프라인 순서/번호는 유지. label(원래 라벨)은 툴팁에 보존. */
 const TABS=[
-  {id:"beat",label:"BEAT SHEET"},
-  {id:"assetcreate",label:"ASSET CREATE"},
-  {id:"assetmanage",label:"ASSET MANAGE"},
-  {id:"layout",label:"LAYOUT"},
-  {id:"integrate",label:"INTEGRATE"},
-  {id:"simulate",label:"SIMULATE"},
-  {id:"buildtest",label:"BUILD & TEST"},
-  {id:"complete",label:"COMPLETE"}
+  {id:"layout",n:4,ic:"▦",label:"LAYOUT",short:"레이아웃",ko:"좌표 배치·화면 구성"},
+  {id:"beat",n:1,ic:"☰",label:"BEAT SHEET",short:"비트시트",ko:"시퀀스·쇼 순서"},
+  {id:"assetcreate",n:2,ic:"✎",label:"ASSET CREATE",short:"에셋제작",ko:"이미지/에셋 프롬프트"},
+  {id:"assetmanage",n:3,ic:"▤",label:"ASSET MANAGE",short:"에셋관리",ko:"에셋 상태 매트릭스"},
+  {id:"integrate",n:5,ic:"⇄",label:"INTEGRATE",short:"이식",ko:"StreamingAssets 내보내기"},
+  {id:"simulate",n:6,ic:"▶",label:"SIMULATE",short:"시뮬",ko:"용량·미리보기"},
+  {id:"buildtest",n:7,ic:"⚙",label:"BUILD & TEST",short:"빌드·테스트",ko:"빌드 전 확인"},
+  {id:"complete",n:8,ic:"✓",label:"COMPLETE",short:"완료",ko:"납품 체크리스트"}
 ];
 
 /* ---------- uid ---------- */
 let uidN=1; const uid=p=>(p||"b")+(uidN++)+"_"+Math.random().toString(36).slice(2,6);
 
 /* =================================================================
-   Seed data (mirrors repo config files)
+   Seed data — 빈(최소) 프로젝트 기본
+   초심자용 최소 시드: 시퀀스 1개(SEQ1) + 씬 1개("씬 1") + 박스 0개 + 인터랙션 1개.
+   콤보(COM60) 17시퀀스 풀시드는 툴에 내장하지 않고 별도 예제 JSON
+   (example_combo_COM60.project.json)으로 분리 — [예제 불러오기]로 복원.
+   모든 하위구조(그룹/쇼큐/입력레지스트리/기본값)는 빈 프로젝트에서도
+   모든 도구가 동작하도록 최소 스캐폴딩을 유지한다.
    ================================================================= */
 function seedProject(){
-  const gameGroups=[
-    {groupId:"G0",label:"LOBBY"},{groupId:"G1",label:"G#1 순발력"},
-    {groupId:"G2",label:"G#2 추리"},{groupId:"G3",label:"G#3 협동"},
-    {groupId:"G4",label:"G#4 기억"},{groupId:"G5",label:"G#5 조작"}
-  ];
-  const phases=[
-    ["G0","G0","LOBBY","Games/G0_Lobby",0,3,{gameNumber:0,timeLimit:0},null],
-    ["G0_ROULETTE","G0","게임 룰렛","COMBO/Games/Roulette",30000,3,{timeLimit:30},null],
-    ["SEQ06SEL","G1","순발력게임 SELECT","COMBO/Games/Select",60000,3,{timeLimit:60},null],
-    ["SEQ06A","G1","순발력A — 수세미 게임","COMBO/Games/Reflex",60000,5,{mode:"A",timeLimit:60},
-      [["C",5,"BTN_1","빨강 버튼","digital","Alpha1"],["C",7,"BTN_2","흰색 버튼 (확인)","digital","Alpha2"],["C",5,"BTN_3","초록 버튼","digital","Alpha3"]]],
-    ["SEQ06B","G1","순발력B — 벽돌 깨기","COMBO/Games/Reflex",60000,3,{mode:"B",timeLimit:60},
-      [["C",5,"BTN_1","빨강 버튼","digital",null],["C",6,"BTN_2","흰색 버튼 (확인)","digital",null],["C",7,"BTN_3","초록 버튼","digital",null]]],
-    ["SEQ07SEL","G2","추리게임 SELECT","COMBO/Games/Select",60000,3,{timeLimit:60},null],
-    ["SEQ07A","G2","추리A — 이모지 퀴즈","COMBO/Games/Logic",90000,3,{mode:"A",timeLimit:90},
-      [["C",5,"BTN_1","빨강 버튼 (1번)","digital","Alpha1"],["C",7,"BTN_2","흰색 버튼 (2번)","digital","Alpha2"],["C",5,"BTN_3","초록 버튼 (3번)","digital","Alpha3"]]],
-    ["SEQ07B","G2","추리B — 데이에게 질문","COMBO/Games/Logic",90000,3,{mode:"B",timeLimit:90},
-      [["C",5,"BTN_1","빨강 버튼 (1번)","digital","Alpha1"],["C",7,"BTN_2","흰색 버튼","digital","Alpha2"],["C",5,"BTN_3","초록 버튼 (3번)","digital","Alpha3"]]],
-    ["SEQ08SEL","G3","협동게임 SELECT","COMBO/Games/Select",60000,3,{timeLimit:60},null],
-    ["SEQ08A","G3","협동A — 줄다리기","COMBO/Games/Coop",60000,3,{mode:"A",timeLimit:60},null],
-    ["SEQ08B","G3","협동B — 동기화","COMBO/Games/Coop",60000,3,{mode:"B",timeLimit:60},null],
-    ["SEQ09SEL","G4","기억게임 SELECT","COMBO/Games/Select",60000,3,{timeLimit:60},null],
-    ["SEQ09A","G4","기억A — 사이먼 리콜","COMBO/Games/Memory",90000,3,{mode:"A",timeLimit:90},null],
-    ["SEQ09B","G4","기억B — 실루엣 찾기","COMBO/Games/Memory",90000,3,{mode:"B",timeLimit:90},null],
-    ["SEQ10SEL","G5","조작게임 SELECT","COMBO/Games/Select",60000,3,{timeLimit:60},null],
-    ["SEQ10A","G5","조작A — 패턴 스위치","COMBO/Games/Control",90000,3,{mode:"A",timeLimit:90},null],
-    ["SEQ10B","G5","조작B — 조합 퍼즐","COMBO/Games/Control",90000,3,{mode:"B",timeLimit:90},null]
-  ];
-  const prefabName=p=>{ const n=p.split("/").pop(); return /lobby/i.test(n)?"Lobby":n; };
-  const sequences=phases.map(p=>{
-    const[phaseId,group,label,prefabPath,dto,diff,dp,im]=p;
-    return {
-      phaseId,group,label,gameType:prefabName(prefabPath),prefabPath,
-      mode:dp.mode||"",timeLimit:dp.timeLimit||0,difficulty:diff,defaultTimeoutMs:dto,
-      inputMap:(im||[]).map(r=>({board:r[0],pin:r[1],signalId:r[2],label:r[3],inputType:r[4],testKey:r[5]})),
-      winCondition:"",
-      simParams:{type:"timing",clearScore:100,maxScore:150,inputCount:10},
-      boxes:[],assets:[],prompts:[]
-    };
-  });
-  const showOrder=[
-    [1,"P1 인트로 영상",1,[["P1_intro_video","video","COMBO/Videos/P1_intro.mp4",{loop:false,volume:1.0},true],["P1_intro_ambient","ambient","room1_neon",{fadeDuration:2.0},false]],"linear-next","linear-next",0],
-    [2,"SEQ 06A — 바이러스 술래잡기",1,[["P1_Reflex_A","game","COMBO/Games/Reflex",{mode:"A",timeLimit:60},true]],"linear-next","skip",60000],
-    [3,"SEQ 06B — 벽돌 깨기",1,[["P1_Reflex_B","game","COMBO/Games/Reflex",{mode:"B",timeLimit:60},true]],"linear-next","skip",60000],
-    [4,"SEQ 07A — 이모지 퀴즈",1,[["P1_Logic_A","game","COMBO/Games/Logic",{mode:"A",timeLimit:90},true]],"linear-next","skip",90000],
-    [5,"SEQ 07B — 데이에게 질문",1,[["P1_Logic_B","game","COMBO/Games/Logic",{mode:"B",timeLimit:90},true]],"linear-next","skip",90000],
-    [6,"P1 중간 리워드 영상",1,[["P1_mid_reward","video","COMBO/Videos/P1_reward_mid.mp4",{loop:false},true]],"linear-next","linear-next",0],
-    [7,"SEQ 08A — 줄다리기",1,[["P1_Coop_A","game","COMBO/Games/Coop",{mode:"A",timeLimit:60},true]],"linear-next","skip",60000],
-    [8,"SEQ 08B — 동기화",1,[["P1_Coop_B","game","COMBO/Games/Coop",{mode:"B",timeLimit:60},true]],"linear-next","skip",60000],
-    [9,"SEQ 09A — 사이먼 리콜",1,[["P1_Memory_A","game","COMBO/Games/Memory",{mode:"A",timeLimit:90},true]],"linear-next","skip",90000],
-    [10,"SEQ 09B — 실루엣 찾기",1,[["P1_Memory_B","game","COMBO/Games/Memory",{mode:"B",timeLimit:90},true]],"linear-next","skip",90000],
-    [11,"SEQ 10A — 미로 탈출",1,[["P1_Control_A","game","COMBO/Games/Control",{mode:"A",timeLimit:90},true]],"linear-next","skip",90000],
-    [12,"SEQ 10B — 표적 사격",1,[["P1_Control_B","game","COMBO/Games/Control",{mode:"B",timeLimit:60},true]],"linear-next","skip",60000],
-    [13,"P1 엔딩 리워드 + 릴레이",1,[["P1_end_video","video","COMBO/Videos/P1_ending.mp4",{loop:false},true],["P1_end_relay","relay","RELAY_PRIZE_01",{state:"pulse",durationMs:3000},false],["P1_end_ambient","ambient","room1_reveal",{fadeDuration:1.5},false]],"linear-next","linear-next",0]
-  ].map(s=>({seqIndex:s[0],label:s[1],roomId:s[2],triggerSignal:"",
-    outputs:s[3].map(o=>({outputId:o[0],type:o[1],asset:o[2],parameters:o[3],waitForComplete:o[4]})),
-    onSuccess:s[4],onFail:s[5],timeoutMs:s[6]}));
-
-  const signals=[
-    [1,"joystick_up","G1","digital"],[2,"joystick_down","G1","digital"],[3,"joystick_left","G1","digital"],[4,"joystick_right","G1","digital"],
-    [5,"btn_1","G1","digital"],[6,"btn_2","G1","digital"],[7,"btn_3","G1","digital"],[8,"btn_4","G1","digital"],[9,"btn_5","G1","digital"],[10,"btn_6","G1","digital"],
-    [11,"wheel_analog","G2","analog"],[12,"confirm_btn","","digital",true],[13,"cancel_btn","","digital",true],
-    [14,"lever_R1_analog","G3","analog"],[15,"lever_R2_analog","G3","analog"],[16,"lever_R_confirm","G3","digital"],
-    [17,"lever_L_analog","G4","analog"],[18,"lever_L_confirm","G4","digital"],[19,"reserved_19","","digital",true],
-    [20,"sw3x3_0","G5","digital"],[21,"sw3x3_1","G5","digital"],[22,"sw3x3_2","G5","digital"],[23,"sw3x3_3","G5","digital"],[24,"sw3x3_4","G5","digital"],[25,"sw3x3_5","G5","digital"],[26,"sw3x3_6","G5","digital"],[27,"sw3x3_7","G5","digital"],[28,"sw3x3_8","G5","digital"],
-    [29,"reserved_29","","digital",true],[30,"token_insert","","digital",true]
-  ];
-  for(let i=1;i<=16;i++) signals.push([30+i,"grid4x4_btn"+i,"G6","digital"]);
-  const sigObjs=signals.map(s=>({pimmId:s[0],boardId:"main",rawSignal:String(s[0]),component:s[1],
-    role:s[4]?"system":(s[2]?"game":"system"),gameSlot:s[2]||"",inputType:s[3]}));
-
+  const gameGroups=[{groupId:"G1",label:"그룹 1"}];
+  const scId=uid("sc"), ixId=uid("ix");
+  const sequences=[{
+    phaseId:"SEQ1",group:"G1",label:"시퀀스 1",gameType:"",prefabPath:"Games/SEQ1",
+    mode:"",timeLimit:60,difficulty:3,defaultTimeoutMs:60000,
+    inputMap:[],winCondition:"",
+    simParams:{type:"timing",clearScore:100,maxScore:150,inputCount:10},
+    scenes:[{sceneId:scId,name:"씬 1",order:0,boxes:[],sceneNote:"",functions:[]}],
+    activeSceneId:scId,
+    interactions:[{id:ixId,label:"인터랙션1",note:"",action:{type:"none"}}],
+    boxes:[],assets:[],prompts:[]
+  }];
   return {
-    theme:{themeId:"COM60",themeName:"COMBO ARCADE SYSTEM",version:"1.2.0"},
+    theme:{themeId:"NEWGAME",themeName:"새 게임 프로젝트",version:"1.0.0"},
     gameGroups,
     sequences,
-    showOrder,
+    showOrder:[],
     showDefaults:{defaultTimeoutMs:120000,defaultOnSuccess:"linear-next",defaultOnFail:"skip",defaultRoomId:1,defaultAmbientPreset:"room1_neon"},
-    unlockRules:[{conditionId:"p5_unlock",conditionType:"all_clear",conditionParams:{requiredSeqs:[2,3,4,5,7,8,9,10,11,12],minScore:0}}],
+    unlockRules:[],
     inputRegistry:{
       boards:[
-        {boardId:"main",comPort:"COM3",baudRate:115200,description:"메인 MEGA — 조이스틱/버튼/휠/레버/3x3스위치/4x4그리드/토큰"},
-        {boardId:"sub_01",comPort:"COM4",baudRate:115200,description:"서브 — 릴레이/조명/추가센서"}
+        {boardId:"main",comPort:"COM3",baudRate:115200,description:"메인 보드"}
       ],
-      signals:sigObjs
+      signals:[]
     },
     defaults:{
       display:{operatorMonitor:0,channelA:1,channelB:2,debugHUD:false},
       scoring:{globalMultiplier:1.0,comboBonus:true,comboBonusMultiplier:1.5,maxComboStreak:6},
       timing:{gameTransitionMs:2000,rewardVideoMinMs:5000,relayPulseDefaultMs:1000,ambientFadeDefaultSec:1.5},
       serial:{defaultBaudRate:115200,reconnectIntervalMs:3000,signalDebounceMs:50},
-      ambient:{presets:{room1_neon:{r:0.1,g:0.04,b:0.2},room1_reveal:{r:0.9,g:0.9,b:0.95},room2_clean:{r:0.92,g:0.96,b:1.0},room3_dream:{r:0.91,g:0.84,b:0.95}}}
+      ambient:{presets:{room1_neon:{r:0.1,g:0.04,b:0.2}}}
     },
     audio:[],
     prefabs:[],
     checklists:{build:{},test:{},complete:{},assetReview:{}},
-    meta:{activeSeq:"SEQ06A"}
+    meta:{activeSeq:"SEQ1"}
   };
+}
+/* =================================================================
+   간단(미니) 인라인 예제 — 콤보 풀시드가 아닌, 데모 편의용 최소 예제.
+   빈 배경 1 + 텍스트 1. [간단 예제]로 로드. (콤보 풀시드는 인라인 금지)
+   ================================================================= */
+function seedMiniExample(){
+  const d=seedProject();
+  d.theme={themeId:"MINI",themeName:"간단 예제",version:"1.0.0"};
+  const s=d.sequences[0]; s.label="예제 시퀀스";
+  const sc=s.scenes[0];
+  sc.boxes=[
+    {id:"bg1",type:"asset",subtype:"image",role:"background",x:0,y:0,w:1920,h:1080,locked:true,
+     assetId:"bg_example",prompts:[],continuity:"persist",span:{fromInteraction:1,toInteraction:1}},
+    {id:"txt1",type:"text",text:"여기에 텍스트를 입력하세요",textMode:"static",x:660,y:480,w:600,h:120,
+     prompts:[],continuity:"enter",span:{fromInteraction:1,toInteraction:1}}
+  ];
+  d.meta={activeSeq:"SEQ1"};
+  return d;
 }
 
 /* =================================================================
    State
    ================================================================= */
 let PROJECT=null;
-let SEL="seq:SEQ06A";        // selected hierarchy node id
-let activeTab="beat";
+let SEL="seq:SEQ1";        // selected hierarchy node id
+let activeTab="layout";   // UI1 — 워크플로우 레이아웃 중심: 기본 활성 탭 = 레이아웃
+/* 2a — 점진적 복잡도: 앞단(항상 노출) = 레이아웃. 뒷단(고급·핸드오프)은 '고급 ▾' 뒤로 접어둠(기본 숨김). */
+const FRONT_TABS=new Set(["layout"]);
+function isBackTab(id){ return !FRONT_TABS.has(id); }
+let advancedOpen=false;   // 뒷단(고급) 탭 펼침 여부. 기본 접힘 → 첫 화면 단출
 let expanded=new Set(["theme","seqRoot","groupsRoot"]);
 
 function load(){
@@ -811,10 +847,32 @@ function save(){ clearTimeout(saveT);
   saveT=setTimeout(()=>{
   /* 핫패스는 baseline과 동일하게 LS_KEY 1회 기록만(회귀 방지). 프로젝트 스냅샷/최근목록은 persistNow()에서만. */
   try{ ensureProjectMeta(); if(PROJECT.projectMeta)PROJECT.projectMeta.lastSaved=nowTs();
-       localStorage.setItem(LS_KEY,JSON.stringify(PROJECT)); hideSaveBanner(); updateAutosaveInd(); }
+       localStorage.setItem(LS_KEY,JSON.stringify(PROJECT)); hideSaveBanner(); updateAutosaveInd();
+       scheduleHandoffWrite();  /* 2a — 저장위치(핸들/서버) 있으면 코워크용 config를 그 위치에 디바운스 기록 */ }
   catch(e){ log("자동저장 실패: "+(e&&e.message||e),"err");
     showSaveBanner("⚠ 자동저장 실패 — 브라우저 저장 용량 초과일 수 있습니다. [데이터 내보내기]로 지금 백업하세요. ("+(e&&e.name||"Error")+")"); }
 },150); }
+/* =================================================================
+   2a — 자동저장 = 핸드오프 : 저장위치가 있으면(File System Access 핸들 또는 로컬 서버)
+   프로젝트 config(scenes/박스/인터랙션/기능메모/상태 전부 포함하는 자체 JSON=PROJECT)를
+   그 위치에 계속 기록 → 코워크가 수동 내보내기 없이 바로 읽는다. LS 핫패스와 분리된 별도 디바운스.
+   ================================================================= */
+let handoffT=null;
+function hasSaveLocation(){ return !!((typeof P6!=="undefined"&&P6.fileHandle)||(typeof SERVER!=="undefined"&&SERVER.online&&SERVER.drive)); }
+function scheduleHandoffWrite(){ if(!hasSaveLocation())return; clearTimeout(handoffT); handoffT=setTimeout(writeConfigToLocation,1200); }
+async function writeConfigToLocation(){
+  try{
+    if(typeof P6!=="undefined"&&P6.fileHandle){ await writeToFileHandle(); return; }   // 파일 핸들 = 프로젝트 config JSON 그대로 기록
+    if(typeof SERVER!=="undefined"&&SERVER.online&&SERVER.drive){
+      const m=PROJECT&&PROJECT.projectMeta;
+      const fn=((m&&m.name)?m.name:"project").replace(/[^\w가-힣.-]+/g,"_")+".project.json";
+      const sub=(PROJECT.theme&&PROJECT.theme.themeId)||"PIMMplayer_JSON";
+      await driveSaveInto(fn,JSON.stringify(PROJECT,null,2),sub);
+      log("자동 config 기록(서버): "+sub+"/"+fn,"ok");
+    }
+  }catch(e){ log("자동 config 기록 실패(브라우저 저장은 유지): "+(e&&e.message||e),"warn"); }
+}
+window.__writeConfigToLocation=writeConfigToLocation;   // 테스트/디버그 훅
 function commit(){ save(); render(); }
 /* ---- U1 banner ---- */
 function showSaveBanner(msg){ const b=$("topBanner"); if(!b)return; const m=$("topBannerMsg"); if(m)m.textContent=msg; b.style.display="flex"; }
@@ -997,7 +1055,12 @@ function hydrateSequence(s){
     s.scenes=[{sceneId:uid("sc"),name:"씬1",order:0,boxes:legacy,sceneNote:""}];
   }
   s.scenes.forEach((sc,i)=>{ if(!sc.sceneId)sc.sceneId=uid("sc"); if(sc.name==null)sc.name="씬"+(i+1);
-    if(sc.order==null)sc.order=i; if(!Array.isArray(sc.boxes))sc.boxes=[]; if(sc.sceneNote==null)sc.sceneNote=""; });
+    if(sc.order==null)sc.order=i; if(!Array.isArray(sc.boxes))sc.boxes=[]; if(sc.sceneNote==null)sc.sceneNote="";
+    // 2b — 기능 인스펙터(동작 블록): 씬 단위. {id,name,commands:[{id,text}],boxIds:[]}
+    if(!Array.isArray(sc.functions))sc.functions=[];
+    sc.functions.forEach((fn,fi)=>{ if(!fn.id)fn.id=uid("fn"); if(fn.name==null)fn.name="인스펙터"+(fi+1);
+      if(!Array.isArray(fn.commands))fn.commands=[]; fn.commands.forEach(c=>{ if(!c.id)c.id=uid("cmd"); if(c.text==null)c.text=""; });
+      if(!Array.isArray(fn.boxIds))fn.boxIds=[]; }); });
   if(!s.activeSceneId||!s.scenes.some(x=>x.sceneId===s.activeSceneId)) s.activeSceneId=s.scenes[0].sceneId;
   if(!Array.isArray(s.interactions)||!s.interactions.length){
     s.interactions=[{id:uid("ix"),label:"인터랙션1",note:"",action:{type:"none"}}];
@@ -1069,6 +1132,25 @@ function log(msg,cls){ const b=$("conBody"); if(!b) return;
 $("conClear").onclick=()=>{ $("conBody").innerHTML=""; $("conCount").textContent="0 msgs"; };
 $("btnConsole").onclick=()=>{ const m=$("main"); m.classList.toggle("console-open"); $("btnConsole").classList.toggle("on",m.classList.contains("console-open")); if(activeTab==="layout") Layout.fit(); };
 $("btnTimeline").onclick=()=>Timeline.toggle();
+/* UI1 — 좌/우 패널 접기·펼치기 토글 (상태 localStorage 유지, 하단 타임라인 토글과 일관 스타일) */
+const PANEL_LS="pimm_panels_v1";
+let panelState={left:true,right:true};
+function loadPanelState(){ try{ const r=localStorage.getItem(PANEL_LS); if(r){ const d=JSON.parse(r); panelState.left=d.left!==false; panelState.right=d.right!==false; } }catch(e){} }
+function savePanelState(){ try{ localStorage.setItem(PANEL_LS,JSON.stringify(panelState)); }catch(e){} }
+function applyPanels(){ const m=$("main"); if(!m)return;
+  m.classList.toggle("left-collapsed",!panelState.left);
+  m.classList.toggle("right-collapsed",!panelState.right);
+  const bl=$("btnLeftPanel"); if(bl){ bl.classList.toggle("on",panelState.left); bl.title=(panelState.left?"좌패널 접기":"좌패널 펼치기")+" (레이어·하이어라키)"; }
+  const br=$("btnRightPanel"); if(br){ br.classList.toggle("on",panelState.right); br.title=(panelState.right?"우패널 접기":"우패널 펼치기")+" (속성·인스펙터)"; }
+  /* Layout은 뒤에서 const로 선언 → 파스타임 초기호출 시 TDZ. try/catch로 안전 처리(마운트 후엔 재fit). */
+  try{ if(activeTab==="layout"&&Layout&&Layout.mounted&&Layout.fit) Layout.fit(); }catch(e){}
+}
+function togglePanel(side){ panelState[side]=!panelState[side]; savePanelState(); applyPanels(); }
+$("btnLeftPanel").onclick=()=>togglePanel("left");
+$("btnRightPanel").onclick=()=>togglePanel("right");
+$("btnColLeft").onclick=()=>togglePanel("left");
+$("btnColRight").onclick=()=>togglePanel("right");
+loadPanelState(); applyPanels();
 $("tlClose").onclick=()=>Timeline.close();
 $("tlPhClear").onclick=()=>{ Timeline.playhead=null; Timeline.selInteraction=null; Layout.renderIfActive(); Timeline.render(); };
 
@@ -1076,8 +1158,21 @@ $("tlPhClear").onclick=()=>{ Timeline.playhead=null; Timeline.selInteraction=nul
    Top bar
    ================================================================= */
 function renderTabs(){
-  $("tabs").innerHTML=TABS.map((t,i)=>`<button class="tab ${activeTab===t.id?'active':''}" data-tab="${t.id}"><span class="n">${i+1}</span>${t.label}</button>`).join("");
+  /* UI1 — 아이콘+짧은라벨(세로 wrap 방지: .tab white-space:nowrap). 원래 라벨은 title 툴팁에 보존.
+     2a — 앞단(레이아웃)만 항상 노출. 뒷단(비트시트·에셋·이식·시뮬·빌드·완료)은 '고급 ▾' 뒤로 접어둠(펼치면 나옴).
+          뒷단 탭이 현재 활성이면 자동으로 펼쳐 유지(길 잃지 않게). */
+  if(isBackTab(activeTab)) advancedOpen=true;
+  const tabBtn=t=>`<button class="tab ${activeTab===t.id?'active':''}" data-tab="${t.id}" title="${t.n} · ${esc(t.label)} — ${esc(t.ko)}"><span class="n">${t.n}</span><span class="ti" aria-hidden="true">${t.ic}</span><span class="tl">${esc(t.short)}</span></button>`;
+  const front=TABS.filter(t=>FRONT_TABS.has(t.id)).map(tabBtn).join("");
+  const back=TABS.filter(t=>isBackTab(t.id)).map(tabBtn).join("");
+  const backCount=TABS.filter(t=>isBackTab(t.id)).length;
+  let html=front;
+  html+=`<button class="advtoggle ${advancedOpen?'open':''}" id="advToggle" aria-expanded="${advancedOpen}" title="고급·핸드오프 단계(비트시트·에셋제작·에셋관리·이식·시뮬·빌드·완료) — 초심자는 안 건드려도 됩니다">고급 <span class="ti" aria-hidden="true">${advancedOpen?"▾":"▸"}</span>${advancedOpen?"":`<span class="n" style="margin-left:2px">+${backCount}</span>`}</button>`;
+  if(advancedOpen) html+=`<span class="advgroup">${back}</span>`;
+  $("tabs").innerHTML=html;
   $("tabs").querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ activeTab=b.dataset.tab; render(); });
+  const at=$("advToggle"); if(at)at.onclick=()=>{ advancedOpen=!advancedOpen;
+    if(!advancedOpen&&isBackTab(activeTab)){ activeTab="layout"; render(); } else { renderTabs(); } };
 }
 function renderThemeBadge(){ $("themeBadge").innerHTML=`<b>${esc(PROJECT.theme.themeId)}</b> · ${esc(PROJECT.theme.themeName)} v${esc(PROJECT.theme.version)}`; }
 
@@ -1297,8 +1392,11 @@ function renderInspector(){
   else if(p.kind==="registry") h=inspRegistry();
   else if(p.kind==="defaults") h=inspDefaults();
   else h=`<div class="empty">항목을 선택하세요</div>`;
+  // 2b — 레이아웃(앞단) 워크플로우에서는 씬의 '기능 인스펙터' 섹션을 인스펙터 최상단에 노출.
+  if(activeTab==="layout") h=functionsPanel(p)+h;
   I.innerHTML=h;
   bindInspector(p);
+  if(activeTab==="layout") bindFunctionsPanel(p);
 }
 
 /* ---- prompts component card (non-coding core) ---- */
@@ -1326,6 +1424,126 @@ function getPromptHost(p){
   if(p.kind==="box"){ const s=seqById(p.seqId); const b=s&&s.boxes.find(x=>x.id===p.boxId); return b?(b.prompts||(b.prompts=[])):null; }
   if(p.kind==="asset"){ const s=seqById(p.seqId); const a=s&&s.assets.find(x=>x.aid===p.assetId); return a?(a.prompts||(a.prompts=[])):null; }
   return null;
+}
+
+/* =================================================================
+   2b — 기능 인스펙터 (동작 블록)
+   "인스펙터 = 기능을 담는 빈 캔버스". 씬 단위로 functions[] 보유.
+   각 function = {id,name,commands:[{id,text}],boxIds:[]}.
+   기능명령은 자유 텍스트(코워크가 읽음), 박스는 껍데기(비주얼)를 인스펙터에 맵핑.
+   ================================================================= */
+function activeSceneObj(){ const s=activeSeq(); return s?activeScene(s):null; }
+function fnAutoName(sc){ let n=1; const used=new Set((sc.functions||[]).map(f=>f.name)); while(used.has("인스펙터"+n))n++; return "인스펙터"+n; }
+function fnById(fid){ const sc=activeSceneObj(); return sc&&(sc.functions||[]).find(x=>x.id===fid); }
+function boxShortName(b){ if(!b)return "?";
+  if(b.role==="background")return "Background";
+  if(b.type==="text")return (b.text||"텍스트").slice(0,18);
+  if(b.kind==="prefab"){ const d=prefabDef(b); return (d&&d.name)||b.prefabId; }
+  return b.assetId||(b.subtype==="button"?"버튼":"이미지박스"); }
+function addFunction(){ const sc=activeSceneObj(); if(!sc)return; sc.functions=sc.functions||[];
+  sc.functions.push({id:uid("fn"),name:fnAutoName(sc),commands:[],boxIds:[]}); commit(); log("기능 인스펙터 추가","ok"); }
+function delFunction(fid){ const sc=activeSceneObj(); if(!sc)return;
+  const f=(sc.functions||[]).find(x=>x.id===fid); if(!f)return;
+  if(!confirm("기능 인스펙터 '"+f.name+"' 을(를) 삭제할까요?"))return;
+  sc.functions=(sc.functions||[]).filter(x=>x.id!==fid); commit(); }
+function renameFunction(fid,name){ const f=fnById(fid); if(f){ f.name=name||f.name; save(); } }
+function addCommand(fid,text){ const f=fnById(fid); if(!f)return; f.commands.push({id:uid("cmd"),text:text||""}); commit(); }
+function updateCommand(fid,cid,text){ const f=fnById(fid); const c=f&&f.commands.find(x=>x.id===cid); if(c){ c.text=text; save(); } }
+function delCommand(fid,cid){ const f=fnById(fid); if(!f)return; f.commands=f.commands.filter(c=>c.id!==cid); commit(); }
+function toggleFnBox(fid,boxId){ const f=fnById(fid); if(!f)return; const i=f.boxIds.indexOf(boxId);
+  if(i<0)f.boxIds.push(boxId); else f.boxIds.splice(i,1); commit(); }
+
+/* ---- 기능명령 팝업(모달) ---- */
+let fnCmdCtx=null;   // {fid, cid|null}
+function openCmdModal(fid,cid){ fnCmdCtx={fid,cid:cid||null};
+  const f=fnById(fid); const c=cid&&f&&f.commands.find(x=>x.id===cid);
+  const t=$("fnCmdTitle"); if(t)t.textContent=cid?"기능명령 편집":"프롬프트 혹은 기능명령 추가";
+  const ta=$("fnCmdText"); if(ta)ta.value=c?c.text:"";
+  const m=$("fnCmdModal"); if(m)m.classList.add("show"); setTimeout(()=>{ if(ta)ta.focus(); },0); }
+function closeCmdModal(){ const m=$("fnCmdModal"); if(m)m.classList.remove("show"); fnCmdCtx=null; }
+function saveCmdModal(){ if(!fnCmdCtx){ closeCmdModal(); return; }
+  const t=($("fnCmdText").value||"").trim();
+  if(fnCmdCtx.cid){ updateCommand(fnCmdCtx.fid,fnCmdCtx.cid,t); }
+  else if(t){ addCommand(fnCmdCtx.fid,t); }
+  closeCmdModal(); renderInspector(); }
+
+/* ---- 인스펙터 이름 인라인 변경 ---- */
+function startFnRename(tx){ const fid=tx.dataset.fnren; const f=fnById(fid); if(!f)return; const w=tx.offsetWidth;
+  tx.innerHTML=`<input class="boxren" value="${esc(f.name)}" style="width:${Math.max(w,120)}px"/>`;
+  const inp=tx.querySelector("input"); inp.focus(); inp.select();
+  const commitR=()=>{ renameFunction(fid,(inp.value||"").trim()); render(); };
+  inp.onkeydown=e=>{ e.stopPropagation(); if(e.key==="Enter")commitR(); else if(e.key==="Escape")renderInspector(); };
+  inp.onblur=commitR; inp.onclick=e=>e.stopPropagation(); }
+
+/* ---- 기능 인스펙터 섹션 렌더 (인스펙터 최상단) ---- */
+function functionsPanel(p){
+  const s=activeSeq(); const sc=s?activeScene(s):null; if(!sc) return "";
+  sc.functions=sc.functions||[];
+  const boxesOf=sc.boxes||[];
+  const selBox=(p&&p.kind==="box")?boxesOf.find(x=>x.id===p.boxId):null;
+  let h=`<div class="fnpanel-hdr">
+    <div class="fnp-title">⚙️ 기능 인스펙터 · <span style="color:var(--fg)">${esc(sc.name)}</span></div>
+    <div class="hint">이 씬의 <b>동작(기능)</b>을 담는 빈 블록입니다. 인스펙터를 추가하고 → 기능명령(자유 텍스트)을 적고 → 박스를 맵핑하세요.</div>
+    <button class="mini p" data-fnadd="1">＋ 인스펙터 추가</button>
+  </div>`;
+  // 박스 선택 시: 이 박스가 어느 인스펙터에 맵핑됐는지 + 빠른 토글
+  if(selBox){
+    const rows=sc.functions.length? sc.functions.map(f=>{
+      const on=(f.boxIds||[]).indexOf(selBox.id)>=0;
+      return `<label><input type="checkbox" data-fnqt="${esc(f.id)}" ${on?"checked":""}/> ${esc(f.name)}</label>`;
+    }).join("") : `<div class="hint">아직 기능 인스펙터가 없습니다. 위 <b>＋ 인스펙터 추가</b>로 만드세요.</div>`;
+    h+=`<div class="fncard"><h3>🔗 이 박스 맵핑 <span class="gi">${esc(boxShortName(selBox))}</span></h3>
+      <div class="body"><div class="hint" style="margin-bottom:4px">선택한 박스를 어떤 기능 인스펙터에 연결할지 체크하세요.</div>
+      <div class="boxmaplist">${rows}</div></div></div>`;
+  }
+  if(!sc.functions.length){
+    h+=`<div class="fncard"><div class="body"><div class="hint">아직 기능 인스펙터가 없습니다. <b>＋ 인스펙터 추가</b>를 눌러 빈 인스펙터를 만드세요.</div></div></div>`;
+  }
+  sc.functions.forEach(f=>{
+    const cmds=(f.commands||[]).map(c=>`<div class="cmdrow">
+      <div class="cmdtx" data-cmdedit="${esc(f.id)}:${esc(c.id)}" title="클릭=편집">${esc(c.text)||'<span class="hint">(빈 명령 — 클릭해 작성)</span>'}</div>
+      <button class="mini" data-cmddel="${esc(f.id)}:${esc(c.id)}" title="삭제">✕</button>
+    </div>`).join("")||`<div class="hint">기능명령 없음 — 아래 버튼으로 추가</div>`;
+    const mapped=(f.boxIds||[]).map(bid=>{ const b=boxesOf.find(x=>x.id===bid); if(!b)return "";
+      return `<span class="boxchip">${esc(boxShortName(b))}<span class="x" data-fnunmap="${esc(f.id)}:${esc(bid)}" title="맵핑 해제">✕</span></span>`;
+    }).filter(Boolean).join("")||`<span class="hint">맵핑된 박스 없음</span>`;
+    const boxOpts=boxesOf.length? boxesOf.map(b=>{ const on=(f.boxIds||[]).indexOf(b.id)>=0;
+      return `<label><input type="checkbox" data-fnbox="${esc(f.id)}:${esc(b.id)}" ${on?"checked":""}/> ${esc(boxShortName(b))}</label>`;
+    }).join("") : `<div class="hint">이 씬에 박스가 없습니다. 레이아웃에서 박스를 먼저 추가하세요.</div>`;
+    h+=`<div class="fncard" data-fndrop="${esc(f.id)}">
+      <h3><span class="fnname" data-fnren="${esc(f.id)}" title="더블클릭=이름변경">${esc(f.name)}</span>
+        <button class="mini" data-fndel="${esc(f.id)}" title="인스펙터 삭제">✕</button></h3>
+      <div class="body">
+        <div class="hint" style="margin-bottom:4px">기능명령 (자유 텍스트)</div>
+        ${cmds}
+        <button class="mini" data-fncmdadd="${esc(f.id)}" style="margin-top:2px">＋ 프롬프트 혹은 기능명령 추가</button>
+        <div class="hint" style="margin:9px 0 3px">박스 맵핑 <span style="opacity:.7">· 하이어라키에서 박스를 이 카드로 드래그해도 됩니다</span></div>
+        <div class="boxchips">${mapped}</div>
+        <div class="boxmaplist">${boxOpts}</div>
+      </div></div>`;
+  });
+  return h;
+}
+function bindFunctionsPanel(p){
+  const I=$("inspector");
+  const add=I.querySelector("[data-fnadd]"); if(add)add.onclick=addFunction;
+  I.querySelectorAll("[data-fndel]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); delFunction(b.dataset.fndel); });
+  I.querySelectorAll("[data-fnren]").forEach(tx=>tx.ondblclick=e=>{ e.stopPropagation(); startFnRename(tx); });
+  I.querySelectorAll("[data-fncmdadd]").forEach(b=>b.onclick=()=>openCmdModal(b.dataset.fncmdadd,null));
+  I.querySelectorAll("[data-cmdedit]").forEach(el=>el.onclick=()=>{ const [fid,cid]=el.dataset.cmdedit.split(":"); openCmdModal(fid,cid); });
+  I.querySelectorAll("[data-cmddel]").forEach(b=>b.onclick=()=>{ const [fid,cid]=b.dataset.cmddel.split(":"); delCommand(fid,cid); });
+  I.querySelectorAll("[data-fnbox]").forEach(c=>c.onchange=()=>{ const [fid,bid]=c.dataset.fnbox.split(":"); toggleFnBox(fid,bid); });
+  I.querySelectorAll("[data-fnunmap]").forEach(x=>x.onclick=()=>{ const [fid,bid]=x.dataset.fnunmap.split(":"); toggleFnBox(fid,bid); });
+  I.querySelectorAll("[data-fnqt]").forEach(c=>c.onchange=()=>{ const fid=c.dataset.fnqt; const p2=parseSel(SEL); if(p2.kind==="box")toggleFnBox(fid,p2.boxId); });
+  // 하이어라키 boxrow → 기능카드 드래그 맵핑 (treeDrag 재사용)
+  I.querySelectorAll("[data-fndrop]").forEach(cardEl=>{
+    cardEl.addEventListener("dragover",e=>{ if(!treeDrag)return; e.preventDefault(); cardEl.classList.add("dragover"); });
+    cardEl.addEventListener("dragleave",()=>cardEl.classList.remove("dragover"));
+    cardEl.addEventListener("drop",e=>{ e.preventDefault(); cardEl.classList.remove("dragover"); if(!treeDrag)return;
+      const f=fnById(cardEl.dataset.fndrop);
+      if(f&&f.boxIds.indexOf(treeDrag.id)<0){ f.boxIds.push(treeDrag.id); commit(); log("박스를 기능 인스펙터에 맵핑","ok"); }
+      treeDrag=null; });
+  });
 }
 
 function inspTheme(){
@@ -1857,7 +2075,10 @@ function sceneBeat(pad){
     <h2 style="margin-top:18px;font-size:13px">쇼 순서 (combo_show_config.sequences)</h2>
     <div class="toolbtn-row"><button id="beatAddShow">+ 쇼 큐 추가</button></div>
     <div class="tblwrap"><table><thead><tr><th>#</th><th>label</th><th>outputs</th><th>onSuccess/Fail</th><th>timeout</th><th></th></tr></thead>
-      <tbody>${showRows}</tbody></table></div>`;
+      <tbody>${showRows}</tbody></table></div>
+    <h2 style="margin-top:18px;font-size:13px">기능 인스펙터 요약 (자동 정리 · 읽기전용)</h2>
+    <p class="desc">레이아웃 단계에서 만든 씬별 기능 인스펙터·기능명령·맵핑 박스가 여기 자동으로 모입니다. (직접 적지 않고 확인만)</p>
+    ${beatFunctionsSummary()}`;
   pad.querySelectorAll("[data-seqrow]").forEach(r=>r.onclick=e=>{ if(e.target.dataset.delseq)return; selectNode("seq:"+r.dataset.seqrow); });
   pad.querySelectorAll("[data-delseq]").forEach(b=>b.onclick=e=>{e.stopPropagation();delSeqByPhase(b.dataset.delseq);});
   pad.querySelectorAll("[data-showrow]").forEach(r=>r.onclick=e=>{ if(e.target.dataset.delshow||e.target.dataset.shup||e.target.dataset.shdn)return; selectNode("show:"+r.dataset.showrow); });
@@ -1866,6 +2087,28 @@ function sceneBeat(pad){
   pad.querySelectorAll("[data-shdn]").forEach(b=>b.onclick=e=>{e.stopPropagation();const i=+b.dataset.shdn;const a=PROJECT.showOrder;if(i<a.length-1){[a[i+1],a[i]]=[a[i],a[i+1]];commit();}});
   $("beatAddSeq").onclick=addSequence;
   $("beatAddShow").onclick=()=>{ const idx=(PROJECT.showOrder.reduce((m,s)=>Math.max(m,s.seqIndex),0))+1; PROJECT.showOrder.push({seqIndex:idx,label:"새 쇼 큐",roomId:1,triggerSignal:"",outputs:[{outputId:"out_1",type:"game",asset:"",parameters:{},waitForComplete:true}],onSuccess:"linear-next",onFail:"skip",timeoutMs:60000}); commit(); };
+}
+
+/* 2b — 비트시트 자동 정리 뷰: 씬별 기능 인스펙터/기능명령/맵핑박스 읽기전용 나열 */
+function beatFunctionsSummary(){
+  let any=false; let h="";
+  PROJECT.sequences.forEach(s=>{
+    hydrateSequence(s);
+    (scenesOf(s)||[]).forEach(sc=>{
+      const fns=sc.functions||[]; if(!fns.length)return; any=true;
+      const boxesOf=sc.boxes||[];
+      h+=`<div class="card"><h3>${esc(s.phaseId)} · ${esc(sc.name)}<span class="gi">${fns.length} 인스펙터</span></h3><div class="body">`;
+      fns.forEach(f=>{
+        const cmds=(f.commands||[]).filter(c=>(c.text||"").trim()).map(c=>`<li>${esc(c.text)}</li>`).join("")||`<li class="hint">기능명령 없음</li>`;
+        const boxes=(f.boxIds||[]).map(bid=>{ const b=boxesOf.find(x=>x.id===bid); return b?esc(boxShortName(b)):""; }).filter(Boolean).join(", ")||"없음";
+        h+=`<div style="margin-bottom:8px"><b style="color:var(--accent)">${esc(f.name)}</b>
+          <ul style="margin:3px 0 3px 16px;font-size:11px;line-height:1.55">${cmds}</ul>
+          <div class="hint">맵핑 박스: ${boxes}</div></div>`;
+      });
+      h+=`</div></div>`;
+    });
+  });
+  return any?h:`<div class="empty">아직 기능 인스펙터가 없습니다. 레이아웃 탭의 인스펙터 패널에서 추가하세요.</div>`;
 }
 
 /* ---- 2. ASSET CREATE ---- */
@@ -1943,8 +2186,9 @@ function sceneAssetManage(pad){
 /* ---- 5. INTEGRATE ---- */
 function sceneIntegrate(pad){
   const exports=buildExports();
-  pad.innerHTML=`<h2>5 · INTEGRATE</h2>
-    <p class="desc">config 내보내기 미리보기. 각 파일을 미리보고 브라우즈 저장/다운로드합니다. 레이아웃 핸드오프 파일명은 자동 코드명(SEQ1..)을 사용합니다. 경로: <code>Assets/StreamingAssets/...</code></p>
+  pad.innerHTML=`<h2>5 · INTEGRATE <span style="font-size:10px;color:var(--muted);font-weight:400">고급·핸드오프</span></h2>
+    <p class="desc">평소엔 <b>자동저장이 코워크용 config를 저장위치에 계속 기록</b>합니다(수동 내보내기 불필요). 이 화면은 <b>에셋 교체·특수 상황</b>용 수동 내보내기 미리보기입니다. 레이아웃 핸드오프 파일명은 자동 코드명(SEQ1..)을 사용합니다. 경로: <code>Assets/StreamingAssets/...</code></p>
+    <div class="rowb" style="margin:0 0 12px"><button class="p" id="btnEncode" title="시퀀스를 골라 자체완결 게임파일(.pimmgame.json)로 인코딩(내보내기)">🎬 인코딩 (게임파일로 내보내기)</button></div>
     <div class="exp-grid" id="expGrid">${exports.map(e=>`<div class="exp-card">
       <div class="fn">${esc(e.file)}</div><div class="pth">${esc(e.path)}</div>
       <div class="rowb"><button class="mini" data-prev="${e.key}">미리보기</button><button class="mini" data-dl="${e.key}">다운로드</button><button class="mini" data-drive="${e.key}" title="로컬 서버 경유 Drive 저장 · 오프라인이면 다운로드 폴백">Drive에 저장</button></div></div>`).join("")}</div>
@@ -1953,6 +2197,7 @@ function sceneIntegrate(pad){
   pad.querySelectorAll("[data-prev]").forEach(b=>b.onclick=()=>{ $("expPreview").value=map[b.dataset.prev].content; });
   pad.querySelectorAll("[data-dl]").forEach(b=>b.onclick=()=>{ const e=map[b.dataset.dl]; saveFile(e.file,e.content,e.mime); });
   pad.querySelectorAll("[data-drive]").forEach(b=>b.onclick=()=>{ const e=map[b.dataset.drive]; driveSave(e.file,e.content,PROJECT.theme.themeId,e.mime); });
+  const enc=pad.querySelector("#btnEncode"); if(enc)enc.onclick=()=>openEncodeModal();  // 2a — 인코딩은 고급(이식) 탭 안으로 이동(앞단 헤더에서 제거)
 }
 function buildExports(){
   const out=[];
@@ -2374,8 +2619,10 @@ const Layout={
         <button class="mini aln" data-al="dh" title="수평 균등 분배">↔↔</button><button class="mini aln" data-al="dv" title="수직 균등 분배">↕↕</button>
         <button class="mini" data-al="sw" title="같은 폭">같은W</button><button class="mini" data-al="sh" title="같은 높이">같은H</button></div>
       <div class="grp"><button class="mini" id="L_zoomOut" title="줌 아웃 (Ctrl+휠)">－</button><button class="mini" id="L_zoom100" title="100% (1:1)">100%</button><button class="mini" id="L_zoomFit" title="화면맞춤">맞춤</button><button class="mini" id="L_zoomIn" title="줌 인 (Ctrl+휠)">＋</button></div>
-      <div class="grp"><button class="mini" id="L_import">불러오기</button><button class="mini" id="L_svg" title="SVG · Illustrator 아트보드 (박스별 개별 아트보드)">좌표이미지 내보내기</button><button class="mini p" id="L_json" title="핸드오프 JSON · PIMMplayer_JSON">데이터 내보내기</button>
-        <button class="mini" id="L_drive" title="로컬 서버 경유 Drive 저장 · 오프라인이면 다운로드 폴백">Drive에 저장</button>
+      <div class="grp"><button class="mini" id="L_advToggle" title="고급·핸드오프 — 불러오기/좌표이미지/데이터/Drive 내보내기(평소엔 자동저장이 코워크용 config를 기록하므로 불필요)">고급 ▸</button>
+        <span id="L_advGrp" style="display:none;align-items:center;gap:3px">
+        <button class="mini" id="L_import">불러오기</button><button class="mini" id="L_svg" title="SVG · Illustrator 아트보드 (박스별 개별 아트보드)">좌표이미지 내보내기</button><button class="mini p" id="L_json" title="핸드오프 JSON · PIMMplayer_JSON">데이터 내보내기</button>
+        <button class="mini" id="L_drive" title="로컬 서버 경유 Drive 저장 · 오프라인이면 다운로드 폴백">Drive에 저장</button></span>
         <input type="file" id="L_fileJson" accept=".json" style="display:none"/></div>
       <div class="grp hint">클릭=선택 · Shift=다중 · 드래그=영역 · 방향키=이동 · Del=삭제 · Ctrl+D=복제 · Ctrl+Z=취소 · 우클릭=메뉴 · ?=단축키</div>
     </div>
@@ -2411,6 +2658,7 @@ const Layout={
     const ldr=$("L_drive"); if(ldr)ldr.onclick=()=>{ const s=self.seq(); driveSave("PIMMplayer_JSON_"+seqCode(s)+"_layout.json",JSON.stringify(buildLayoutJSON(s),null,2),PROJECT.theme.themeId+"/"+seqCode(s)); };
     $("L_svg").onclick=()=>self.exportSVG();
     $("L_import").onclick=()=>$("L_fileJson").click();
+    const lat=$("L_advToggle"); if(lat)lat.onclick=()=>{ const g=$("L_advGrp"); if(!g)return; const open=g.style.display==="none"; g.style.display=open?"inline-flex":"none"; lat.textContent="고급 "+(open?"▾":"▸"); lat.classList.toggle("on",open); };
     $("L_fileJson").onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ self.importData(JSON.parse(r.result)); log("레이아웃 불러옴: "+f.name,"ok"); }catch(err){ alert("불러오기 실패: "+err.message); log("불러오기 실패: "+err.message,"err"); } }; r.readAsText(f); e.target.value=""; };
     document.querySelectorAll(".lay-toolbar [data-al]").forEach(btn=>btn.onclick=()=>self.align(btn.dataset.al));
     // pointer
@@ -2449,7 +2697,9 @@ const Layout={
     if(type==="text") Object.assign(b,{text:"텍스트",fontSize:32,textColor:"#ffffff",align:"center",bgColor:"",borderColor:"#00ff99",textMode:"static",variants:[]});
     else Object.assign(b,{subtype:"image",assetId:"",fps:0,previewSrc:"",borderColor:"#00e5ff",prompts:[{label:"이미지생성",text:"",kind:"image"}]});
     ensureBoxContinuity(b,this.seq().interactions.length);
-    this.boxes().push(b); this.sel=new Set([b.id]); SEL="box:"+this.seq().phaseId+":"+b.id; save(); this.render(); renderTree(); renderInspector();
+    this.boxes().push(b); this.sel=new Set([b.id]); SEL="box:"+this.seq().phaseId+":"+b.id;
+    expanded.add("seq:"+this.seq().phaseId);   // 2a-3 — 추가 즉시 하이어라키에 노드 보이게 시퀀스 노드 펼침
+    save(); this.render(); renderTree(); renderInspector();
   },
   addBackground(){ const s=this.seq();
     if(s.boxes.some(b=>b.role==="background")){ if(!confirm("이미 배경 에셋이 있습니다. 하나 더 추가할까요?")) return; }
@@ -2457,7 +2707,9 @@ const Layout={
       assetId:"background",fps:0,previewSrc:"",borderColor:"#888",prompts:[{label:"이미지생성",text:"",kind:"image"}]};
     ensureBoxContinuity(b,s.interactions.length);
     s.boxes.unshift(b); // bottom z-index
-    this.sel=new Set([b.id]); SEL="box:"+s.phaseId+":"+b.id; save(); this.render(); renderTree(); renderInspector();
+    this.sel=new Set([b.id]); SEL="box:"+s.phaseId+":"+b.id;
+    expanded.add("seq:"+s.phaseId);   // 2a-3 — 배경 추가 즉시 하이어라키 반영
+    save(); this.render(); renderTree(); renderInspector();
     pickImageForBox(s.phaseId,b.id);
   },
   /* PART5 — prefab select options (새 프리팹 + 기존 프리팹) */
@@ -2478,6 +2730,7 @@ const Layout={
       borderColor:def.borderColor||"#ffcf5a",fps:0,hidden:false,locked:false,prompts:[{label:"이미지생성",text:"",kind:"image"}]};
     ensureBoxContinuity(b,s.interactions.length);
     s.boxes.push(b); this.sel=new Set([b.id]); SEL="box:"+s.phaseId+":"+b.id;
+    expanded.add("seq:"+s.phaseId);   // 2a-3 — 프리팹박스 추가 즉시 하이어라키 반영
     save(); this.render(); renderTree(); renderInspector();
     log("프리팹박스 추가: "+def.name+" ("+(existing+1)+"번째 인스턴스)","ok");
   },
@@ -2965,14 +3218,19 @@ async function sendChat(){
 $("btnSaveProj").onclick=()=>{ save(); download("pimm_project.json",JSON.stringify(PROJECT,null,2)); log("프로젝트 저장(JSON)","ok"); };
 $("btnLoadProj").onclick=()=>$("fileProj").click();
 $("fileProj").onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.sequences)throw new Error("유효한 프로젝트 아님"); PROJECT=d; PROJECT.checklists=PROJECT.checklists||{build:{},test:{},complete:{},assetReview:{}}; PROJECT.meta=PROJECT.meta||{activeSeq:PROJECT.sequences[0].phaseId}; SEL="theme"; save(); render(); log("프로젝트 불러옴: "+f.name,"ok"); }catch(err){ alert("불러오기 실패: "+err.message); log("불러오기 실패: "+err.message,"err"); } }; r.readAsText(f); e.target.value=""; };
-$("btnReset").onclick=()=>{ if(confirm("모든 데이터를 초기 시드로 되돌립니까? (localStorage 삭제)")){ localStorage.removeItem(LS_KEY); PROJECT=seedProject(); SEL="seq:"+PROJECT.sequences[0].phaseId; activeTab="beat"; save(); render(); log("초기화 완료","ok"); } };
+$("btnReset").onclick=()=>{ if(confirm("모든 데이터를 초기 시드로 되돌립니까? (localStorage 삭제)")){ localStorage.removeItem(LS_KEY); PROJECT=seedProject(); SEL="seq:"+PROJECT.sequences[0].phaseId; activeTab="layout"; save(); render(); log("초기화 완료","ok"); } };
 
 /* ---- PART9 인코딩 다이얼로그 controls ---- */
-$("btnEncode").onclick=()=>openEncodeModal();
+/* 2a — 인코딩 버튼은 헤더에서 제거하고 INTEGRATE(고급) 탭 안에서 바인딩(sceneIntegrate) */
 $("encCancel").onclick=()=>closeEncodeModal();
 $("encRun").onclick=()=>runEncode();
 $("encTarget").onchange=()=>renderEncReskin();
 $("encodeModal").addEventListener("mousedown",e=>{ if(e.target&&e.target.id==="encodeModal")closeEncodeModal(); });
+/* ---- 2b 기능명령 팝업 controls ---- */
+$("fnCmdCancel").onclick=()=>closeCmdModal();
+$("fnCmdSave").onclick=()=>saveCmdModal();
+$("fnCmdModal").addEventListener("mousedown",e=>{ if(e.target&&e.target.id==="fnCmdModal")closeCmdModal(); });
+$("fnCmdText").addEventListener("keydown",e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){ e.preventDefault(); saveCmdModal(); } if(e.key==="Escape"){ e.preventDefault(); closeCmdModal(); } });
 /* ---- U1 banner controls ---- */
 $("topBannerClose").onclick=()=>hideSaveBanner();
 $("topBannerExport").onclick=()=>{ const s=activeSeq(); if(s) saveFile("PIMMplayer_JSON_"+seqCode(s)+"_layout.json",JSON.stringify(buildLayoutJSON(s),null,2)); else download("pimm_project.json",JSON.stringify(PROJECT,null,2)); };
@@ -3022,7 +3280,14 @@ function snapshotActiveProject(){
 function persistNow(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(PROJECT)); }catch(e){} snapshotActiveProject(); updateAutosaveInd(); }
 /* ---- header 표시 ---- */
 function updateProjName(){ const el=$("projName"); if(!el)return; const m=PROJECT&&PROJECT.projectMeta; el.innerHTML=m?("<b>"+esc(m.name)+"</b>"):""; el.title=m?("현재 프로젝트: "+m.name):"현재 프로젝트"; }
-function updateAutosaveInd(){ const el=$("autosaveInd"); if(!el)return; const m=PROJECT&&PROJECT.projectMeta; el.innerHTML=(m&&m.lastSaved)?("자동저장 <b>✓</b> "+fmtTime(m.lastSaved)):""; }
+function updateAutosaveInd(){ const el=$("autosaveInd"); if(!el)return; const m=PROJECT&&PROJECT.projectMeta;
+  if(!(m&&m.lastSaved)){ el.innerHTML=""; el.title="마지막 자동저장 시각"; return; }
+  const loc=hasSaveLocation();   /* 2a — 저장위치 있으면 코워크 연동 상태, 없으면 안내 한 줄 */
+  el.innerHTML="자동저장 <b>✓</b> "+fmtTime(m.lastSaved)+(loc
+    ? ' <span style="color:var(--accent)">· 코워크 연동중</span>'
+    : ' <span style="opacity:.7">· 저장위치 지정 시 코워크가 바로 읽어요</span>');
+  el.title=loc?"자동저장 + 저장위치에 코워크용 config를 계속 기록 중":"브라우저(localStorage)에만 자동저장 중 — 새 프로젝트에서 저장위치를 지정하거나 로컬 서버를 켜면 코워크가 config를 바로 읽습니다";
+}
 /* ---- 마이그레이션 : 기존 단일 상태는 이미 load()가 PROJECT로 읽음 → 기본 프로젝트로 승격(유실 없음) ---- */
 function migrateLegacyIfNeeded(){
   const first=!localStorage.getItem("pimm_migrated");
@@ -3059,7 +3324,7 @@ function loadProjectObject(d, nameHint){
   PROJECT.meta=PROJECT.meta||{activeSeq:PROJECT.sequences[0].phaseId};
   if(!PROJECT.projectMeta) PROJECT.projectMeta={id:newProjId(),name:nameHint||"불러온 프로젝트",createdAt:nowTs(),lastSaved:nowTs()};
   else if(nameHint) PROJECT.projectMeta.name=PROJECT.projectMeta.name||nameHint;
-  SEL="seq:"+(PROJECT.meta.activeSeq||PROJECT.sequences[0].phaseId); activeTab="beat";
+  SEL="seq:"+(PROJECT.meta.activeSeq||PROJECT.sequences[0].phaseId); activeTab="layout";   // UI1 — 프로젝트 열기 시 레이아웃 우선
   checkTempRecovery();
   persistNow(); enterEdit();
   if(typeof History!=="undefined")History.reset();   // PART7-B — 프로젝트 전환 시 히스토리 초기화
@@ -3091,7 +3356,7 @@ function createProjectWithName(name, handle){
   PROJECT=seedProject();
   PROJECT.projectMeta={id:newProjId(),name:name,createdAt:nowTs(),lastSaved:nowTs()};
   P6.fileHandle=handle||null;
-  SEL="seq:"+PROJECT.sequences[0].phaseId; activeTab="beat";
+  SEL="seq:"+PROJECT.sequences[0].phaseId; activeTab="layout";   // UI1 — 새 프로젝트 시 레이아웃 우선
   persistNow();
   if(P6.fileHandle) writeToFileHandle();
   enterEdit();
@@ -3115,6 +3380,35 @@ async function openProjectFile(){
     }catch(err){ if(err&&err.name==="AbortError")return; /* 미지원/거부 → input 폴백 */ }
   }
   const hf=$("homeFileInput"); if(hf) hf.click();
+}
+/* ---- 예제 불러오기 : 콤보(COM60) 풀예제(외부 파일) + 간단(인라인) 예제 ---- */
+async function loadExampleCombo(){
+  persistNow();   // 나가는 프로젝트 스냅샷 최신화
+  // 1) 같은 폴더의 예제 JSON을 fetch (로컬 서버/HTTP 환경). 콤보 데이터는 툴에 내장하지 않는다.
+  //    file:// 로컬 파일 환경은 fetch가 CORS로 차단(콘솔에러 유발)되므로 시도하지 않고 곧장 파일선택 폴백.
+  if(location.protocol!=="file:"){
+    try{
+      const res=await fetch("example_combo_COM60.project.json",{cache:"no-store"});
+      if(res&&res.ok){
+        const d=await res.json();
+        P6.fileHandle=null; loadProjectObject(d,"콤보(COM60) 예제");
+        toast("콤보(COM60) 예제를 불러왔습니다.");
+        return;
+      }
+    }catch(e){ /* 오프라인/파일없음 → 파일 선택 폴백 */ }
+  }
+  // 2) 폴백: 예제 파일을 직접 선택 (오프라인/로컬 file:// 환경 안내)
+  if(confirm("예제 파일을 자동으로 불러오지 못했습니다(오프라인/로컬 file:// 환경).\n\nexample_combo_COM60.project.json 파일을 직접 선택하시겠습니까?\n(취소 시 [간단 예제] 또는 [＋ 새 프로젝트]로 시작할 수 있습니다.)")){
+    const hf=$("homeFileInput"); if(hf) hf.click();   // onchange가 fileHandle=null로 로드
+  } else {
+    toast("예제 불러오기를 건너뜁니다. [간단 예제] 또는 [＋ 새 프로젝트]로 시작하세요.");
+  }
+}
+function loadMiniExample(){
+  persistNow();
+  P6.fileHandle=null;
+  loadProjectObject(seedMiniExample(),"간단 예제");
+  toast("간단 예제(배경 1 + 텍스트 1)를 불러왔습니다.");
 }
 /* ---- 20분 temp 자동저장 + fileHandle 병행 기록 ---- */
 function autoTemp(){
@@ -3171,7 +3465,7 @@ const TUT_STEPS=[
  {t:"⑤ 소리 (SFX / BGM)", b:"<b>SFX</b> = 버튼·이벤트에 붙는 순간 효과음. <b>BGM</b> = 시퀀스 진입 시 루프되는 배경음. 상호작용 메모에서 SFX를, 시퀀스 속성에서 BGM을 연결합니다.", spot:"#L_addSfx"},
  {t:"⑥ 타임라인 = 인터랙션 순서 (시간 아님!)", b:"상단 <b>🎞 타임라인</b>을 열면 프리미어처럼 트랙(배경·UI·텍스트·오디오·SFX)이 보입니다. 하지만 <b>가로축은 '시간'이 아니라 '인터랙션(플레이 단계) 순서'</b>입니다. 인터랙션1 → 2 → 3 은 <b>플레이어가 입력할 때마다</b> 넘어가는 단계이지, 몇 초 뒤가 아닙니다. 각 클립 막대 = 그 요소가 유지되는 인터랙션 구간입니다.", spot:"#btnTimeline"},
  {t:"⑦ 되돌리기 · 우클릭 메뉴", b:"실수해도 괜찮습니다. <b>Ctrl+Z</b>(되돌리기) / <b>Ctrl+Shift+Z</b>(다시실행), 헤더의 <b>↶ ↷</b> 버튼으로 언제든 되돌립니다. 캔버스에서 <b>마우스 우클릭</b>하면 복제·정렬·삭제·맨앞/맨뒤 같은 메뉴가 나옵니다. 단축키 전체는 헤더 <b>⌨</b> 또는 <b>?</b>키로 봅니다.", spot:"#btnUndo"},
- {t:"⑧ 데이터 / 좌표이미지 내보내기 (인코딩)", b:"완성되면 <b>데이터 내보내기</b>(핸드오프 JSON)와 <b>좌표이미지 내보내기</b>(SVG)로 저장 — 이 과정이 Unity로 넘기는 <b>인코딩</b>입니다. 헤더의 <b>🎬 인코딩</b>으로 시퀀스를 자체완결 게임파일로 내보낼 수도 있습니다.", spot:"#L_json"}
+ {t:"⑧ 자동저장이 곧 핸드오프 (내보내기 걱정 없음)", b:"이제 <b>따로 내보낼 필요가 없습니다</b>. 새 프로젝트에서 <b>저장위치</b>를 정하면(또는 로컬 서버를 켜면), 편집하는 동안 <b>자동저장이 코워크용 config를 그 위치에 계속 기록</b>합니다 — 코워크가 바로 읽습니다. 저장위치를 안 정하면 브라우저에만 저장되니 헤더의 자동저장 안내를 참고하세요. 특수한 수동 내보내기(좌표이미지·에셋 아카이브·게임파일 인코딩)는 상단 <b>고급 ▾ → 이식</b> 탭에 모여 있습니다.", spot:"#advToggle"}
 ];
 let tutIdx=0;
 function openTutorial(idx){ tutIdx=idx||0; const l=$("tutorialLayer"); if(l)l.classList.add("show"); renderTutStep(); }
@@ -3197,6 +3491,8 @@ function bindPart6(){
   bind("btnTutorial",()=>openTutorial(0));
   bind("homeNew",()=>openNewProjModal());
   bind("homeOpen",()=>openProjectFile());
+  bind("homeExampleCombo",()=>loadExampleCombo());
+  bind("homeExampleMini",()=>loadMiniExample());
   bind("homeTutorial",()=>openTutorial(0));
   bind("newProjCreate",()=>confirmNewProject());
   bind("newProjCancel",()=>{ const m=$("newProjModal"); if(m)m.classList.remove("show"); });
@@ -3225,6 +3521,7 @@ function initApp(){
   ensureProjectMeta();
   try{ touchRecent(PROJECT.projectMeta); localStorage.setItem("pimm_active",PROJECT.projectMeta.id); }catch(e){}
   enterEdit();                               // 항상 활성 프로젝트로 편집화면(회귀 안전)
+  applyPanels();                             // UI1 — 저장된 좌/우 패널 접힘 상태 반영(마운트 후 재fit)
   renderChat();
   updateServerStatus();                      // 초기 오프라인 표시
   startAutoTempTimer();                      // 20분 temp 자동저장
