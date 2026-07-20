@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# renderer/index.html 은 sync 스크립트가 tool/ 최신본에서 생성 → 커밋하지 않음(단일 소스 유지)
+renderer/index.html

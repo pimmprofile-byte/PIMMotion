@@ -1,0 +1,21 @@
+{
+  "name": "pimmotion-desktop",
+  "productName": "PIMMotion",
+  "version": "0.1.0",
+  "description": "PIMMotion 게임에디터 데스크톱 앱 (Electron 래퍼) — 최신 tool/ 에디터 HTML을 감싼다.",
+  "main": "main.js",
+  "author": "PIMM",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "sync": "node scripts/sync-renderer.mjs",
+    "start": "npm run sync && electron .",
+    "dist": "npm run sync && electron-builder",
+    "dist:win": "npm run sync && electron-builder --win",
+    "dist:mac": "npm run sync && electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^31.7.0",
+    "electron-builder": "^24.13.3"
+  }
+}
