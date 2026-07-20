@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PIMMotion · Hub</title>
+<!--
+  ============================================================================
+  PIMMotion Hub (마더페이지 / 허브) — ver0.1 (WIP)
+  ----------------------------------------------------------------------------
+  · 컨셉: PIMMotion 진입 시 처음 보이는 "첫 관문". 어도비 Creative Cloud 런처
+    철학(깔끔·집중·앱 그리드)을 다크그레이+#00FF99 브랜드로 재해석.
+  · Forge  = 특정 에디터/시스템으로 바로 진입(빠른 접근). 4대 섹터 카드 그리드.
+             PIMMotion 섹터를 펼치면 하위 "에디터 에이전트" 카드들이 나온다.
+  · Track  = 테마의 최초 공정부터 끝까지 가는 전체 파이프라인(공정 흐름).
+             뼈대는 Partwork(실제공정)이며 아직 빈약 → 대부분 🚧.
+  · 통합 워크플로우: 모든 섹터/에디터/트랙 스텝은 아래 DATA 배열에서 렌더된다.
+    → 새 에디터 추가 = EDITORS 배열에 한 줄 추가.  (data-driven hub)
+  · 단일 HTML · 외부 의존성 0 (아이콘=유니코드/이모지/인라인SVG).
+  ============================================================================
+-->
+<style>
+  :root{
+    /* --- PIMMotion 브랜드 셸 (UnityGameCreator와 동일 팔레트) --- */
+    --bg:#232323; --bg2:#2b2b2b; --panel:#343434; --panel2:#3f3f3f;
+    --header:#2a2a2a; --line:#1c1c1c; --line2:#525252;
+    --fg:#e2e2e2; --muted:#9a9a9a; --muted2:#787878;
+    --accent:#00ff99; --accent-dim:#0c8f56; --accent-deep:#07130d;
+    /* field-navigation 참고색 (푸터용) */
+    --f-green:#00ff99; --f-blue:#4aa3ff; --f-yellow:#ffcf5a; --f-purple:#c07ad8;
+    --warn:#ffcf5a; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+    background:
+      radial-gradient(1100px 600px at 78% -10%, #0c8f5618, transparent 60%),
+      radial-gradient(900px 500px at 8% 110%, #00ff9910, transparent 55%),
+      var(--bg);
+    color:var(--fg); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:26px 24px 60px}
+
+  /* ---------------- Top bar : 로고 + 워드마크 + 뷰 토글 ---------------- */
+  .topbar{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:8px}
+  .brand{display:flex; align-items:center; gap:13px; min-width:0}
+  .logo{width:46px; height:46px; flex:0 0 auto; border-radius:12px;
+    background:linear-gradient(150deg,#0c8f56,#00ff99);
+    display:grid; place-items:center; box-shadow:0 6px 20px #00ff9926, inset 0 0 0 1px #ffffff22}
+  .logo svg{width:28px; height:28px; display:block}
+  .wordmark{display:flex; flex-direction:column; gap:1px; min-width:0}
+  .wordmark .wm{font-size:22px; font-weight:800; letter-spacing:.3px; line-height:1.1}
+  .wordmark .wm b{color:var(--accent)}
+  .wordmark .tag{font-size:12px; color:var(--muted)}
+  .spacer{flex:1 1 auto}
+
+  /* view toggle (Forge <-> Track) */
+  .viewtoggle{display:inline-flex; background:var(--panel); border:1px solid var(--line);
+    border-radius:11px; padding:4px; gap:3px; flex:0 0 auto}
+  .viewtoggle button{appearance:none; cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; gap:7px; border:1px solid transparent;
+    background:transparent; color:var(--muted); font-size:13px; font-weight:700;
+    padding:8px 15px; border-radius:8px; transition:.15s}
+  .viewtoggle button .vi{font-size:15px}
+  .viewtoggle button .vs{font-size:10.5px; font-weight:600; opacity:.7}
+  .viewtoggle button:hover{color:var(--fg)}
+  .viewtoggle button.active{background:var(--accent); color:var(--accent-deep);
+    box-shadow:0 3px 12px #00ff9933}
+  .viewtoggle button.active .vs{opacity:.75; color:var(--accent-deep)}
+
+  /* ---------------- "에디터란?" 안내 배너 ---------------- */
+  .infobanner{display:flex; align-items:flex-start; gap:12px; margin:18px 0 22px;
+    background:linear-gradient(90deg,#0c8f5615,transparent 70%);
+    border:1px solid var(--line); border-left:3px solid var(--accent);
+    border-radius:10px; padding:13px 16px; font-size:12.5px; color:var(--muted)}
+  .infobanner .ib-ic{font-size:18px; line-height:1.3; flex:0 0 auto}
+  .infobanner b{color:var(--accent-dim)} .infobanner .k{color:var(--fg); font-weight:700}
+  .infobanner .close{margin-left:auto; flex:0 0 auto; cursor:pointer; color:var(--muted2);
+    background:transparent; border:none; font-size:16px; padding:0 2px; font-family:inherit}
+  .infobanner .close:hover{color:var(--fg)}
+
+  /* ---------------- view container ---------------- */
+  .view{display:none; animation:fade .22s ease}
+  .view.show{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+  .sectionhead{display:flex; align-items:baseline; gap:10px; margin:4px 0 14px}
+  .sectionhead h2{font-size:15px; margin:0; letter-spacing:.3px}
+  .sectionhead .sh-sub{font-size:12px; color:var(--muted)}
+
+  /* ---------------- card grid ---------------- */
+  .grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .card{position:relative; text-align:left; cursor:pointer; font-family:inherit;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 17px 16px; transition:.16s; color:inherit; display:flex; flex-direction:column; gap:10px}
+  .card:hover{border-color:#00ff9955; transform:translateY(-3px);
+    box-shadow:0 12px 30px #00000055, 0 0 0 1px #00ff9922}
+  .card:active{transform:translateY(-1px)}
+  .card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .card.live{border-color:#0c8f5666}
+  .card.wip{opacity:.9}
+  .card.wip:hover{border-color:#ffcf5a55; box-shadow:0 12px 30px #00000055,0 0 0 1px #ffcf5a22}
+  .card-top{display:flex; align-items:flex-start; gap:12px}
+  .card-ic{width:44px; height:44px; flex:0 0 auto; border-radius:11px; font-size:23px;
+    display:grid; place-items:center; background:#00ff990e; border:1px solid var(--line2)}
+  .card.live .card-ic{background:#00ff9914; border-color:#0c8f56}
+  .card-tt{min-width:0; flex:1}
+  .card-name{font-size:15px; font-weight:800; letter-spacing:.2px}
+  .card-sub{font-size:11.5px; color:var(--muted); margin-top:1px}
+  .card-desc{font-size:12.5px; color:#c2c2c2; line-height:1.55; flex:1}
+
+  /* status badge */
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800;
+    letter-spacing:.4px; padding:3px 9px; border-radius:20px; align-self:flex-start}
+  .badge.live{color:var(--accent-deep); background:var(--accent)}
+  .badge.live .dot{width:6px; height:6px; border-radius:50%; background:var(--accent-deep);
+    box-shadow:0 0 0 0 var(--accent-deep); animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 #07130d88}70%{box-shadow:0 0 0 5px #07130d00}100%{box-shadow:0 0 0 0 #07130d00}}
+  .badge.wip{color:var(--warn); background:#ffcf5a1c; border:1px solid #ffcf5a44}
+  .card-cta{position:absolute; top:16px; right:15px; font-size:12px; color:var(--muted2); transition:.16s}
+  .card:hover .card-cta{color:var(--accent); transform:translateX(2px)}
+  .card.expandable .card-cta::after{content:"▾"}
+  .card.expandable.open .card-cta::after{content:"▴"}
+  .card.live:not(.expandable) .card-cta::after{content:"↗"}
+  .card.wip .card-cta::after{content:""}
+
+  /* editors panel (PIMMotion 펼침) */
+  .editors{grid-column:1/-1; display:none; margin-top:-2px}
+  .editors.show{display:block; animation:fade .2s ease}
+  .editors-head{display:flex; align-items:center; gap:9px; margin:6px 2px 12px;
+    font-size:12.5px; color:var(--muted)}
+  .editors-head b{color:var(--accent)}
+  .editors-head .ln{flex:1; height:1px; background:var(--line)}
+  .editors .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .editors .card{background:linear-gradient(180deg,#2f2f2f,#272727)}
+
+  /* ---------------- Track pipeline ---------------- */
+  .track-note{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--muted);
+    background:#ffcf5a12; border:1px solid #ffcf5a33; border-radius:10px; padding:11px 15px; margin-bottom:20px}
+  .track-note b{color:var(--warn)}
+  .pipeline{display:flex; align-items:stretch; gap:0; overflow-x:auto; padding:6px 2px 14px;
+    scrollbar-width:thin; scrollbar-color:var(--accent-dim) transparent}
+  .pipeline::-webkit-scrollbar{height:7px}
+  .pipeline::-webkit-scrollbar-thumb{background:var(--accent-dim); border-radius:4px}
+  .step{flex:1 0 172px; display:flex; align-items:center; gap:0}
+  .step-body{flex:1; background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line); border-radius:12px; padding:15px 14px; cursor:pointer;
+    transition:.16s; min-height:132px; display:flex; flex-direction:column; gap:7px}
+  .step-body:hover{border-color:#ffcf5a55; transform:translateY(-3px); box-shadow:0 10px 24px #00000055}
+  .step-body:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .step-num{font-size:10.5px; color:var(--muted2); font-weight:800; letter-spacing:1px}
+  .step-ic{font-size:24px; line-height:1}
+  .step-name{font-size:14px; font-weight:800}
+  .step-desc{font-size:11.5px; color:var(--muted); line-height:1.5; flex:1}
+  .step-arrow{flex:0 0 auto; width:26px; text-align:center; color:var(--line2); font-size:17px}
+  .step:last-child .step-arrow{display:none}
+  .track-legend{margin-top:8px; font-size:11.5px; color:var(--muted2)}
+  .track-legend b{color:var(--accent-dim)}
+
+  /* ---------------- footer : field navigation (참고용, 약하게) ---------------- */
+  footer{margin-top:44px; padding-top:20px; border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap; font-size:11.5px; color:var(--muted2)}
+  .fields{display:flex; gap:14px; flex-wrap:wrap}
+  .field{display:inline-flex; align-items:center; gap:6px}
+  .field .sw{width:9px; height:9px; border-radius:2px; display:inline-block}
+  .field .fn{color:var(--muted)} .field .fs{color:var(--muted2)}
+  footer .foot-brand{margin-left:auto} footer .foot-brand b{color:var(--accent-dim)}
+
+  /* ---------------- toast ("준비 중입니다") ---------------- */
+  #toast{position:fixed; left:50%; bottom:34px; transform:translate(-50%,20px);
+    background:#111; border:1px solid var(--accent-dim); color:var(--fg);
+    padding:12px 20px; border-radius:12px; font-size:13px; font-weight:600;
+    box-shadow:0 12px 34px #000a; opacity:0; pointer-events:none; transition:.25s; z-index:50;
+    display:flex; align-items:center; gap:9px; max-width:90vw}
+  #toast.show{opacity:1; transform:translate(-50%,0)}
+  #toast .t-ic{font-size:16px}
+  #toast b{color:var(--accent)}
+
+  @media (max-width:560px){
+    .wrap{padding:20px 15px 50px}
+    .viewtoggle{width:100%} .viewtoggle button{flex:1; justify-content:center}
+    .wordmark .wm{font-size:19px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <!-- inline SVG mark : 재생(모션) 삼각형 + 링 -->
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#07130d" stroke-width="2" opacity=".35"/>
+          <path d="M13 10.5 L23 16 L13 21.5 Z" fill="#07130d"/>
+        </svg>
+      </div>
+      <div class="wordmark">
+        <div class="wm"><b>PIMM</b>otion</div>
+        <div class="tag">에디터 에이전트 허브 · 초심자를 전문 작업으로</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="viewtoggle" role="tablist" aria-label="뷰 전환">
+      <button id="tabForge" role="tab" onclick="setView('forge')">
+        <span class="vi">⚡</span><span>Forge</span><span class="vs">바로 진입</span>
+      </button>
+      <button id="tabTrack" role="tab" onclick="setView('track')">
+        <span class="vi">🛤️</span><span>Track</span><span class="vs">공정 흐름</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== "에디터란?" 안내 배너 ===================== -->
+  <div class="infobanner" id="infoBanner">
+    <span class="ib-ic">💡</span>
+    <div>
+      <span class="k">에디터란?</span> 비경험자·초심자가 어도비·유니티·스케치업 같은
+      <b>전문 툴</b>을 <b>코워크(대화형 AI)</b>로 설계·작업하도록 돕는 에이전트예요.
+      <b>Forge</b>는 원하는 에디터로 바로, <b>Track</b>은 처음 공정부터 끝까지 함께 갑니다.
+    </div>
+    <button class="close" title="닫기" onclick="this.parentElement.remove()">×</button>
+  </div>
+
+  <!-- ===================== FORGE VIEW ===================== -->
+  <section class="view" id="view-forge" role="tabpanel" aria-labelledby="tabForge">
+    <div class="sectionhead">
+      <h2>Forge</h2>
+      <span class="sh-sub">그린필드(프레임워크) 4대 섹터 — 원하는 곳으로 바로 진입</span>
+    </div>
+    <div class="grid" id="sectorGrid"></div>
+  </section>
+
+  <!-- ===================== TRACK VIEW ===================== -->
+  <section class="view" id="view-track" role="tabpanel" aria-labelledby="tabTrack">
+    <div class="sectionhead">
+      <h2>Track</h2>
+      <span class="sh-sub">테마의 최초 공정부터 끝까지 — 전체 파이프라인</span>
+    </div>
+    <div class="track-note">
+      <span>🚧</span>
+      <div><b>준비 중.</b> Track의 뼈대인 <b>Partwork(실제공정)</b>이 아직 빈약해
+      각 스텝은 공사 중입니다. 지금은 Forge에서 <b>피모션 → 게임 에디터</b>로 바로 시작해 보세요.</div>
+    </div>
+    <div class="pipeline" id="pipeline"></div>
+    <div class="track-legend">파이프라인 뼈대: <b>Plogic → Poffice → Partwork → PIMMotion</b> 흐름을 공정 단계로 표현합니다.</div>
+  </section>
+
+  <!-- ===================== FOOTER : 필드 네비게이션 (참고용) ===================== -->
+  <footer>
+    <span>필드 내비게이션</span>
+    <div class="fields" id="fields"></div>
+    <span class="foot-brand"><b>PIMMotion</b> Hub · ver0.1 (WIP)</span>
+  </footer>
+
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================================
+   DATA — 허브가 통합하는 모든 진입점을 구조화(데이터 주도 렌더).
+   status: 'live' | 'wip'   |   launch: 새 탭으로 열 상대경로(있으면 LIVE 진입)
+   ========================================================================= */
+
+// 실전작업툴(PIMMotion 섹터)이 품는 에디터 에이전트들.
+// ▶ 새 에디터 추가 = 이 배열에 한 줄이면 카드가 자동 생성됨.
+const EDITORS = [
+  { id:'game', name:'게임 에디터 에이전트', engine:'Unity · PIMMplayer', icon:'🎮',
+    desc:'비트시트로 콘티·레이아웃·인코딩까지. 대화형으로 게임을 설계·제작합니다.',
+    status:'live', launch:'./PIMM_UnityGameCreator.ver1.1.html' },
+  { id:'adobe', name:'어도비 에디터 에이전트', engine:'Photoshop · Premiere 등', icon:'🅰️',
+    desc:'어도비 크리에이티브 툴을 초심자도 코워크로 다루도록 돕습니다.',
+    status:'wip', launch:null },
+  { id:'sketchup', name:'스케치업 에디터 에이전트', engine:'Trimble SketchUp', icon:'📐',
+    desc:'3D 공간·모델링을 대화로 설계하고 배치합니다.',
+    status:'wip', launch:null },
+  { id:'slot', name:'다음 에디터 (예정)', engine:'추가 슬롯', icon:'➕',
+    desc:'EDITORS 배열에 한 줄이면 새 에디터 에이전트가 여기 등장합니다.',
+    status:'wip', launch:null },
+];
+
+// 그린필드(프레임워크 안) 4대 섹터 — Drive 실구조 명칭 그대로.
+const SECTORS = [
+  { id:'plogic',  name:'Plogic',   sub:'플로직 · 마스터로직', icon:'🧭',
+    desc:'플랫폼 전체를 관통하는 마스터 로직·규칙 체계.', status:'wip' },
+  { id:'poffice', name:'Poffice',  sub:'포피스 · 사무체계시스템', icon:'🗂️',
+    desc:'프로젝트·문서·승인 흐름을 다루는 사무 체계.', status:'wip' },
+  { id:'partwork',name:'Partwork', sub:'파트웍 · 실제공정처리', icon:'⚙️',
+    desc:'실제 제작 공정을 단계별로 처리 — Track의 뼈대.', status:'wip' },
+  { id:'pimmotion',name:'PIMMotion',sub:'피모션 · 실전작업툴 · 에디터 허브', icon:'🎬',
+    desc:'여러 에디터 에이전트를 품는 실전 작업 공간. 카드를 펼쳐 진입하세요.',
+    status:'live', expandable:true, editors:EDITORS },
+];
+
+// Track 파이프라인 스텝(테마 공정: 기획→설계→제작→현장→아카이빙).
+const TRACK = [
+  { id:'plan',    name:'기획',     icon:'💡', desc:'테마·목표 정의 (Plogic)',        status:'wip' },
+  { id:'design',  name:'설계',     icon:'📐', desc:'구조·문서·승인 설계 (Poffice)',  status:'wip' },
+  { id:'make',    name:'제작',     icon:'🛠️', desc:'실제 공정 처리 (Partwork)',      status:'wip' },
+  { id:'field',   name:'현장',     icon:'🎬', desc:'실전 작업·검수 (PIMMotion)',     status:'wip' },
+  { id:'archive', name:'아카이빙', icon:'📦', desc:'산출물 보관·회수',               status:'wip' },
+];
+
+// 부가 : 필드 네비게이션(참고용). 크게 강조하지 않음.
+const FIELDS = [
+  { c:'var(--f-green)',  name:'그린', sub:'프레임워크' },
+  { c:'var(--f-blue)',   name:'블루', sub:'아카이브' },
+  { c:'var(--f-yellow)', name:'옐로', sub:'RnD' },
+  { c:'var(--f-purple)', name:'퍼플', sub:'로그' },
+];
+
+/* ------------------------- helpers ------------------------- */
+const $ = (s,r=document)=>r.querySelector(s);
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function badge(status){
+  return status==='live'
+    ? '<span class="badge live"><span class="dot"></span>LIVE</span>'
+    : '<span class="badge wip">🚧 공사중</span>';
+}
+let toastTimer=null;
+function toast(msg){
+  const t=$('#toast');
+  t.innerHTML='<span class="t-ic">🚧</span><span>'+msg+'</span>';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+/* ------------------------- card render ------------------------- */
+function cardHTML(item, kind){
+  const cls = 'card '+(item.status==='live'?'live':'wip')+(item.expandable?' expandable':'');
+  const sub = item.sub || item.engine || '';
+  return '<button class="'+cls+'" data-kind="'+kind+'" data-id="'+item.id+'"'
+    + (item.launch?' data-launch="'+esc(item.launch)+'"':'')
+    + (item.expandable?' aria-expanded="false"':'')
+    + '>'
+    + '<span class="card-cta" aria-hidden="true"></span>'
+    + '<div class="card-top">'
+    +   '<div class="card-ic" aria-hidden="true">'+item.icon+'</div>'
+    +   '<div class="card-tt"><div class="card-name">'+esc(item.name)+'</div>'
+    +   (sub?'<div class="card-sub">'+esc(sub)+'</div>':'')+'</div>'
+    + '</div>'
+    + '<div class="card-desc">'+esc(item.desc)+'</div>'
+    + badge(item.status)
+    + '</button>';
+}
+
+function renderSectors(){
+  const grid=$('#sectorGrid'); let html='';
+  SECTORS.forEach(sec=>{
+    html+=cardHTML(sec,'sector');
+    if(sec.expandable){
+      // 펼쳐지는 에디터 에이전트 패널(초기 숨김)
+      let ed='<div class="editors" id="editors-'+sec.id+'">'
+        +'<div class="editors-head"><b>'+esc(sec.name)+'</b> 가 품은 에디터 에이전트'
+        +'<span class="ln"></span></div><div class="grid">';
+      sec.editors.forEach(e=> ed+=cardHTML(e,'editor'));
+      ed+='</div></div>';
+      html+=ed;
+    }
+  });
+  grid.innerHTML=html;
+}
+
+function renderTrack(){
+  const p=$('#pipeline'); let html='';
+  TRACK.forEach((s,i)=>{
+    html+='<div class="step">'
+      +'<div class="step-body" role="button" tabindex="0" data-kind="track" data-id="'+s.id+'">'
+      +'<div class="step-num">STEP '+(i+1)+'</div>'
+      +'<div class="step-ic" aria-hidden="true">'+s.icon+'</div>'
+      +'<div class="step-name">'+esc(s.name)+'</div>'
+      +'<div class="step-desc">'+esc(s.desc)+'</div>'
+      +badge(s.status)
+      +'</div><div class="step-arrow" aria-hidden="true">→</div></div>';
+  });
+  p.innerHTML=html;
+}
+
+function renderFields(){
+  $('#fields').innerHTML=FIELDS.map(f=>
+    '<span class="field"><span class="sw" style="background:'+f.c+'"></span>'
+    +'<span class="fn">'+f.name+'</span> <span class="fs">'+f.sub+'</span></span>').join('');
+}
+
+/* ------------------------- interactions ------------------------- */
+function toggleEditors(sectorId, cardEl){
+  const panel=$('#editors-'+sectorId);
+  if(!panel) return;
+  const open=panel.classList.toggle('show');
+  cardEl.classList.toggle('open', open);
+  cardEl.setAttribute('aria-expanded', open?'true':'false');
+}
+
+function launch(url){
+  // 새 탭으로 에디터 진입 (같은 폴더의 상대경로)
+  window.open(url,'_blank','noopener');
+}
+
+// 이름 조회(토스트 문구용)
+function findName(kind,id){
+  const src = kind==='sector'?SECTORS : kind==='editor'?EDITORS : TRACK;
+  const it = src.find(x=>x.id===id);
+  return it?it.name:'해당 항목';
+}
+
+function handleActivate(el){
+  const kind=el.dataset.kind, id=el.dataset.id;
+  // 1) 펼침형 섹터(PIMMotion) → 에디터 목록 토글
+  const sec = kind==='sector' && SECTORS.find(s=>s.id===id);
+  if(sec && sec.expandable){ toggleEditors(id, el); return; }
+  // 2) LIVE + launch 있음 → 새 탭 진입
+  const launchUrl = el.dataset.launch;
+  if(launchUrl){ launch(launchUrl); return; }
+  // 3) 그 외(🚧) → 에러 없이 "준비 중" 안내
+  toast('<b>'+esc(findName(kind,id))+'</b> 는 준비 중입니다 · 곧 만나요!');
+}
+
+/* ------------------------- view switching ------------------------- */
+function setView(v){
+  const forge = v!=='track';
+  $('#view-forge').classList.toggle('show', forge);
+  $('#view-track').classList.toggle('show', !forge);
+  $('#tabForge').classList.toggle('active', forge);
+  $('#tabTrack').classList.toggle('active', !forge);
+  $('#tabForge').setAttribute('aria-selected', forge);
+  $('#tabTrack').setAttribute('aria-selected', !forge);
+  try{ localStorage.setItem('pimm.hub.view', forge?'forge':'track'); }catch(e){}
+}
+
+/* ------------------------- boot ------------------------- */
+renderSectors();
+renderTrack();
+renderFields();
+
+// 카드/스텝 클릭 위임
+document.addEventListener('click', e=>{
+  const el = e.target.closest('[data-kind]');
+  if(el){ handleActivate(el); }
+});
+// 키보드 접근(Enter/Space) — track step은 div role=button
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const el=document.activeElement;
+  if(el && el.dataset && el.dataset.kind && el.classList.contains('step-body')){
+    e.preventDefault(); handleActivate(el);
+  }
+});
+
+// 마지막 뷰 복원(없으면 Forge)
+let saved='forge';
+try{ saved=localStorage.getItem('pimm.hub.view')||'forge'; }catch(e){}
+setView(saved);
+</script>
+</body>
+</html>
