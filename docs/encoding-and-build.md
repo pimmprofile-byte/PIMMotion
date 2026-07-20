@@ -89,6 +89,20 @@
   "states": [ { "id", "name", "assetId", "hasImage" } ],
   "defaultStateId", "activeStateId",
   "prefabId", "stateId",                 // 프리팹 인스턴스
+  // 클리핑마스크(ver1.7, 추가만·기본 없음) — §3.3
+  "clip": { "type": "rect|roundrect|ellipse|maskBox",
+            "radius",                    // roundrect(또는 마스크 도형이 둥근사각)일 때
+            "maskBoxId",                 // type=maskBox: 마스크 박스 id
+            "shape",                     // maskBox일 때 마스크 도형(rect|roundrect|ellipse)
+            "geometry": { "x","y","w","h" },   // 도형=박스 자기 rect / maskBox=마스크 박스 rect
+            "unityMask": "RectMask2D|SpriteMask",   // 사각·둥근=RectMask2D / 타원·커스텀=SpriteMask(알파)
+            "unityMaskNote" },
+  "maskRole": "mask",                    // 이 박스가 마스크 박스일 때(렌더 숨김)
+  "maskFor": [ "<contentBoxId>" ],       // maskRole=mask: 클립하는 콘텐츠 박스들
+  "renderHidden", "maskShape",           // 마스크 박스: 렌더 숨김 + 마스크 도형
+  // 프레임유형(ver1.7, 추가만·기본 cropframe) — §3.4
+  "frameType": "cropframe|fullframe",    // cropframe=파일이 박스크기(좌표배치) / fullframe=이미지 1920×1080 전체
+  "frameTypeUnity": { "fit": "boxSprite|fullscreen", "anchorMin", "anchorMax", "note" },
   // 논코딩 메모(기능/상호작용/프롬프트)
   "prompts": [ { "label", "text", "kind", "sfxAssetId", "trigger" } ]
 }
