@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PIMMotion · Hub</title>
+<!--
+  ============================================================================
+  PIMMotion Hub (마더페이지 / 허브) — ver0.2
+  ----------------------------------------------------------------------------
+  · 컨셉: PIMMotion 진입 시 처음 보이는 "첫 관문".
+    ver0.2에서 디자인을 애플 감성의 **리퀴드 글래스모피즘**으로 전면 리디자인.
+    (반투명 프로스티드 글래스 패널 + backdrop-filter blur + 스페큘러 하이라이트
+     + 레이어드 그림자 + 앰비언트 컬러 blob 배경). 브랜드 액센트 #00FF99는 유지.
+    ※ 글래스모피즘은 "허브 전용" — 에디터(별개 파일)는 그레이 프로툴 유지.
+  · Forge  = 특정 에디터/시스템으로 바로 진입(빠른 접근). 4대 섹터 카드 그리드.
+  · Track  = 테마(아이디어)의 최초 공정부터 끝까지. ver0.2에서 실제 5공정으로 실제화:
+             Beat → Note → Render → Work → Max.
+             + Track 카테고리(핌업/피머시브/기타) 선택 UI, + 생애주기 안내(🚧 구조만).
+  · 데이터 주도 렌더: EDITORS/SECTORS/FIELDS(보존) + TRACK5/TRACK_CATEGORIES/
+             TRACK_LIFECYCLE(신규). 나중에 채우기 = 데이터 배열 수정.
+  · 단일 HTML · 외부 의존성 0 (폰트/이미지/스크립트 없음 · 아이콘=유니코드/인라인SVG).
+  ============================================================================
+-->
+<style>
+  :root{
+    /* --- 브랜드 액센트 (유지) --- */
+    --accent:#00ff99; --accent-dim:#28c483; --accent-deep:#04130c;
+    --warn:#ffd66b;
+    /* --- 리퀴드 글래스 셸 팔레트 (딥 틸/그린 그라디언트 위 유리) --- */
+    --fg:#eef7f2; --muted:#a9c4ba; --muted2:#7f9990;
+    /* 유리 재질 토큰 */
+    --glass-bg:rgba(28,44,40,.42);
+    --glass-bg-strong:rgba(30,48,44,.60);
+    --glass-brd:rgba(255,255,255,.14);
+    --glass-hi:rgba(255,255,255,.42);      /* 상단 스페큘러 하이라이트 */
+    --glass-sh:0 10px 30px rgba(0,0,0,.42), 0 2px 6px rgba(0,0,0,.30);
+    --glass-sh-hi:0 18px 46px rgba(0,0,0,.5), 0 0 0 1px rgba(0,255,153,.22), 0 2px 8px rgba(0,0,0,.35);
+    --line:rgba(255,255,255,.10);
+    /* field-navigation 참고색 (푸터용, 보존) */
+    --f-green:#00ff99; --f-blue:#5cb2ff; --f-yellow:#ffd66b; --f-purple:#ce8fe6;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+    color:var(--fg); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    /* 딥한 틸/그린 그라디언트 베이스 — 유리가 살아나게 */
+    background:
+      radial-gradient(1200px 720px at 82% -8%, #0d5f45 0%, transparent 58%),
+      radial-gradient(1000px 620px at 6% 108%, #0a3d33 0%, transparent 55%),
+      linear-gradient(165deg, #071c17 0%, #0a2420 46%, #071813 100%);
+    background-attachment:fixed;
+    position:relative; overflow-x:hidden;
+  }
+  /* ---- 앰비언트: 블러 처리된 컬러 blob 3개가 은은히 떠있음 ---- */
+  .ambient{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none}
+  .blob{position:absolute; border-radius:50%; filter:blur(90px); opacity:.5;
+    mix-blend-mode:screen; will-change:transform}
+  .blob.b1{width:520px; height:520px; top:-120px; left:-60px;
+    background:radial-gradient(circle at 30% 30%, #00ff99, transparent 70%);
+    animation:drift1 26s ease-in-out infinite}
+  .blob.b2{width:460px; height:460px; top:20%; right:-100px;
+    background:radial-gradient(circle at 60% 40%, #1f9bd6, transparent 70%); opacity:.4;
+    animation:drift2 32s ease-in-out infinite}
+  .blob.b3{width:560px; height:560px; bottom:-160px; left:32%;
+    background:radial-gradient(circle at 50% 50%, #0c8f56, transparent 72%); opacity:.42;
+    animation:drift3 30s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,50px) scale(1.08)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-50px,60px) scale(1.05)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-50px) scale(1.07)}}
+
+  .wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:26px 24px 60px}
+
+  /* ============ 공통 글래스 재질 ============ */
+  .glass{position:relative; background:var(--glass-bg);
+    -webkit-backdrop-filter:blur(20px) saturate(150%); backdrop-filter:blur(20px) saturate(150%);
+    border:1px solid var(--glass-brd); border-radius:var(--radius); box-shadow:var(--glass-sh)}
+  /* 유리 표면 스페큘러 하이라이트(상단 광택) — 얇은 그라디언트 라인 */
+  .glass::before{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 42%);
+    -webkit-mask:linear-gradient(#000,#000); }
+  .glass::after{content:""; position:absolute; left:12%; right:12%; top:0; height:1px; pointer-events:none;
+    background:linear-gradient(90deg, transparent, var(--glass-hi), transparent)}
+
+  /* ---------------- Top bar ---------------- */
+  .topbar{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:8px}
+  .brand{display:flex; align-items:center; gap:13px; min-width:0}
+  .logo{width:48px; height:48px; flex:0 0 auto; border-radius:14px;
+    background:linear-gradient(150deg,#0c8f56,#00ff99);
+    display:grid; place-items:center;
+    box-shadow:0 8px 24px rgba(0,255,153,.30), inset 0 1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(255,255,255,.18)}
+  .logo svg{width:29px; height:29px; display:block}
+  .wordmark{display:flex; flex-direction:column; gap:1px; min-width:0}
+  .wordmark .wm{font-size:22px; font-weight:800; letter-spacing:.3px; line-height:1.1;
+    text-shadow:0 1px 10px rgba(0,0,0,.35)}
+  .wordmark .wm b{color:var(--accent)}
+  .wordmark .tag{font-size:12px; color:var(--muted)}
+  .ver{font-size:10.5px; font-weight:800; letter-spacing:.6px; color:var(--accent-deep);
+    background:var(--accent); border-radius:20px; padding:2px 9px; margin-left:8px;
+    box-shadow:0 2px 10px rgba(0,255,153,.4); vertical-align:middle}
+  .spacer{flex:1 1 auto}
+
+  /* view toggle (Forge <-> Track) — 글래스 */
+  .viewtoggle{display:inline-flex; padding:5px; gap:4px; flex:0 0 auto; border-radius:14px}
+  .viewtoggle button{appearance:none; cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; gap:7px; border:1px solid transparent;
+    background:transparent; color:var(--muted); font-size:13px; font-weight:700;
+    padding:8px 16px; border-radius:10px; transition:.18s; position:relative; z-index:1}
+  .viewtoggle button .vi{font-size:15px}
+  .viewtoggle button .vs{font-size:10.5px; font-weight:600; opacity:.7}
+  .viewtoggle button:hover{color:var(--fg)}
+  .viewtoggle button.active{color:var(--accent-deep);
+    background:linear-gradient(180deg,#4dffb4,#00ff99);
+    box-shadow:0 4px 16px rgba(0,255,153,.4), inset 0 1px 0 rgba(255,255,255,.55)}
+  .viewtoggle button.active .vs{opacity:.8; color:var(--accent-deep)}
+
+  /* ---------------- 안내 배너 ---------------- */
+  .infobanner{display:flex; align-items:flex-start; gap:12px; margin:18px 0 22px;
+    padding:14px 17px; font-size:12.5px; color:var(--muted); border-radius:14px}
+  .infobanner::after{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+  .infobanner .ib-ic{font-size:18px; line-height:1.3; flex:0 0 auto}
+  .infobanner b{color:var(--accent)} .infobanner .k{color:var(--fg); font-weight:700}
+  .infobanner .close{margin-left:auto; flex:0 0 auto; cursor:pointer; color:var(--muted2);
+    background:transparent; border:none; font-size:16px; padding:0 2px; font-family:inherit; z-index:1}
+  .infobanner .close:hover{color:var(--fg)}
+
+  /* ---------------- view container ---------------- */
+  .view{display:none; animation:fade .26s ease}
+  .view.show{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+  .sectionhead{display:flex; align-items:baseline; gap:10px; margin:4px 2px 16px}
+  .sectionhead h2{font-size:16px; margin:0; letter-spacing:.3px}
+  .sectionhead .sh-sub{font-size:12px; color:var(--muted)}
+
+  /* ---------------- card grid ---------------- */
+  .grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .card{position:relative; text-align:left; cursor:pointer; font-family:inherit;
+    padding:18px 17px 16px; transition:transform .18s cubic-bezier(.2,.8,.3,1), box-shadow .18s, border-color .18s;
+    color:inherit; display:flex; flex-direction:column; gap:10px; overflow:hidden}
+  .card:hover{transform:translateY(-4px); border-color:rgba(0,255,153,.45); box-shadow:var(--glass-sh-hi)}
+  .card:hover::after{background:linear-gradient(90deg,transparent,rgba(0,255,153,.7),transparent)}
+  .card:active{transform:translateY(-1px)}
+  .card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .card.wip{opacity:.96}
+  .card.wip:hover{border-color:rgba(255,214,107,.45)}
+  .card.wip:hover::after{background:linear-gradient(90deg,transparent,rgba(255,214,107,.7),transparent)}
+  .card-top{display:flex; align-items:flex-start; gap:12px}
+  .card-ic{width:46px; height:46px; flex:0 0 auto; border-radius:13px; font-size:24px;
+    display:grid; place-items:center; background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12); box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+  .card.live .card-ic{background:rgba(0,255,153,.14); border-color:rgba(0,255,153,.4)}
+  .card-tt{min-width:0; flex:1}
+  .card-name{font-size:15px; font-weight:800; letter-spacing:.2px}
+  .card-sub{font-size:11.5px; color:var(--muted); margin-top:1px}
+  .card-desc{font-size:12.5px; color:#d6e7df; line-height:1.55; flex:1}
+
+  /* status badge */
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800;
+    letter-spacing:.4px; padding:3px 9px; border-radius:20px; align-self:flex-start; z-index:1}
+  .badge.live{color:var(--accent-deep); background:linear-gradient(180deg,#4dffb4,#00ff99);
+    box-shadow:0 2px 10px rgba(0,255,153,.35)}
+  .badge.live .dot{width:6px; height:6px; border-radius:50%; background:var(--accent-deep);
+    animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(4,19,12,.6)}70%{box-shadow:0 0 0 5px rgba(4,19,12,0)}100%{box-shadow:0 0 0 0 rgba(4,19,12,0)}}
+  .badge.wip{color:var(--warn); background:rgba(255,214,107,.14); border:1px solid rgba(255,214,107,.4)}
+  .card-cta{position:absolute; top:16px; right:15px; font-size:12px; color:var(--muted2); transition:.16s; z-index:1}
+  .card:hover .card-cta{color:var(--accent); transform:translateX(2px)}
+  .card.expandable .card-cta::after{content:"▾"}
+  .card.expandable.open .card-cta::after{content:"▴"}
+  .card.live:not(.expandable) .card-cta::after{content:"↗"}
+  .card.wip .card-cta::after{content:""}
+
+  /* editors panel (PIMMotion 펼침) */
+  .editors{grid-column:1/-1; display:none; margin-top:-2px}
+  .editors.show{display:block; animation:fade .22s ease}
+  .editors-head{display:flex; align-items:center; gap:9px; margin:8px 2px 12px;
+    font-size:12.5px; color:var(--muted)}
+  .editors-head b{color:var(--accent)}
+  .editors-head .ln{flex:1; height:1px; background:var(--line)}
+  .editors .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .editors .card{background:var(--glass-bg-strong)}
+
+  /* ================= Track ================= */
+  /* 카테고리(사업 파트) 선택 */
+  .cat-head{font-size:12px; color:var(--muted); margin:2px 2px 10px; display:flex; align-items:center; gap:8px}
+  .cat-head b{color:var(--accent)}
+  .catgrid{display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); margin-bottom:22px}
+  .catcard{position:relative; cursor:pointer; font-family:inherit; text-align:left; color:inherit;
+    padding:16px 16px 14px; display:flex; flex-direction:column; gap:8px; overflow:hidden;
+    transition:transform .18s cubic-bezier(.2,.8,.3,1), box-shadow .18s, border-color .18s}
+  .catcard:hover{transform:translateY(-4px); box-shadow:var(--glass-sh-hi); border-color:rgba(0,255,153,.4)}
+  .catcard:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .catcard.sel{border-color:rgba(0,255,153,.7); box-shadow:0 0 0 1px rgba(0,255,153,.5), var(--glass-sh-hi)}
+  .catcard.sel::after{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+  .catcard .cc-top{display:flex; align-items:center; gap:10px}
+  .catcard .cc-ic{width:38px; height:38px; border-radius:11px; font-size:20px; flex:0 0 auto;
+    display:grid; place-items:center; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12)}
+  .catcard.sel .cc-ic{background:rgba(0,255,153,.16); border-color:rgba(0,255,153,.45)}
+  .catcard .cc-name{font-size:14.5px; font-weight:800}
+  .catcard .cc-sub{font-size:11.5px; color:var(--muted); line-height:1.5; flex:1}
+  .catcard .cc-check{position:absolute; top:13px; right:13px; font-size:13px; color:var(--accent);
+    opacity:0; transition:.16s} .catcard.sel .cc-check{opacity:1}
+
+  /* 선택된 트랙 표시 */
+  .track-current{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--muted);
+    margin:2px 2px 12px}
+  .track-current .tc-name{color:var(--fg); font-weight:800; font-size:13.5px}
+  .track-current .tc-pill{font-size:10.5px; font-weight:800; color:var(--warn);
+    background:rgba(255,214,107,.14); border:1px solid rgba(255,214,107,.4); border-radius:20px; padding:2px 8px}
+
+  /* 5공정 파이프라인 */
+  .pipeline{display:flex; align-items:stretch; gap:0; overflow-x:auto; padding:6px 2px 14px;
+    scrollbar-width:thin; scrollbar-color:var(--accent-dim) transparent}
+  .pipeline::-webkit-scrollbar{height:7px}
+  .pipeline::-webkit-scrollbar-thumb{background:var(--accent-dim); border-radius:4px}
+  .step{flex:1 0 190px; display:flex; align-items:center; gap:0}
+  .step-body{flex:1; position:relative; overflow:hidden; cursor:pointer;
+    transition:transform .18s cubic-bezier(.2,.8,.3,1), box-shadow .18s, border-color .18s;
+    min-height:168px; padding:15px 15px 14px; display:flex; flex-direction:column; gap:7px}
+  .step-body:hover{border-color:rgba(0,255,153,.4); transform:translateY(-4px); box-shadow:var(--glass-sh-hi)}
+  .step-body:hover::after{background:linear-gradient(90deg,transparent,rgba(0,255,153,.7),transparent)}
+  .step-body:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .step-head{display:flex; align-items:center; gap:9px}
+  .step-num{font-size:10px; color:var(--muted2); font-weight:800; letter-spacing:1px}
+  .step-code{margin-left:auto; font-size:10px; font-weight:800; letter-spacing:1.5px;
+    color:var(--accent-dim); opacity:.8}
+  .step-ic{font-size:26px; line-height:1}
+  .step-name{font-size:15px; font-weight:800}
+  .step-name small{font-size:11px; font-weight:700; color:var(--muted); margin-left:5px}
+  .step-desc{font-size:11.5px; color:#cfe3db; line-height:1.5}
+  .step-art{font-size:11px; color:var(--muted); line-height:1.5; margin-top:auto;
+    padding-top:8px; border-top:1px solid var(--line)}
+  .step-art b{color:var(--accent-dim); font-weight:800}
+  .step-arrow{flex:0 0 auto; width:28px; text-align:center; color:rgba(255,255,255,.28); font-size:18px}
+  .step:last-child .step-arrow{display:none}
+  .step-body.render{border-color:rgba(0,255,153,.28)}
+  .step-body.render .render-tag{display:block; margin-top:4px; line-height:1.45;
+    font-size:9.5px; font-weight:800; color:var(--accent-deep); background:var(--accent);
+    border-radius:11px; padding:4px 9px; box-shadow:0 2px 8px rgba(0,255,153,.3)}
+
+  /* 생애주기 스트립 (🚧 구조만) */
+  .lifecycle{margin-top:22px; padding:16px 17px 15px; border-radius:14px}
+  .lifecycle .lc-head{display:flex; align-items:center; gap:9px; font-size:12.5px; margin-bottom:12px; color:var(--muted)}
+  .lifecycle .lc-head b{color:var(--fg); font-weight:800; font-size:13px}
+  .lifecycle .lc-head .lc-wip{margin-left:auto; font-size:10.5px; font-weight:800; color:var(--warn);
+    background:rgba(255,214,107,.14); border:1px solid rgba(255,214,107,.4); border-radius:20px; padding:2px 9px}
+  .lc-flow{display:flex; align-items:stretch; gap:0; overflow-x:auto; padding-bottom:4px;
+    scrollbar-width:thin; scrollbar-color:var(--accent-dim) transparent}
+  .lc-flow::-webkit-scrollbar{height:6px}
+  .lc-flow::-webkit-scrollbar-thumb{background:var(--accent-dim); border-radius:4px}
+  .lc-node{flex:1 0 168px; display:flex; align-items:stretch; gap:0}
+  .lc-box{flex:1; background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:11px;
+    padding:11px 12px; display:flex; flex-direction:column; gap:5px}
+  .lc-box .lc-ic{font-size:17px}
+  .lc-box .lc-name{font-size:12px; font-weight:800}
+  .lc-box .lc-desc{font-size:10.5px; color:var(--muted); line-height:1.45}
+  .lc-arrow{flex:0 0 auto; width:22px; text-align:center; color:rgba(255,255,255,.25); font-size:15px;
+    display:grid; place-items:center}
+  .lc-node:last-child .lc-arrow{display:none}
+
+  /* ---------------- footer ---------------- */
+  footer{margin-top:44px; padding:18px 18px; border-radius:14px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap; font-size:11.5px; color:var(--muted2)}
+  .fields{display:flex; gap:14px; flex-wrap:wrap}
+  .field{display:inline-flex; align-items:center; gap:6px}
+  .field .sw{width:9px; height:9px; border-radius:2px; display:inline-block}
+  .field .fn{color:var(--muted)} .field .fs{color:var(--muted2)}
+  footer .foot-brand{margin-left:auto} footer .foot-brand b{color:var(--accent)}
+
+  /* ---------------- toast ---------------- */
+  #toast{position:fixed; left:50%; bottom:34px; transform:translate(-50%,20px);
+    background:rgba(18,30,26,.72); -webkit-backdrop-filter:blur(18px) saturate(160%);
+    backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(0,255,153,.35); color:var(--fg);
+    padding:12px 20px; border-radius:14px; font-size:13px; font-weight:600;
+    box-shadow:0 14px 40px rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:.28s; z-index:50;
+    display:flex; align-items:center; gap:9px; max-width:90vw}
+  #toast.show{opacity:1; transform:translate(-50%,0)}
+  #toast .t-ic{font-size:16px}
+  #toast b{color:var(--accent)}
+
+  @media (max-width:560px){
+    .wrap{padding:20px 15px 50px}
+    .viewtoggle{width:100%} .viewtoggle button{flex:1; justify-content:center}
+    .wordmark .wm{font-size:19px}
+  }
+
+  /* 모션 절제 — prefers-reduced-motion 존중 */
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important}
+    .blob{animation:none !important}
+  }
+</style>
+</head>
+<body>
+<!-- 앰비언트 컬러 blob 배경(블러) -->
+<div class="ambient" aria-hidden="true">
+  <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+</div>
+
+<div class="wrap">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#04130c" stroke-width="2" opacity=".4"/>
+          <path d="M13 10.5 L23 16 L13 21.5 Z" fill="#04130c"/>
+        </svg>
+      </div>
+      <div class="wordmark">
+        <div class="wm"><b>PIMM</b>otion <span class="ver">v0.2</span></div>
+        <div class="tag">에디터 에이전트 허브 · 초심자를 전문 작업으로</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="viewtoggle glass" role="tablist" aria-label="뷰 전환">
+      <button id="tabForge" role="tab" onclick="setView('forge')">
+        <span class="vi">⚡</span><span>Forge</span><span class="vs">바로 진입</span>
+      </button>
+      <button id="tabTrack" role="tab" onclick="setView('track')">
+        <span class="vi">🛤️</span><span>Track</span><span class="vs">공정 흐름</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== 안내 배너 ===================== -->
+  <div class="infobanner glass" id="infoBanner">
+    <span class="ib-ic">💡</span>
+    <div>
+      <span class="k">에디터란?</span> 비경험자·초심자가 어도비·유니티·스케치업 같은
+      <b>전문 툴</b>을 <b>코워크(대화형 AI)</b>로 설계·작업하도록 돕는 에이전트예요.
+      <b>Forge</b>는 원하는 에디터로 바로, <b>Track</b>은 아이디어의 5공정(Beat→Max)을 처음부터 끝까지 함께 갑니다.
+    </div>
+    <button class="close" title="닫기" onclick="this.parentElement.remove()">×</button>
+  </div>
+
+  <!-- ===================== FORGE VIEW ===================== -->
+  <section class="view" id="view-forge" role="tabpanel" aria-labelledby="tabForge">
+    <div class="sectionhead">
+      <h2>Forge</h2>
+      <span class="sh-sub">그린필드(프레임워크) 4대 섹터 — 원하는 곳으로 바로 진입</span>
+    </div>
+    <div class="grid" id="sectorGrid"></div>
+  </section>
+
+  <!-- ===================== TRACK VIEW ===================== -->
+  <section class="view" id="view-track" role="tabpanel" aria-labelledby="tabTrack">
+    <div class="sectionhead">
+      <h2>Track</h2>
+      <span class="sh-sub">아이디어의 5공정 — Beat → Note → Render → Work → Max</span>
+    </div>
+
+    <!-- ① 카테고리(사업 파트) 선택 -->
+    <div class="cat-head">🗂️ <b>트랙 카테고리</b> — 어떤 사업 파트의 트랙을 가동할까요? (선택하면 5공정이 표시됩니다)</div>
+    <div class="catgrid" id="catGrid"></div>
+
+    <!-- ② 선택된 트랙의 5공정 -->
+    <div class="track-current" id="trackCurrent"></div>
+    <div class="pipeline" id="pipeline"></div>
+
+    <!-- ③ 생애주기 안내(🚧 구조만) -->
+    <div class="lifecycle glass" id="lifecycle"></div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="glass">
+    <span>필드 내비게이션</span>
+    <div class="fields" id="fields"></div>
+    <span class="foot-brand"><b>PIMMotion</b> Hub · ver0.2</span>
+  </footer>
+
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================================
+   DATA — 데이터 주도 렌더. 나중에 채우기 = 배열 수정.
+   ========================================================================= */
+
+// ---- 실전작업툴(PIMMotion 섹터) 에디터 에이전트들 (보존) ----
+const EDITORS = [
+  { id:'game', name:'게임 에디터 에이전트', engine:'Unity · PIMMplayer', icon:'🎮',
+    desc:'비트시트로 콘티·레이아웃·인코딩까지. 대화형으로 게임을 설계·제작합니다.',
+    status:'live', launch:'./PIMM_UnityGameCreator.ver1.1.html' },
+  { id:'adobe', name:'어도비 에디터 에이전트', engine:'Photoshop · Premiere 등', icon:'🅰️',
+    desc:'어도비 크리에이티브 툴을 초심자도 코워크로 다루도록 돕습니다.',
+    status:'wip', launch:null },
+  { id:'sketchup', name:'스케치업 에디터 에이전트', engine:'Trimble SketchUp', icon:'📐',
+    desc:'3D 공간·모델링을 대화로 설계하고 배치합니다.',
+    status:'wip', launch:null },
+  { id:'slot', name:'다음 에디터 (예정)', engine:'추가 슬롯', icon:'➕',
+    desc:'EDITORS 배열에 한 줄이면 새 에디터 에이전트가 여기 등장합니다.',
+    status:'wip', launch:null },
+];
+
+// ---- 그린필드 4대 섹터 (보존) ----
+const SECTORS = [
+  { id:'plogic',  name:'Plogic',   sub:'플로직 · 마스터로직', icon:'🧭',
+    desc:'플랫폼 전체를 관통하는 마스터 로직·규칙 체계.', status:'wip' },
+  { id:'poffice', name:'Poffice',  sub:'포피스 · 사무체계시스템', icon:'🗂️',
+    desc:'프로젝트·문서·승인 흐름을 다루는 사무 체계.', status:'wip' },
+  { id:'partwork',name:'Partwork', sub:'파트웍 · 실제공정처리', icon:'⚙️',
+    desc:'실제 제작 공정을 단계별로 처리 — Track의 뼈대.', status:'wip' },
+  { id:'pimmotion',name:'PIMMotion',sub:'피모션 · 실전작업툴 · 에디터 허브', icon:'🎬',
+    desc:'여러 에디터 에이전트를 품는 실전 작업 공간. 카드를 펼쳐 진입하세요.',
+    status:'live', expandable:true, editors:EDITORS },
+];
+
+/* ---- Track 실제화: 아이디어 5공정 (Beat → Note → Render → Work → Max) ----
+   {code,name,desc,artifact}  — 대부분 워크플로우 미구현(🚧)이되 구조는 정확히. */
+const TRACK5 = [
+  { id:'beat',   code:'BEAT',   name:'비트',   icon:'💥',
+    desc:'원초적 영감. 무엇을 만들지 결정하는 첫 씨앗 — 깊이 티어(T1~T3)로 규모를 정합니다.',
+    artifact:'비트제안서 + 버추얼 스토리보드 · <b>Tier T1~T3</b>', status:'wip' },
+  { id:'note',   code:'NOTE',   name:'노트',   icon:'📝',
+    desc:'논리 골조와 상세 스크립트. 시퀀스·스텝·공간구조를 기술적 헌법 필터로 다듬습니다.',
+    artifact:'상세 스크립트 <b>시퀀스/스텝/공간구조</b>', status:'wip' },
+  { id:'render', code:'RENDER', name:'렌더',   icon:'📐',
+    desc:'설계 단계. 서류작업 기반의 기획·설계로, 어도비·스케치업·유니티 등 도구를 써서 도면을 이원화(기획/시공)하고 표준 스펙을 확정합니다.',
+    artifact:'도면 이원화(기획/시공)·<b>표준 스펙시트</b>·설계 문서', status:'wip', render:true },
+  { id:'work',   code:'WORK',   name:'워크',   icon:'🏗️',
+    desc:'완성된 몰입. 현장 시공 후 90% 시점에 QA 테스터가 밸런싱·검수합니다.',
+    artifact:'현장 시공 + <b>90% QA·밸런싱</b>', status:'wip' },
+  { id:'max',    code:'MAX',    name:'맥스',   icon:'📈',
+    desc:'사후 가치극대화. 아카이빙·IP·마케팅·스케치필름·재계약으로 트랙의 가치를 최대화.',
+    artifact:'아카이빙·IP·마케팅 · <b>스케치필름/재계약</b>', status:'wip' },
+];
+
+/* ---- Track 카테고리(사업 파트) ---- */
+const TRACK_CATEGORIES = [
+  { id:'pimmup',    name:'핌업 (PIMM-UP)',     icon:'🎪', sub:'팝업 콘텐츠 제작',         status:'wip' },
+  { id:'pimmersive',name:'피머시브 (PIMMersive)',icon:'🏛️', sub:'상설 이머시브 매장 제작',   status:'wip' },
+  { id:'etc',       name:'기타',                icon:'🧩', sub:'머더미스터리 · 프리프로젝트 준비 등', status:'wip' },
+];
+
+/* ---- Track 생애주기 (🚧 구조만 표시) ---- */
+const TRACK_LIFECYCLE = [
+  { icon:'🚀', name:'Track 가동',        desc:'카테고리 선택 → 트랙 시작' },
+  { icon:'🤝', name:'핌코프 + 스킬크리에이터', desc:'클로드 코워크 플러그인으로 연결' },
+  { icon:'🤖', name:'프로젝트 에이전트 활성화', desc:'전용 에이전트 생성·투입' },
+  { icon:'📡', name:'세션로그·진행·위클리 알림', desc:'상태 추적·주간 리포트' },
+  { icon:'📦', name:'마감/드랍 → 종료',   desc:'스킬 제거 · 아카이빙' },
+];
+
+// ---- 필드 네비게이션(참고용, 보존) ----
+const FIELDS = [
+  { c:'var(--f-green)',  name:'그린', sub:'프레임워크' },
+  { c:'var(--f-blue)',   name:'블루', sub:'아카이브' },
+  { c:'var(--f-yellow)', name:'옐로', sub:'RnD' },
+  { c:'var(--f-purple)', name:'퍼플', sub:'로그' },
+];
+
+/* ------------------------- helpers ------------------------- */
+const $ = (s,r=document)=>r.querySelector(s);
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function badge(status){
+  return status==='live'
+    ? '<span class="badge live"><span class="dot"></span>LIVE</span>'
+    : '<span class="badge wip">🚧 공사중</span>';
+}
+let toastTimer=null;
+function toast(msg){
+  const t=$('#toast');
+  t.innerHTML='<span class="t-ic">🚧</span><span>'+msg+'</span>';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+/* ------------------------- card render (Forge) ------------------------- */
+function cardHTML(item, kind){
+  const cls = 'card glass '+(item.status==='live'?'live':'wip')+(item.expandable?' expandable':'');
+  const sub = item.sub || item.engine || '';
+  return '<button class="'+cls+'" data-kind="'+kind+'" data-id="'+item.id+'"'
+    + (item.launch?' data-launch="'+esc(item.launch)+'"':'')
+    + (item.expandable?' aria-expanded="false"':'')
+    + '>'
+    + '<span class="card-cta" aria-hidden="true"></span>'
+    + '<div class="card-top">'
+    +   '<div class="card-ic" aria-hidden="true">'+item.icon+'</div>'
+    +   '<div class="card-tt"><div class="card-name">'+esc(item.name)+'</div>'
+    +   (sub?'<div class="card-sub">'+esc(sub)+'</div>':'')+'</div>'
+    + '</div>'
+    + '<div class="card-desc">'+esc(item.desc)+'</div>'
+    + badge(item.status)
+    + '</button>';
+}
+
+function renderSectors(){
+  const grid=$('#sectorGrid'); let html='';
+  SECTORS.forEach(sec=>{
+    html+=cardHTML(sec,'sector');
+    if(sec.expandable){
+      let ed='<div class="editors" id="editors-'+sec.id+'">'
+        +'<div class="editors-head"><b>'+esc(sec.name)+'</b> 가 품은 에디터 에이전트'
+        +'<span class="ln"></span></div><div class="grid">';
+      sec.editors.forEach(e=> ed+=cardHTML(e,'editor'));
+      ed+='</div></div>';
+      html+=ed;
+    }
+  });
+  grid.innerHTML=html;
+}
+
+/* ------------------------- Track render ------------------------- */
+let currentCat = null;
+
+function renderCategories(){
+  $('#catGrid').innerHTML = TRACK_CATEGORIES.map(c=>
+    '<button class="catcard glass'+(c.id===currentCat?' sel':'')+'" data-cat="'+c.id+'"'
+    + ' aria-pressed="'+(c.id===currentCat)+'">'
+    + '<span class="cc-check" aria-hidden="true">✔ 선택됨</span>'
+    + '<div class="cc-top"><div class="cc-ic" aria-hidden="true">'+c.icon+'</div>'
+    + '<div class="cc-name">'+esc(c.name)+'</div></div>'
+    + '<div class="cc-sub">'+esc(c.sub)+'</div>'
+    + badge(c.status)
+    + '</button>'
+  ).join('');
+}
+
+function renderTrack5(){
+  const p=$('#pipeline'); let html='';
+  TRACK5.forEach((s,i)=>{
+    html+='<div class="step">'
+      +'<div class="step-body glass'+(s.render?' render':'')+'" role="button" tabindex="0" data-kind="track" data-id="'+s.id+'">'
+      +'<div class="step-head"><span class="step-num">STEP '+(i+1)+'</span><span class="step-code">'+esc(s.code)+'</span></div>'
+      +'<div class="step-ic" aria-hidden="true">'+s.icon+'</div>'
+      +'<div class="step-name">'+esc(s.name)+' <small>'+esc(s.code.toLowerCase())+'</small></div>'
+      +'<div class="step-desc">'+esc(s.desc)+'</div>'
+      +(s.render?'<span class="render-tag">🧰 설계 도구: 어도비·스케치업·유니티(게임 에디터) 등</span>':'')
+      +'<div class="step-art">산출 · '+s.artifact+'</div>'
+      +badge(s.status)
+      +'</div><div class="step-arrow" aria-hidden="true">→</div></div>';
+  });
+  p.innerHTML=html;
+}
+
+function renderTrackCurrent(){
+  const el=$('#trackCurrent');
+  if(!currentCat){
+    el.innerHTML='<span>👆 위에서 <b class="tc-name" style="font-weight:800">카테고리</b>를 선택하면 해당 트랙의 5공정이 열립니다.</span>';
+    return;
+  }
+  const c=TRACK_CATEGORIES.find(x=>x.id===currentCat);
+  el.innerHTML='🛤️ 선택된 트랙 · <span class="tc-name">'+esc(c.name)+'</span> '
+    +'<span class="tc-pill">🚧 워크플로우 준비 중</span>';
+}
+
+function renderLifecycle(){
+  let flow='';
+  TRACK_LIFECYCLE.forEach(n=>{
+    flow+='<div class="lc-node"><div class="lc-box">'
+      +'<div class="lc-ic" aria-hidden="true">'+n.icon+'</div>'
+      +'<div class="lc-name">'+esc(n.name)+'</div>'
+      +'<div class="lc-desc">'+esc(n.desc)+'</div>'
+      +'</div><div class="lc-arrow" aria-hidden="true">→</div></div>';
+  });
+  $('#lifecycle').innerHTML=
+    '<div class="lc-head">🔄 <b>Track 생애주기</b> · 가동에서 종료까지'
+    +'<span class="lc-wip">🚧 실제 연동 준비 중</span></div>'
+    +'<div class="lc-flow">'+flow+'</div>';
+}
+
+function renderFields(){
+  $('#fields').innerHTML=FIELDS.map(f=>
+    '<span class="field"><span class="sw" style="background:'+f.c+'"></span>'
+    +'<span class="fn">'+f.name+'</span> <span class="fs">'+f.sub+'</span></span>').join('');
+}
+
+/* ------------------------- interactions ------------------------- */
+function toggleEditors(sectorId, cardEl){
+  const panel=$('#editors-'+sectorId);
+  if(!panel) return;
+  const open=panel.classList.toggle('show');
+  cardEl.classList.toggle('open', open);
+  cardEl.setAttribute('aria-expanded', open?'true':'false');
+}
+function launch(url){ window.open(url,'_blank','noopener'); }
+
+function findName(kind,id){
+  const src = kind==='sector'?SECTORS : kind==='editor'?EDITORS : TRACK5;
+  const it = src.find(x=>x.id===id);
+  return it?it.name:'해당 항목';
+}
+
+function selectCat(catId){
+  currentCat = (currentCat===catId)? null : catId;
+  renderCategories();
+  renderTrackCurrent();
+  const c=TRACK_CATEGORIES.find(x=>x.id===catId);
+  if(currentCat){ toast('<b>'+esc(c.name)+'</b> 트랙 · 5공정은 구조만 준비됨 (🚧)'); }
+}
+
+function handleActivate(el){
+  const kind=el.dataset.kind, id=el.dataset.id;
+  const sec = kind==='sector' && SECTORS.find(s=>s.id===id);
+  if(sec && sec.expandable){ toggleEditors(id, el); return; }
+  const launchUrl = el.dataset.launch;
+  if(launchUrl){ launch(launchUrl); return; }
+  if(kind==='track'){
+    const s=TRACK5.find(x=>x.id===id);
+    toast('<b>'+esc(s?s.name:'공정')+'('+(s?s.code:'')+')</b> 공정 · 워크플로우 준비 중입니다');
+    return;
+  }
+  toast('<b>'+esc(findName(kind,id))+'</b> 는 준비 중입니다 · 곧 만나요!');
+}
+
+/* ------------------------- view switching ------------------------- */
+function setView(v){
+  const forge = v!=='track';
+  $('#view-forge').classList.toggle('show', forge);
+  $('#view-track').classList.toggle('show', !forge);
+  $('#tabForge').classList.toggle('active', forge);
+  $('#tabTrack').classList.toggle('active', !forge);
+  $('#tabForge').setAttribute('aria-selected', forge);
+  $('#tabTrack').setAttribute('aria-selected', !forge);
+  try{ localStorage.setItem('pimm.hub.view', forge?'forge':'track'); }catch(e){}
+}
+
+/* ------------------------- boot ------------------------- */
+renderSectors();
+renderCategories();
+renderTrack5();
+renderTrackCurrent();
+renderLifecycle();
+renderFields();
+
+// 위임: 카드/스텝/카테고리 클릭
+document.addEventListener('click', e=>{
+  const cat = e.target.closest('[data-cat]');
+  if(cat){ selectCat(cat.dataset.cat); return; }
+  const el = e.target.closest('[data-kind]');
+  if(el){ handleActivate(el); }
+});
+// 키보드 접근(Enter/Space)
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const el=document.activeElement;
+  if(el && el.dataset && el.dataset.kind && el.classList.contains('step-body')){
+    e.preventDefault(); handleActivate(el);
+  }
+});
+
+// 마지막 뷰 복원
+let saved='forge';
+try{ saved=localStorage.getItem('pimm.hub.view')||'forge'; }catch(e){}
+setView(saved);
+</script>
+</body>
+</html>
