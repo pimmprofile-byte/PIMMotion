@@ -43,6 +43,21 @@
 - 역할 분리: **좌표/씬/트랙/메모 = `project.pimm.json`**, **이미지/오디오 = `assets/`**, **인코딩 = `encode/`**.
 - 코워크는 이 폴더(특히 `project.pimm.json` + `encode/`)를 읽어 유니티 빌드(encoding-and-build.md).
 
+## 2.5. 저장용량 문제 & 해결 (자동저장 실패 — 중요)
+
+> **증상(사용자)**: "자동저장 실패 — 저장용량 초과" 안내. 원인 = **localStorage 용량(~5MB)** 한계인데
+> 이미지를 **data URI로 임베드**해 자동저장하니 이미지 몇 장이면 초과 → 저장 실패.
+
+**해결 2축:**
+1. **폴더 연결 시 = localStorage 대신 폴더 저장(정본)**: `project.pimm.json`(경량 config) + `assets/*`(이미지/오디오
+   **파일**). 이미지는 data URI로 config에 박지 말고 **assets 파일 + 상대경로 참조**. → 용량 제한 사실상 없음.
+2. **폴더 미연결 폴백 = IndexedDB 오프로드**: 무거운 이미지/오디오 blob을 **IndexedDB**(용량 수백MB)에 저장,
+   localStorage엔 **경량 상태만**. → 폴더 없이도 자동저장이 안 터짐.
+
+- **경량화 원칙**: localStorage(및 undo 스냅샷)에는 **data URI 대신 assetId/경로 참조**만. 실제 바이너리는 폴더/IndexedDB.
+- **우아한 처리**: 쿼터 초과시 조용히 실패 금지 → "폴더 연결 또는 내보내기" 안내 + 폴더/IndexedDB로 폴백(작업물 보존).
+- 우선순위: ver1.8(타임라인) 다음 **최우선**(작업물 저장 직결).
+
 ## 3. 저장 동작
 
 - **자동저장**: 편집 시 `project.pimm.json`을 폴더에 기록(디바운스). 에셋 추가 시 바이너리를 `assets/*`에 기록하고 config는 상대경로 참조.
