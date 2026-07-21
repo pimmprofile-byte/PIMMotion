@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIMM DeviceAssistant v0.1</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root{
+    --bg:#0a0a0d; --panel:#0e0e12; --card:#141418; --card2:#1a1a20;
+    --border:#26262c; --border2:#2f2f37;
+    --accent:#00FF99; --accent-dim:rgba(0,255,153,0.13);
+    --txt:#e6e6e6; --dim:#6a6a72; --dim2:#8a8a92;
+    --red:#ff5566; --yellow:#ffcc44; --cyan:#44ddff; --violet:#9b7dd4; --orange:#ff8844; --pink:#ff66aa;
+  }
+  html,body { background:var(--bg); color:var(--txt); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard',sans-serif; -webkit-font-smoothing:antialiased; }
+  body{ min-height:100vh; }
+  input,select,button,textarea { font-family:inherit; color:var(--txt); }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#2a2a32; border-radius:4px; }
+  ::-webkit-scrollbar-thumb:hover { background:#3a3a44; }
+  code,.mono{ font-family:'SF Mono','JetBrains Mono',ui-monospace,Menlo,Consolas,monospace; }
+
+  .inp{ padding:7px 10px; background:#1a1a1e; color:var(--txt); border:1px solid var(--border); border-radius:7px; font-size:12.5px; outline:none; transition:border-color .15s; }
+  .inp:focus{ border-color:rgba(0,255,153,0.5); }
+  .sel{ padding:7px 8px; background:#1a1a1e; color:var(--txt); border:1px solid var(--border); border-radius:7px; font-size:12.5px; outline:none; cursor:pointer; }
+  .btn{ padding:7px 14px; border-radius:7px; cursor:pointer; font-size:12px; font-weight:700; border:1px solid var(--border2); background:var(--card2); color:var(--txt); transition:all .15s; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .btn:hover{ border-color:var(--dim2); }
+  .btn-accent{ background:var(--accent-dim); color:var(--accent); border-color:rgba(0,255,153,0.35); }
+  .btn-accent:hover{ background:rgba(0,255,153,0.2); }
+  .btn-ghost{ background:transparent; border-color:var(--border); }
+  .icon-btn{ background:transparent; border:none; cursor:pointer; color:var(--dim); padding:4px; border-radius:6px; display:inline-flex; transition:all .15s; }
+  .icon-btn:hover{ color:var(--red); background:rgba(255,85,102,0.1); }
+
+  .badge{ display:inline-flex; align-items:center; padding:2px 8px; border-radius:5px; font-size:10px; font-weight:700; let-spacing:.5px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  th{ padding:8px 9px; text-align:left; color:var(--dim); font-weight:600; font-size:10px; letter-spacing:1px; text-transform:uppercase; border-bottom:1px solid var(--border); }
+  td{ padding:6px 9px; border-bottom:1px solid rgba(255,255,255,0.035); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  .cell-inp{ width:100%; background:transparent; border:1px solid transparent; border-radius:5px; padding:5px 7px; font-size:12.5px; color:var(--txt); outline:none; }
+  .cell-inp:hover{ border-color:var(--border); background:#1a1a1e; }
+  .cell-inp:focus{ border-color:rgba(0,255,153,0.5); background:#1a1a1e; }
+  select.cell-inp{ cursor:pointer; }
+
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .toolbar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:12px 16px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:16px; }
+  .lbl{ font-size:10px; color:var(--dim); font-weight:700; letter-spacing:1px; }
+  .hint{ font-size:11px; color:var(--dim); line-height:1.55; }
+
+  .tab-btn{ padding:12px 20px; font-size:12.5px; font-weight:600; color:var(--dim); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all .15s; letter-spacing:.3px; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+  .tab-btn:hover{ color:var(--dim2); }
+  .tab-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+  .tab-btn svg{ width:15px; height:15px; }
+
+  .seqgroup{ border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:14px; }
+  .seqhead{ display:flex; align-items:center; gap:10px; padding:11px 15px; background:var(--card2); border-bottom:1px solid var(--border); }
+
+  pre.md{ background:#0c0c10; border:1px solid var(--border); border-radius:10px; padding:18px; font-size:11.5px; line-height:1.6; color:#c8c8d0; overflow:auto; max-height:70vh; white-space:pre; }
+  .proto-row{ display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; background:var(--card); border:1px solid var(--border); margin-bottom:5px; }
+  .kbd{ font-family:'SF Mono',monospace; background:#1a1a1e; border:1px solid var(--border); border-radius:5px; padding:3px 8px; font-size:11.5px; }
+
+  @media (max-width:820px){
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .toolbar .sel,.toolbar .inp{ width:100%; }
+    .board-grid{ grid-template-columns:1fr !important; }
+    .tab-btn{ padding:11px 13px; font-size:11px; }
+    .tab-btn span{ display:none; }
+    .table-wrap{ overflow-x:auto; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════════════
+   PIMM_DeviceAssistant ver0.1  —  자체완결 단일 HTML (외부 의존성 0)
+   정본 규격: 260502 플로직매뉴얼 장치통신표준 개정판
+   전신 툴: SerialTunner v0.4 (vanilla 재구축)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── 통신 규격 기본값 (260502 = 편집 가능한 기본값. 최종 규칙은 인터뷰로 확정 → 툴이 규칙을 정의) ─── */
+const SPEC_DEFAULT = {
+  baud: 115200,
+  debounce: 50,
+  pinMin: 22, pinMax: 53,     // 물리 핀 범위 (D22~D53)
+  idBase: 1,                  // D(pinMin) = ID_(idBase). 기본: D22 = ID_01
+  activeLow: true,
+  hsInput: "PIMM_input", hsOutput: "PIMM_output", hsAck: "PIMM_ACK",
+  inFmt:    "IN_{NN}",        // 입력 시리얼 템플릿  ({NN}=2자리 ID)
+  outIdFmt: "OUT_{NN}",       // 출력 식별 stem
+  outOnFmt: "OUT_{NN}_on",    // 출력 ON 명령
+  outOffFmt:"OUT_{NN}_off",   // 출력 OFF 명령
+  pwmFmt:   "OUT_{NN}_pwm_{VVV}", // PWM 명령 ({VVV}=0~255)
+  ackResp:  "OK!",            // 출력 실행 응답
+  pwmPins:  "44,45,46",       // PWM 지원 핀 (콤마 구분)
+};
+// spec 접근자 (런타임은 항상 state.spec 사용 — 편집 가능)
+function sp(){ return state.spec; }
+function pwmPinArr(){ return String(sp().pwmPins||"").split(",").map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)); }
+function isPwmPin(pin){ return pwmPinArr().indexOf(pin) !== -1; }
+
+// 핀-ID 매핑 (편집 가능: pinMin, idBase 기준)
+function pinToId(pin){ return pin==null ? null : (pin - sp().pinMin + sp().idBase); }
+function pinToNN(pin){ const id=pinToId(pin); return id==null ? "??" : String(id).padStart(2,"0"); }
+
+// 시리얼 템플릿 적용
+function applyFmt(tpl, nn, vvv){ return String(tpl||"").replace(/\{NN\}/g, nn).replace(/\{VVV\}/g, vvv==null?"VVV":vvv); }
+function inSig(pin){ return applyFmt(sp().inFmt, pinToNN(pin)); }
+function outOn(pin){ return applyFmt(sp().outOnFmt, pinToNN(pin)); }
+function outOff(pin){ return applyFmt(sp().outOffFmt, pinToNN(pin)); }
+function outPwm(pin){ return applyFmt(sp().pwmFmt, pinToNN(pin)); }
+
+/* ─── 장치 라이브러리 (장치코드 = 260502 §5.3) ─── */
+const DEVICE_LIB = {
+  INPUT: [
+    {code:"Btn", ko:"버튼"}, {code:"SW", ko:"스위치"}, {code:"SS", ko:"센서"},
+    {code:"SS", ko:"레이저"}, {code:"Kpd", ko:"키패드"},
+  ],
+  OUTPUT: [
+    {code:"Rly", ko:"릴레이"}, {code:"SSR", ko:"SSR"}, {code:"Ltx", ko:"조명"},
+    {code:"Mtr", ko:"모터"}, {code:"Air", ko:"에어"}, {code:"Fog", ko:"포그"},
+    {code:"Dcv", ko:"밸브"}, {code:"Lin", ko:"리니어"}, {code:"LED", ko:"LED"},
+    {code:"Srv", ko:"서보"}, {code:"Sol", ko:"솔레노이드"}, {code:"Sir", ko:"사이렌"},
+  ],
+};
+// role -> device option list
+function devOptions(role){ return role==="OUTPUT" ? DEVICE_LIB.OUTPUT : DEVICE_LIB.INPUT; }
+function deviceCode(ko){
+  for(const g of [DEVICE_LIB.INPUT, DEVICE_LIB.OUTPUT]) for(const d of g) if(d.ko===ko) return d.code;
+  return "Dev";
+}
+const TYPE_COLOR = {
+  "버튼":"var(--accent)","스위치":"var(--cyan)","센서":"var(--violet)","레이저":"var(--red)","키패드":"var(--pink)",
+  "릴레이":"var(--yellow)","SSR":"var(--yellow)","조명":"var(--cyan)","모터":"var(--orange)","에어":"var(--cyan)",
+  "포그":"var(--dim2)","밸브":"var(--cyan)","리니어":"var(--orange)","LED":"var(--cyan)","서보":"var(--orange)",
+  "솔레노이드":"var(--yellow)","사이렌":"var(--orange)",
+};
+
+const IO_MODES = ["INPUT_PULLUP","OUTPUT","PWM"];
+const BOARD_ROLES = ["INPUT","OUTPUT","GAMING"];
+const BOARD_COLORS = ["var(--accent)","var(--cyan)","var(--yellow)","var(--violet)","var(--orange)","var(--pink)"];
+const ROLE_DEFAULT_MODE = { INPUT:"INPUT_PULLUP", OUTPUT:"OUTPUT", GAMING:"INPUT_PULLUP" };
+
+const TAG_COLORS = { START:"var(--accent)", HIT:"var(--red)", STOP:"var(--yellow)", REMOTE:"var(--cyan)", SYSTEM:"var(--violet)" };
+const SEQ_LIST = ["SEQ1","SEQ2","SEQ3","SEQ4","SEQ5","SEQ6"];  // -> combo_input_registry G1~G6
+
+/* ─── 인라인 SVG 아이콘 (이모지 지양) ─── */
+const IC = {
+  chip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.6-6-10a6 6 0 1 1 12 0c0 4.4-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>',
+  pad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="4"/><path d="M7 11v4M5 13h4M15.5 12.5h.01M18 15h.01"/></svg>',
+  wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2-7 4 14 3-9 2 4h6"/></svg>',
+  flow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>',
+  table:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/></svg>',
+  export:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>',
+};
+function icon(n, sz){ return '<span style="display:inline-flex;width:'+(sz||15)+'px;height:'+(sz||15)+'px">'+IC[n]+'</span>'; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   상태 + 자동저장 (localStorage)
+   ═══════════════════════════════════════════════════════════════════ */
+const LS_KEY = "pimm_device_assistant_v01";
+
+function defaultState(){
+  return {
+    meta:{ projectName:"KLZ Laser Dodge", projectCode:"KLZ", mapNo:1, activeTab:"boards" },
+    spec: Object.assign({}, SPEC_DEFAULT),
+    boards:[
+      { id:"IN",   role:"INPUT",  alias:"인풋보드",   color:0 },
+      { id:"OUT",  role:"OUTPUT", alias:"아웃풋보드", color:1 },
+      { id:"GAME", role:"GAMING", alias:"게이밍보드", color:3 },
+    ],
+    pins:[
+      // INPUT
+      { uid:uid(), board:"IN",  pin:22, mode:"INPUT_PULLUP", name:"시작버튼", type:"버튼", seq:"" },
+      { uid:uid(), board:"IN",  pin:23, mode:"INPUT_PULLUP", name:"비상정지", type:"스위치", seq:"" },
+      { uid:uid(), board:"IN",  pin:24, mode:"INPUT_PULLUP", name:"진입감지", type:"센서", seq:"" },
+      // OUTPUT
+      { uid:uid(), board:"OUT", pin:22, mode:"OUTPUT", name:"도어락", type:"릴레이", seq:"" },
+      { uid:uid(), board:"OUT", pin:23, mode:"OUTPUT", name:"경광등",  type:"조명", seq:"" },
+      { uid:uid(), board:"OUT", pin:44, mode:"PWM",    name:"LED바",   type:"LED", seq:"" },
+      // GAMING (SEQ 그룹)
+      { uid:uid(), board:"GAME", pin:22, mode:"INPUT_PULLUP", name:"레인1버튼", type:"버튼", seq:"SEQ1" },
+      { uid:uid(), board:"GAME", pin:23, mode:"INPUT_PULLUP", name:"레인2버튼", type:"버튼", seq:"SEQ1" },
+      { uid:uid(), board:"GAME", pin:24, mode:"INPUT_PULLUP", name:"정답버튼",  type:"버튼", seq:"SEQ2" },
+      { uid:uid(), board:"GAME", pin:25, mode:"INPUT_PULLUP", name:"통과센서",  type:"레이저", seq:"SEQ2" },
+    ],
+    flows:[
+      { id:1, tag:"START", text:"시작버튼(IN_01)이 눌리면 → 도어락 릴레이 ON(OUT_01_on) + PIMMplayer에 IN_01 전송" },
+      { id:2, tag:"HIT",   text:"통과센서(IN_04, GAME)가 감지되면 → PIMMplayer에 IN_04 전송 (디바운스 50ms)" },
+      { id:3, tag:"STOP",  text:"비상정지 스위치가 눌리면 → 전체 출력 OFF + 게임 상태 초기화" },
+      { id:4, tag:"REMOTE",text:"PIMMplayer에서 OUT_02_on 수신 → 경광등 ON + OK! 응답" },
+      { id:5, tag:"SYSTEM",text:"부팅 시 → PIMM_input/PIMM_output 송신, PIMM_ACK 수신 후 정상운영 진입" },
+    ],
+    protocols:[
+      { id:1, name:"FLASH", category:"조명", desc:"빠른 점멸. 경고등·히트 피드백",
+        params:[{label:"ON",value:"30ms"},{label:"OFF",value:"50ms"},{label:"반복",value:"5회"}],
+        timing:[{state:"ON",dur:30},{state:"OFF",dur:50},{state:"ON",dur:30},{state:"OFF",dur:50},{state:"ON",dur:30},{state:"OFF",dur:50}],
+        signal:"OUT_{NN}_on / OUT_{NN}_off ×5", example:"OUT_02_on" },
+      { id:2, name:"PULSE", category:"제어", desc:"단발 ON 후 자동 OFF. 솔레노이드·자물쇠",
+        params:[{label:"ON 유지",value:"100ms"}],
+        timing:[{state:"ON",dur:100},{state:"OFF",dur:0}],
+        signal:"OUT_{NN}_on → (100ms) → OUT_{NN}_off", example:"OUT_01_on" },
+      { id:3, name:"FADE", category:"조명", desc:"PWM 디밍 (D44/45/46 전용). LED 페이드",
+        params:[{label:"시작",value:"0"},{label:"끝",value:"255"},{label:"소요",value:"1000ms"}],
+        timing:[{state:"▁",dur:200},{state:"▃",dur:200},{state:"▅",dur:200},{state:"▇",dur:200},{state:"█",dur:200}],
+        signal:"OUT_{NN}_pwm_{VVV}", example:"OUT_23_pwm_255" },
+    ],
+  };
+}
+function uid(){ return "p"+Math.random().toString(36).slice(2,9); }
+
+let state = loadState();
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){ const s = JSON.parse(raw); if(s && s.boards && s.pins) return migrate(s); }
+  }catch(e){ console.warn("load fail", e); }
+  return defaultState();
+}
+function migrate(s){
+  s.meta = s.meta || {}; if(!s.meta.activeTab) s.meta.activeTab="boards";
+  if(s.meta.mapNo==null) s.meta.mapNo=1; if(!s.meta.projectCode) s.meta.projectCode="PIMM";
+  s.spec = Object.assign({}, SPEC_DEFAULT, s.spec||{});   // 누락 규격 필드 = 기본값 보강
+  s.pins.forEach(p=>{ if(!p.uid) p.uid=uid(); if(p.seq==null) p.seq=""; });
+  return s;
+}
+let saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); flashSaved(); }
+    catch(e){ console.warn("save fail", e); }
+  }, 120);
+}
+function flashSaved(){
+  const el=document.getElementById("save-ind"); if(!el) return;
+  el.style.opacity="1"; clearTimeout(el._t);
+  el._t=setTimeout(()=>{ el.style.opacity="0.35"; }, 900);
+}
+
+/* ─── helpers ─── */
+function boardById(id){ return state.boards.find(b=>b.id===id); }
+function boardColor(b){ return BOARD_COLORS[(b.color||0)%BOARD_COLORS.length]; }
+function pinsOf(id){ return state.pins.filter(p=>p.board===id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function sanitizeName(s){ return String(s||"").replace(/\s+/g,"").replace(/[^0-9A-Za-z가-힣]/g,"")||"Dev"; }
+function seqToG(seq){ const i=SEQ_LIST.indexOf(seq); return i>=0 ? "G"+(i+1) : ""; }
+
+// 시리얼 ID (템플릿 기반, 편집 가능)
+function serialId(p){
+  const b=boardById(p.board); const nn=pinToNN(p.pin);
+  return (b && b.role==="OUTPUT") ? applyFmt(sp().outIdFmt, nn) : applyFmt(sp().inFmt, nn);
+}
+// PIMM_ID 추천 (260502 §5) — 입력: Bl_[Map]_P_[Code][Name], 출력: Out_[Code]_[Name]
+function pimmId(p){
+  const b=boardById(p.board); const code=deviceCode(p.type); const nm=sanitizeName(p.name);
+  const id=pinToId(p.pin);
+  if(b && b.role==="OUTPUT") return "Out_"+code+"_"+nm;
+  const mapN = (state.meta.mapNo||1)*100 + (id||0);
+  return "Bl_"+mapN+"_P_"+code+nm;
+}
+function autoArrow(t){
+  return t.replace(/(?<!=)>(?!=)/g,"→")
+    .replace(/화살표\s*위/g,"↑").replace(/화살표\s*아래/g,"↓")
+    .replace(/화살표\s*왼쪽/g,"←").replace(/화살표\s*오른쪽/g,"→");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   렌더링
+   ═══════════════════════════════════════════════════════════════════ */
+const TABS = [
+  { id:"boards",   icon:"chip",   label:"보드" },
+  { id:"pinmap",   icon:"pin",    label:"핀맵" },
+  { id:"gaming",   icon:"pad",    label:"게이밍" },
+  { id:"protocol", icon:"wave",   label:"프로토콜" },
+  { id:"flow",     icon:"flow",   label:"디바이스 플로우" },
+  { id:"registry", icon:"table",  label:"레지스트리" },
+  { id:"handoff",  icon:"export", label:"HANDOFF" },
+];
+
+function render(){
+  const m=state.meta;
+  const app=document.getElementById("app");
+  app.innerHTML =
+    topbar() +
+    '<div style="border-bottom:1px solid var(--border);background:var(--panel)">'+
+      '<div style="max-width:1180px;margin:0 auto;display:flex;overflow-x:auto">'+
+        TABS.map(t=>'<button class="tab-btn '+(m.activeTab===t.id?"active":"")+'" data-tab="'+t.id+'">'+icon(t.icon)+'<span>'+t.label+'</span></button>').join('')+
+      '</div>'+
+    '</div>'+
+    '<div style="max-width:1180px;margin:0 auto;padding:22px 18px 60px">'+ tabBody(m.activeTab) +'</div>';
+  bindTopbar(); bindTabs(); bindTab(m.activeTab);
+}
+function tabBody(t){
+  switch(t){
+    case "boards":   return renderBoards();
+    case "pinmap":   return renderPinmap();
+    case "gaming":   return renderGaming();
+    case "protocol": return renderProtocol();
+    case "flow":     return renderFlow();
+    case "registry": return renderRegistry();
+    case "handoff":  return renderHandoff();
+  }
+  return "";
+}
+
+/* ─── Topbar ─── */
+function topbar(){
+  const m=state.meta;
+  return '<div style="display:flex;align-items:center;gap:14px;padding:11px 18px;background:#0c0c10;border-bottom:1px solid var(--border);flex-wrap:wrap">'+
+    '<div style="display:flex;align-items:center;gap:9px">'+
+      '<div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#00b36b);display:flex;align-items:center;justify-content:center;color:#001a10">'+icon("chip",17)+'</div>'+
+      '<div style="line-height:1.1"><div style="font-size:14.5px;font-weight:800;color:var(--accent);letter-spacing:-.3px">PIMM DeviceAssistant</div>'+
+      '<div style="font-size:9.5px;color:var(--dim);letter-spacing:1px">ver0.1 · 장치통신표준 260502</div></div>'+
+    '</div>'+
+    '<div style="width:1px;height:26px;background:var(--border)"></div>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+      '<input id="tb-name" class="inp" value="'+esc(m.projectName)+'" style="width:180px;font-weight:600" placeholder="프로젝트명">'+
+      '<input id="tb-code" class="inp mono" value="'+esc(m.projectCode)+'" style="width:82px" placeholder="CODE" title="Project Code">'+
+      '<div style="display:flex;align-items:center;gap:4px" title="MAP 번호 (100단위 ID base)"><span class="lbl">MAP</span>'+
+      '<input id="tb-map" class="inp mono" type="number" min="0" value="'+esc(m.mapNo)+'" style="width:58px"></div>'+
+    '</div>'+
+    '<div style="flex:1"></div>'+
+    '<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--dim);padding:5px 11px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:7px">'+
+      '<span>BOARDS <b style="color:var(--accent)">'+state.boards.length+'</b></span><span style="color:var(--border)">|</span>'+
+      '<span>PINS <b style="color:var(--cyan)">'+state.pins.length+'</b></span><span style="color:var(--border)">|</span>'+
+      '<span>FLOW <b style="color:var(--yellow)">'+state.flows.length+'</b></span>'+
+    '</div>'+
+    '<div id="save-ind" style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--accent);opacity:.35;transition:opacity .3s">'+
+      '<span style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></span>자동저장</div>'+
+    '<button class="btn btn-ghost" id="tb-reset" title="기본값으로 초기화">초기화</button>'+
+  '</div>';
+}
+function bindTopbar(){
+  const bind=(id,key,fn)=>{ const el=document.getElementById(id); if(!el)return;
+    el.oninput=()=>{ state.meta[key]=fn?fn(el.value):el.value; save(); syncTopStats(); }; };
+  bind("tb-name","projectName");
+  bind("tb-code","projectCode");
+  bind("tb-map","mapNo",v=>{ const n=parseInt(v); return isNaN(n)?1:n; });
+  const rs=document.getElementById("tb-reset");
+  if(rs) rs.onclick=()=>{ if(confirm("모든 데이터를 기본값으로 초기화합니다. 계속할까요?")){ state=defaultState(); save(); render(); } };
+}
+function syncTopStats(){ /* light refresh of counters without full re-render */
+  const t=document.querySelector('#save-ind'); if(t){/* stats are static text; skip */}
+}
+function bindTabs(){
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.onclick=()=>{ state.meta.activeTab=b.dataset.tab; save(); render(); };
+  });
+}
+
+/* ═══ TAB: BOARDS ═══ */
+function renderBoards(){
+  let h='';
+  // 통신 규격 (편집 가능 · 기본값=260502) ─ 최종 규칙은 인터뷰로 확정, 이후 Plogic/핌플레이어를 이 규격에 맞춰 수정
+  const sopen = state.meta.specOpen!==false;
+  h+='<div class="card" style="padding:16px 18px;margin-bottom:18px;background:linear-gradient(180deg,rgba(0,255,153,0.05),transparent)">'+
+    '<div id="spec-toggle" style="display:flex;align-items:center;gap:8px;color:var(--accent);font-weight:700;font-size:13px;cursor:pointer">'+icon("link",15)+
+      '통신 규격 (편집 가능 · 기본값 = 260502)'+
+      '<span style="font-size:10px;color:var(--dim);font-weight:400;margin-left:4px">— 이 규격이 시리얼ID·프로토콜·Registry·HANDOFF를 정의합니다</span>'+
+      '<div style="flex:1"></div>'+
+      '<button class="btn btn-ghost" id="spec-reset" style="padding:4px 9px;font-size:10px" onclick="event.stopPropagation()">기본값 복원</button>'+
+      '<span style="color:var(--dim);transform:rotate('+(sopen?'180':'0')+'deg);transition:.2s">▾</span>'+
+    '</div>';
+  if(sopen){
+    h+='<div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">'+
+      specField("baud","Baud","number","전송속도")+
+      specField("debounce","디바운스(ms)","number","HIGH→LOW 천이")+
+      specField("pinMin","핀 시작(D)","number","물리 핀 최소")+
+      specField("pinMax","핀 끝(D)","number","물리 핀 최대")+
+      specField("idBase","ID base","number","D"+sp().pinMin+" = ID_"+String(sp().idBase).padStart(2,"0"))+
+      specField("pwmPins","PWM 핀","text","콤마 구분")+
+      specField("hsInput","핸드셰이크 IN","text","보드→PC")+
+      specField("hsOutput","핸드셰이크 OUT","text","보드→PC")+
+      specField("hsAck","핸드셰이크 ACK","text","PC→보드")+
+      specField("inFmt","입력 포맷","text","{NN}=ID 2자리")+
+      specField("outOnFmt","출력 ON","text","{NN}")+
+      specField("outOffFmt","출력 OFF","text","{NN}")+
+      specField("pwmFmt","PWM 포맷","text","{NN} {VVV}")+
+      specField("ackResp","실행 응답","text","출력 확인")+
+      specField("outIdFmt","출력 ID stem","text","Registry 표기")+
+    '</div>'+
+    '<div class="hint" style="margin-top:9px">보드는 <b>Arduino Mega 2560</b> (INPUT / OUTPUT / GAMING). 전원은 외부 12V SMPS + MOSFET, GND 공통(star) 권장 — 표준 참고사항이며 잠금되지 않습니다.</div>';
+  }
+  h+='</div>';
+
+  // 보드 추가바
+  h+='<div class="toolbar">'+
+    '<span class="lbl">보드 추가</span>'+
+    '<input id="nb-id" class="inp mono" placeholder="ID (예: IN2)" style="width:100px">'+
+    '<select id="nb-role" class="sel">'+BOARD_ROLES.map(r=>'<option value="'+r+'">'+r+'</option>').join('')+'</select>'+
+    '<input id="nb-alias" class="inp" placeholder="별칭" style="width:140px">'+
+    '<button class="btn btn-accent" id="nb-add">'+icon("plus",13)+'보드 추가</button>'+
+  '</div>';
+
+  // 보드 카드
+  h+='<div class="board-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
+  state.boards.forEach(b=>{
+    const c=boardColor(b); const ps=pinsOf(b.id);
+    const roleTxt = b.role==="GAMING" ? "게임 버튼/스위치 다수 · 빠른 재매핑 (인풋보드2)" : (b.role==="INPUT"?"시퀀스 진행신호 수신 전용 (안정형)":"릴레이/연출 구동 (OUTPUT)");
+    h+='<div class="card" style="padding:15px;border-color:'+c+'40">'+
+      '<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">'+
+        '<span style="width:34px;height:34px;border-radius:9px;background:'+c+'1a;color:'+c+';display:flex;align-items:center;justify-content:center">'+icon(b.role==="GAMING"?"pad":"chip",18)+'</span>'+
+        '<div style="flex:1"><span class="mono" style="font-weight:800;color:'+c+';font-size:13px">'+esc(b.id)+'</span>'+
+        '<span class="badge" style="margin-left:6px;background:'+c+'22;color:'+c+'">'+b.role+'</span></div>'+
+        (state.boards.length>1?'<button class="icon-btn" data-delboard="'+esc(b.id)+'" title="보드 삭제">'+IC.trash+'</button>':'')+
+      '</div>'+
+      '<input class="inp" data-alias="'+esc(b.id)+'" value="'+esc(b.alias)+'" style="width:100%;margin-bottom:8px" placeholder="별칭">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--dim)">'+
+        '<span>'+roleTxt+'</span><span class="mono" style="color:'+c+'">'+ps.length+' pins</span></div>'+
+      '<div style="display:flex;gap:5px;margin-top:10px">'+
+        BOARD_COLORS.map((cc,i)=>'<button data-boardcolor="'+esc(b.id)+'" data-ci="'+i+'" style="width:18px;height:18px;border-radius:50%;background:'+cc+';border:2px solid '+(b.color===i?'#fff':'transparent')+';cursor:pointer"></button>').join('')+
+      '</div>'+
+    '</div>';
+  });
+  h+='</div>';
+  return h;
+}
+function specField(key, label, type, sub){
+  return '<div style="padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:9px">'+
+    '<div class="lbl" style="margin-bottom:4px">'+esc(label)+'</div>'+
+    '<input class="inp mono" data-spec="'+key+'" type="'+(type==="number"?"number":"text")+'" value="'+esc(sp()[key])+'" style="width:100%;font-size:12px;font-weight:700">'+
+    '<div style="font-size:9.5px;color:var(--dim);margin-top:3px">'+esc(sub)+'</div></div>';
+}
+function bindBoards(){
+  // 규격 편집
+  const tog=document.getElementById("spec-toggle");
+  if(tog) tog.onclick=()=>{ state.meta.specOpen = state.meta.specOpen===false; save(); render(); };
+  const srst=document.getElementById("spec-reset");
+  if(srst) srst.onclick=()=>{ if(confirm("통신 규격을 260502 기본값으로 복원합니다.")){ state.spec=Object.assign({},SPEC_DEFAULT); save(); render(); } };
+  document.querySelectorAll('[data-spec]').forEach(el=>{
+    const k=el.dataset.spec;
+    el.onchange=()=>{ let v=el.value; if(el.type==="number"){ v=parseInt(v); if(isNaN(v)) v=SPEC_DEFAULT[k]; } state.spec[k]=v; save(); render(); };
+  });
+  const add=document.getElementById("nb-add");
+  if(add) add.onclick=()=>{
+    const id=(document.getElementById("nb-id").value||"").trim().toUpperCase();
+    const role=document.getElementById("nb-role").value;
+    const alias=(document.getElementById("nb-alias").value||"").trim();
+    if(!id||state.boards.some(b=>b.id===id)){ alert("보드 ID가 비었거나 중복입니다."); return; }
+    state.boards.push({ id, role, alias:alias||id, color:state.boards.length%BOARD_COLORS.length });
+    save(); render();
+  };
+  document.querySelectorAll('[data-delboard]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.delboard;
+    if(confirm('보드 '+id+' 와 매핑된 핀을 모두 삭제합니다.')){
+      state.boards=state.boards.filter(x=>x.id!==id);
+      state.pins=state.pins.filter(p=>p.board!==id);
+      save(); render();
+    }
+  });
+  document.querySelectorAll('[data-alias]').forEach(i=>i.oninput=()=>{
+    const b=boardById(i.dataset.alias); if(b){ b.alias=i.value; save(); }
+  });
+  document.querySelectorAll('[data-boardcolor]').forEach(btn=>btn.onclick=()=>{
+    const b=boardById(btn.dataset.boardcolor); if(b){ b.color=parseInt(btn.dataset.ci); save(); render(); }
+  });
+}
+
+/* ═══ TAB: PIN MAP ═══ */
+function usedPins(boardId, exceptUid){
+  return pinsOf(boardId).filter(p=>p.uid!==exceptUid && p.pin!=null).map(p=>p.pin);
+}
+function pinOptions(boardId, current, exceptUid){
+  const used=usedPins(boardId, exceptUid);
+  let o='<option value="">D?</option>';
+  for(let d=sp().pinMin; d<=sp().pinMax; d++){
+    const dis = used.indexOf(d)!==-1 && d!==current;
+    o+='<option value="'+d+'"'+(d===current?' selected':'')+(dis?' disabled':'')+'>D'+d+' · ID_'+pinToNN(d)+(isPwmPin(d)?' ·PWM':'')+'</option>';
+  }
+  return o;
+}
+function renderPinmap(){
+  let h='<div class="hint" style="margin-bottom:14px">핀 D22~D53 = ID_01~32 (32ch). 시리얼 ID는 매핑에서 <b>자동 생성</b>됩니다 (입력 <span class="mono" style="color:var(--accent)">IN_NN</span> · 출력 <span class="mono" style="color:var(--yellow)">OUT_NN</span>). 게이밍보드는 <b>게이밍 탭</b>에서 SEQ# 그룹으로 관리합니다.</div>';
+  const shown = state.boards.filter(b=>b.role!=="GAMING");
+  h+='<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">';
+  shown.forEach(b=> h+=pinTable(b, false));
+  if(shown.length===0) h+='<div class="hint">INPUT/OUTPUT 보드가 없습니다. 보드 탭에서 추가하세요.</div>';
+  h+='</div>';
+  return h;
+}
+function pinTable(b, isGaming){
+  const c=boardColor(b); const ps=pinsOf(b.id).slice().sort(sortPins);
+  const opts=devOptions(b.role);
+  let h='<div style="flex:1;min-width:'+(isGaming?'100%':'480px')+'">';
+  h+='<div style="display:flex;align-items:center;gap:9px;padding:9px 13px;background:'+c+'12;border:1px solid '+c+'30;border-radius:9px 9px 0 0">'+
+    '<span style="width:9px;height:9px;border-radius:50%;background:'+c+'"></span>'+
+    '<span class="mono" style="font-weight:800;color:'+c+';font-size:13px">'+esc(b.id)+'</span>'+
+    '<span style="font-size:11px;color:var(--dim)">'+esc(b.alias)+'</span>'+
+    '<span class="badge" style="background:'+c+'22;color:'+c+'">'+b.role+'</span>'+
+    '<div style="flex:1"></div>'+
+    '<span style="font-size:11px;color:var(--dim)">'+ps.length+' pins</span>'+
+    '<button class="btn btn-accent" data-addpin="'+esc(b.id)+'" style="padding:5px 10px">'+icon("plus",12)+'핀</button>'+
+  '</div>';
+  h+='<div class="card table-wrap" style="border-radius:0 0 9px 9px;border-top:none"><table>';
+  const cols = isGaming ? ['핀','SEQ','장치명','타입','모드','시리얼','']
+                        : ['핀','장치명','타입','모드','시리얼','PIMM_ID',''];
+  h+='<thead><tr>'+cols.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>';
+  ps.forEach(p=>{
+    const sid=serialId(p); const sidColor = sid.startsWith("OUT")?"var(--yellow)":"var(--accent)";
+    const tcol=TYPE_COLOR[p.type]||"var(--dim2)";
+    h+='<tr>';
+    h+='<td style="min-width:118px"><select class="cell-inp mono" data-f="pin" data-u="'+p.uid+'" style="color:'+c+';font-weight:700">'+pinOptions(b.id,p.pin,p.uid)+'</select></td>';
+    if(isGaming){
+      h+='<td style="min-width:96px"><select class="cell-inp mono" data-f="seq" data-u="'+p.uid+'">'+
+        '<option value="">-</option>'+SEQ_LIST.map(s=>'<option value="'+s+'"'+(p.seq===s?' selected':'')+'>'+s+' ('+seqToG(s)+')</option>').join('')+'</select></td>';
+    }
+    h+='<td style="min-width:120px"><input class="cell-inp" data-f="name" data-u="'+p.uid+'" value="'+esc(p.name)+'" placeholder="장치명"></td>';
+    h+='<td style="min-width:104px"><select class="cell-inp" data-f="type" data-u="'+p.uid+'" style="color:'+tcol+'">'+
+      opts.map(d=>'<option value="'+d.ko+'"'+(p.type===d.ko?' selected':'')+'>'+d.ko+' ('+d.code+')</option>').join('')+'</select></td>';
+    h+='<td style="min-width:120px"><select class="cell-inp mono" data-f="mode" data-u="'+p.uid+'" style="font-size:11px;color:var(--dim2)">'+
+      IO_MODES.map(mm=>'<option value="'+mm+'"'+(p.mode===mm?' selected':'')+(mm==="PWM"&&!isPwmPin(p.pin)?' disabled':'')+'>'+mm+'</option>').join('')+'</select></td>';
+    h+='<td class="mono" style="color:'+sidColor+';font-weight:700;font-size:11.5px">'+sid+'</td>';
+    if(!isGaming) h+='<td class="mono" style="color:var(--dim2);font-size:10.5px">'+esc(pimmId(p))+'</td>';
+    h+='<td style="text-align:right"><button class="icon-btn" data-delpin="'+p.uid+'">'+IC.trash+'</button></td>';
+    h+='</tr>';
+  });
+  if(ps.length===0) h+='<tr><td colspan="'+cols.length+'" style="text-align:center;color:var(--dim);padding:16px">등록된 핀 없음</td></tr>';
+  h+='</tbody></table></div></div>';
+  return h;
+}
+function sortPins(a,b){
+  if(a.pin==null&&b.pin==null) return 0; if(a.pin==null) return 1; if(b.pin==null) return -1; return a.pin-b.pin;
+}
+function nextFreePin(boardId){
+  const used=usedPins(boardId,null);
+  for(let d=sp().pinMin; d<=sp().pinMax; d++) if(used.indexOf(d)===-1) return d;
+  return null;
+}
+function bindPinCommon(){
+  // add pin
+  document.querySelectorAll('[data-addpin]').forEach(btn=>btn.onclick=()=>{
+    const bid=btn.dataset.addpin; const b=boardById(bid);
+    const opts=devOptions(b.role);
+    state.pins.push({ uid:uid(), board:bid, pin:nextFreePin(bid), mode:ROLE_DEFAULT_MODE[b.role]||"INPUT_PULLUP",
+      name:"", type:opts[0].ko, seq:b.role==="GAMING"?"SEQ1":"" });
+    save(); render();
+  });
+  // delete pin
+  document.querySelectorAll('[data-delpin]').forEach(btn=>btn.onclick=()=>{
+    state.pins=state.pins.filter(p=>p.uid!==btn.dataset.delpin); save(); render();
+  });
+  // field edits
+  document.querySelectorAll('.cell-inp[data-u]').forEach(el=>{
+    const p=state.pins.find(x=>x.uid===el.dataset.u); if(!p) return;
+    const f=el.dataset.f;
+    if(el.tagName==="INPUT"){
+      el.oninput=()=>{ p[f]=el.value; save(); };  // no re-render (keep focus)
+    } else {
+      el.onchange=()=>{
+        if(f==="pin"){ p.pin = el.value===""?null:parseInt(el.value);
+          if(p.pin!=null && !isPwmPin(p.pin) && p.mode==="PWM") p.mode="OUTPUT"; }
+        else p[f]=el.value;
+        save(); render();   // re-render: derived cells (시리얼/PIMM_ID/PWM) update
+      };
+    }
+  });
+}
+
+/* ═══ TAB: GAMING (SEQ# 그룹) ═══ */
+function renderGaming(){
+  const gb=state.boards.filter(b=>b.role==="GAMING");
+  if(gb.length===0) return '<div class="hint">게이밍보드가 없습니다. 보드 탭에서 role=GAMING 보드를 추가하세요.</div>';
+  let h='<div class="card" style="padding:13px 16px;margin-bottom:16px;background:linear-gradient(180deg,rgba(155,125,212,0.06),transparent)">'+
+    '<div style="display:flex;align-items:center;gap:8px;color:var(--violet);font-weight:700;font-size:13px;margin-bottom:5px">'+icon("pad",15)+'게이밍보드 = 인풋보드2 (빠른 재매핑)</div>'+
+    '<div class="hint"><b>인풋보드</b>는 시퀀스 진행신호 전용(안정·소수). <b>게이밍보드</b>는 게임 버튼/스위치가 세트당 많아 분화된 <b>인풋보드2</b>로, 게임마다 <b>빠르게 재매핑/피봇</b>하는 것이 핵심입니다. 시퀀스 영향은 작지만 SEQ# 그룹으로 묶어 게임에디터 <span class="mono">combo_input_registry</span>(SEQ1→G1 … SEQ6→G6)와 정합할 수 있습니다.</div>'+
+  '</div>';
+  gb.forEach(b=>{
+    const c=boardColor(b);
+    // 빠른 재매핑 툴바
+    h+='<div class="toolbar" style="margin-bottom:10px">'+
+      '<span class="lbl" style="color:'+c+'">빠른 재매핑 · '+esc(b.id)+'</span>'+
+      '<select class="sel" data-fastseq="'+esc(b.id)+'" style="min-width:120px">'+SEQ_LIST.map(s=>'<option value="'+s+'">'+s+' ('+seqToG(s)+')</option>').join('')+'</select>'+
+      '<input class="inp" type="number" min="1" max="32" value="4" data-fastn="'+esc(b.id)+'" style="width:66px" title="추가할 입력 개수">'+
+      '<button class="btn btn-accent" data-fastadd="'+esc(b.id)+'">'+icon("plus",13)+'버튼 일괄추가</button>'+
+      '<div style="flex:1"></div>'+
+      '<button class="btn btn-ghost" data-fastclear="'+esc(b.id)+'" title="이 보드의 모든 핀 삭제">'+icon("trash",12)+'보드 비우기</button>'+
+    '</div>';
+    // full editable table
+    h+='<div style="margin-bottom:8px">'+pinTable(b, true)+'</div>';
+    // SEQ 그룹 요약
+    h+='<div style="margin:10px 0 26px">';
+    const ps=pinsOf(b.id);
+    const groups={}; ps.forEach(p=>{ const k=p.seq||"(미지정)"; (groups[k]=groups[k]||[]).push(p); });
+    const order=SEQ_LIST.concat(["(미지정)"]).filter(k=>groups[k]);
+    order.forEach(k=>{
+      const g=seqToG(k); const items=groups[k].slice().sort(sortPins);
+      const gc = k==="(미지정)"?"var(--dim)":"var(--violet)";
+      h+='<div class="seqgroup">'+
+        '<div class="seqhead">'+
+          '<span class="badge mono" style="background:'+gc+'22;color:'+gc+';font-size:12px;padding:3px 9px">'+esc(k)+'</span>'+
+          (g?'<span style="font-size:11px;color:var(--dim)">↔ combo_input_registry <b class="mono" style="color:var(--accent)">'+g+'</b></span>':'')+
+          '<div style="flex:1"></div><span style="font-size:11px;color:var(--dim)">'+items.length+' inputs</span>'+
+          (k!=="(미지정)"?'<button class="btn btn-ghost" data-seqadd="'+esc(b.id)+'|'+esc(k)+'" style="padding:4px 9px;font-size:10px">'+icon("plus",11)+'입력</button>':'')+
+        '</div>'+
+        '<div style="padding:6px 10px;display:flex;flex-wrap:wrap;gap:7px">'+
+          items.map(p=>'<span class="kbd" style="display:inline-flex;gap:7px;align-items:center">'+
+            '<b class="mono" style="color:var(--accent)">'+serialId(p)+'</b>'+
+            '<span style="color:var(--dim)">D'+(p.pin==null?'?':p.pin)+'</span>'+
+            '<span>'+esc(p.name||'(무명)')+'</span>'+
+            '<span style="color:var(--dim);font-size:10px">'+esc(p.type)+'</span></span>').join('')+
+          (items.length===0?'<span class="hint">비어있음</span>':'')+
+        '</div>'+
+      '</div>';
+    });
+    h+='</div>';
+  });
+  return h;
+}
+
+function bindGaming(){
+  const addInputs=(bid, seq, n)=>{
+    const b=boardById(bid); const opts=devOptions(b.role);
+    for(let i=0;i<n;i++){
+      const pin=nextFreePin(bid); if(pin==null){ alert("빈 핀이 없습니다 (D"+sp().pinMin+"~D"+sp().pinMax+" 소진)."); break; }
+      state.pins.push({ uid:uid(), board:bid, pin, mode:ROLE_DEFAULT_MODE[b.role]||"INPUT_PULLUP",
+        name:seq+"-"+String(pinsOf(bid).filter(p=>p.seq===seq).length+1), type:opts[0].ko, seq });
+    }
+    save(); render();
+  };
+  document.querySelectorAll('[data-fastadd]').forEach(btn=>btn.onclick=()=>{
+    const bid=btn.dataset.fastadd;
+    const seq=(document.querySelector('[data-fastseq="'+bid+'"]')||{}).value||"SEQ1";
+    const n=Math.max(1, parseInt((document.querySelector('[data-fastn="'+bid+'"]')||{}).value)||1);
+    addInputs(bid, seq, n);
+  });
+  document.querySelectorAll('[data-seqadd]').forEach(btn=>btn.onclick=()=>{
+    const [bid,seq]=btn.dataset.seqadd.split("|"); addInputs(bid, seq, 1);
+  });
+  document.querySelectorAll('[data-fastclear]').forEach(btn=>btn.onclick=()=>{
+    const bid=btn.dataset.fastclear;
+    if(confirm("게이밍보드 "+bid+"의 모든 핀을 삭제합니다.")){ state.pins=state.pins.filter(p=>p.board!==bid); save(); render(); }
+  });
+}
+
+/* ═══ TAB: PROTOCOL ═══ */
+function renderProtocol(){
+  let h='<div class="hint" style="margin-bottom:14px">핀 매핑으로부터 <b>표준 시리얼 프로토콜이 자동 생성</b>됩니다 (260502 준수). 하단 커스텀 규격은 자유롭게 추가할 수 있습니다.</div>';
+
+  // 핸드셰이크 · 파라미터 (보드 탭의 편집 가능한 규격에서 파생)
+  h+='<div class="card" style="padding:15px;margin-bottom:16px">'+
+    '<div style="font-weight:700;font-size:12.5px;margin-bottom:10px;color:var(--cyan)">핸드셰이크 · 통신 파라미터 <span style="font-size:10px;color:var(--dim);font-weight:400">(보드 탭 규격에서 편집)</span></div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+      protoLine("보드 → PC","var(--accent)",sp().hsInput,"이 보드는 INPUT")+
+      protoLine("보드 → PC","var(--yellow)",sp().hsOutput,"이 보드는 OUTPUT")+
+      protoLine("PC → 보드","var(--cyan)",sp().hsAck,"식별완료·정상진입")+
+      protoLine("Baud","var(--dim2)",String(sp().baud),"모든 라인 \\n 종결")+
+      protoLine("디바운스","var(--dim2)",sp().debounce+"ms","HIGH→LOW 천이 송신")+
+    '</div></div>';
+
+  // 자동생성: 입력
+  const inPins = state.pins.filter(p=>{ const b=boardById(p.board); return b && b.role!=="OUTPUT" && p.pin!=null; }).slice().sort((a,b)=>serialId(a)<serialId(b)?-1:1);
+  const outPins = state.pins.filter(p=>{ const b=boardById(p.board); return b && b.role==="OUTPUT" && p.pin!=null; }).slice().sort((a,b)=>serialId(a)<serialId(b)?-1:1);
+
+  h+='<div class="card" style="padding:15px;margin-bottom:16px">'+
+    '<div style="font-weight:700;font-size:12.5px;margin-bottom:10px;color:var(--accent)">입력 신호 (보드 → PC) · 자동생성 '+inPins.length+'</div>'+
+    '<div class="table-wrap"><table><thead><tr><th>시리얼</th><th>핀</th><th>장치</th><th>타입</th><th>규칙</th></tr></thead><tbody>'+
+    inPins.map(p=>{ const b=boardById(p.board);
+      return '<tr><td class="mono" style="color:var(--accent);font-weight:700">'+serialId(p)+'</td>'+
+        '<td class="mono" style="color:var(--dim2)">D'+p.pin+' / '+b.id+'</td>'+
+        '<td>'+esc(p.name||'-')+(p.seq?' <span class="badge" style="background:var(--violet)22;color:var(--violet)">'+esc(p.seq)+'</span>':'')+'</td>'+
+        '<td style="color:var(--dim2)">'+esc(p.type)+'</td>'+
+        '<td class="mono" style="color:var(--dim);font-size:10.5px">INPUT_PULLUP'+(sp().activeLow?" · 활성 LOW":"")+' · '+sp().debounce+'ms</td></tr>';
+    }).join('')+(inPins.length===0?'<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:14px">입력 핀 없음</td></tr>':'')+
+    '</tbody></table></div></div>';
+
+  h+='<div class="card" style="padding:15px;margin-bottom:16px">'+
+    '<div style="font-weight:700;font-size:12.5px;margin-bottom:10px;color:var(--yellow)">출력 명령 (PC → 보드) · 자동생성 '+outPins.length+'</div>'+
+    '<div class="table-wrap"><table><thead><tr><th>ON</th><th>OFF</th><th>PWM</th><th>응답</th><th>핀</th><th>장치</th></tr></thead><tbody>'+
+    outPins.map(p=>{ const b=boardById(p.board); const pwm=isPwmPin(p.pin);
+      return '<tr><td class="mono" style="color:var(--yellow);font-weight:700">'+esc(outOn(p.pin))+'</td>'+
+        '<td class="mono" style="color:var(--yellow)">'+esc(outOff(p.pin))+'</td>'+
+        '<td class="mono" style="color:'+(pwm?'var(--cyan)':'var(--dim)')+'">'+(pwm?esc(outPwm(p.pin)):'—')+'</td>'+
+        '<td class="mono" style="color:var(--accent)">'+esc(sp().ackResp)+'</td>'+
+        '<td class="mono" style="color:var(--dim2)">D'+p.pin+' / '+b.id+'</td>'+
+        '<td>'+esc(p.name||'-')+' <span style="color:var(--dim);font-size:10px">'+esc(p.type)+'</span></td></tr>';
+    }).join('')+(outPins.length===0?'<tr><td colspan="6" style="text-align:center;color:var(--dim);padding:14px">출력 핀 없음</td></tr>':'')+
+    '</tbody></table></div>'+
+    '<div class="hint" style="margin-top:8px">ON/OFF 분리 = <b>멱등 명령</b> (보드 토글상태 미보유). PWM은 '+pwmPinArr().map(d=>"D"+d).join("·")+'에서만. VVV=0~255. (핀·포맷은 보드 탭 규격에서 편집)</div>'+
+  '</div>';
+
+  // 커스텀 프로토콜
+  h+='<div style="display:flex;align-items:center;gap:10px;margin:22px 0 12px">'+
+    '<div style="font-weight:700;font-size:13px;color:var(--orange)">커스텀 출력 규격</div>'+
+    '<div style="flex:1;height:1px;background:var(--border)"></div>'+
+    '<button class="btn btn-accent" id="proto-add">'+icon("plus",13)+'규격 추가</button></div>';
+  const catColor={ "조명":"var(--cyan)","경보":"var(--red)","제어":"var(--yellow)","연출":"var(--violet)" };
+  state.protocols.forEach(pr=>{
+    const cc=catColor[pr.category]||"var(--dim2)";
+    h+='<div class="card" style="padding:13px 15px;margin-bottom:8px">'+
+      '<div style="display:flex;align-items:center;gap:11px;margin-bottom:9px">'+
+        '<span class="mono" style="font-weight:800;color:'+cc+';font-size:14px;min-width:74px">'+esc(pr.name)+'</span>'+
+        '<span class="badge" style="background:'+cc+'22;color:'+cc+'">'+esc(pr.category)+'</span>'+
+        '<span style="font-size:12px;color:var(--dim);flex:1">'+esc(pr.desc)+'</span>'+
+        '<button class="icon-btn" data-delproto="'+pr.id+'">'+IC.trash+'</button></div>'+
+      timingBar(pr.timing)+
+      '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:9px">'+
+        '<div><div class="lbl">SIGNAL</div><code class="kbd" style="color:var(--cyan)">'+esc(pr.signal)+'</code></div>'+
+        '<div><div class="lbl">EXAMPLE</div><code class="kbd" style="color:var(--accent);border-color:var(--accent)33">'+esc(pr.example)+'</code></div>'+
+      '</div>'+
+    '</div>';
+  });
+  return h;
+}
+function protoLine(dir,color,line,desc){
+  return '<div class="proto-row" style="flex:1;min-width:180px">'+
+    '<span class="badge" style="background:'+color+'22;color:'+color+'">'+esc(dir)+'</span>'+
+    '<code class="mono" style="color:'+color+';font-weight:700;font-size:12.5px">'+esc(line)+'</code>'+
+    '<span style="font-size:10.5px;color:var(--dim);margin-left:auto">'+esc(desc)+'</span></div>';
+}
+function timingBar(timing){
+  if(!timing||!timing.length) return '';
+  const total=timing.reduce((s,t)=>s+(t.dur||40),0);
+  let h='<div style="display:flex;height:26px;border-radius:6px;overflow:hidden;background:#0c0c10;border:1px solid var(--border)">';
+  timing.forEach((t,i)=>{
+    const w= total>0 ? Math.max((t.dur||40)/total*100,7) : 100/timing.length;
+    const on = t.state.includes("ON")||"█▇▅".includes(t.state);
+    const partial="▃▁".includes(t.state);
+    let bg = on?"rgba(0,255,153,0.33)":(partial?"rgba(0,255,153,0.13)":(t.state.includes("OFF")?"rgba(255,255,255,0.03)":"transparent"));
+    h+='<div style="width:'+w+'%;display:flex;align-items:center;justify-content:center;background:'+bg+';border-right:'+(i<timing.length-1?'1px solid rgba(255,255,255,0.05)':'none')+';font-size:9px;color:'+(on?'var(--accent)':'var(--dim)')+'" class="mono">'+esc(t.dur>0?t.state+' '+t.dur+'ms':t.state)+'</div>';
+  });
+  return h+'</div>';
+}
+function bindProtocol(){
+  const add=document.getElementById("proto-add");
+  if(add) add.onclick=()=>{
+    const name=(prompt("규격명 (예: BLINK)")||"").trim().toUpperCase(); if(!name) return;
+    const desc=(prompt("설명")||"").trim();
+    const signal=(prompt("시리얼 시그널 (예: OUT_{NN}_on)")||"").trim();
+    const maxId=state.protocols.reduce((m,p)=>Math.max(m,p.id),0);
+    state.protocols.push({ id:maxId+1, name, category:"연출", desc, params:[],
+      timing:[{state:"ON",dur:100},{state:"OFF",dur:0}], signal, example:signal });
+    save(); render();
+  };
+  document.querySelectorAll('[data-delproto]').forEach(b=>b.onclick=()=>{
+    state.protocols=state.protocols.filter(p=>p.id!=b.dataset.delproto); save(); render();
+  });
+}
+
+/* ═══ TAB: DEVICE FLOW ═══ */
+function renderFlow(){
+  let h='<div class="card" style="padding:13px 16px;margin-bottom:16px;background:linear-gradient(180deg,rgba(0,255,153,0.05),transparent)">'+
+    '<div style="display:flex;align-items:center;gap:8px;color:var(--accent);font-weight:700;font-size:13px;margin-bottom:4px">'+icon("flow",15)+'디바이스 플로우</div>'+
+    '<div class="hint">"어떤 장치가 어떤 조건일 때 → 무엇을 한다" 형식으로 태그별 동작순서를 메모합니다. <span class="mono">&gt;</span> 입력 시 <span class="mono" style="color:var(--accent)">→</span> 자동변환.</div>'+
+  '</div>';
+  h+='<div class="toolbar">'+
+    '<select id="fl-tag" class="sel" style="min-width:96px">'+Object.keys(TAG_COLORS).map(t=>'<option value="'+t+'">'+t+'</option>').join('')+'</select>'+
+    '<input id="fl-text" class="inp" placeholder="예: 시작버튼이 눌리면 > 도어락 릴레이 ON" style="flex:1;min-width:220px">'+
+    '<button class="btn btn-accent" id="fl-add">'+icon("plus",13)+'추가</button>'+
+  '</div>';
+  const grouped={}; state.flows.forEach(f=>{ (grouped[f.tag]=grouped[f.tag]||[]).push(f); });
+  Object.keys(TAG_COLORS).filter(t=>grouped[t]).forEach(tag=>{
+    const items=grouped[tag]; const col=TAG_COLORS[tag];
+    h+='<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px">'+
+      '<span class="badge" style="background:'+col+'22;color:'+col+'">'+tag+'</span>'+
+      '<span style="font-size:11px;color:var(--dim)">'+items.length+'개 규칙</span></div>';
+    items.forEach(f=>{
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:4px">'+
+        '<span class="mono" style="color:var(--dim);font-size:11px;font-weight:700;min-width:24px">'+String(f.id).padStart(2,"0")+'</span>'+
+        '<span style="width:3px;height:20px;border-radius:2px;background:'+col+';opacity:.6"></span>'+
+        '<input class="cell-inp" data-flowedit="'+f.id+'" value="'+esc(f.text)+'" style="flex:1;font-size:13px">'+
+        '<button class="icon-btn" data-delflow="'+f.id+'">'+IC.trash+'</button></div>';
+    });
+    h+='</div>';
+  });
+  return h;
+}
+function bindFlow(){
+  const add=document.getElementById("fl-add");
+  const doAdd=()=>{
+    const t=document.getElementById("fl-text"); const tag=document.getElementById("fl-tag").value;
+    const text=autoArrow((t.value||"").trim()); if(!text) return;
+    const maxId=state.flows.reduce((m,f)=>Math.max(m,f.id),0);
+    state.flows.push({ id:maxId+1, tag, text }); save(); render();
+  };
+  if(add) add.onclick=doAdd;
+  const ti=document.getElementById("fl-text");
+  if(ti) ti.onkeydown=(e)=>{ if(e.key==="Enter") doAdd(); };
+  document.querySelectorAll('[data-flowedit]').forEach(i=>{
+    i.oninput=()=>{ const f=state.flows.find(x=>x.id==i.dataset.flowedit); if(f){ const s=i.selectionStart; f.text=autoArrow(i.value); if(i.value!==f.text){ i.value=f.text; i.setSelectionRange(s,s);} save(); } };
+  });
+  document.querySelectorAll('[data-delflow]').forEach(b=>b.onclick=()=>{
+    state.flows=state.flows.filter(f=>f.id!=b.dataset.delflow); save(); render();
+  });
+}
+
+/* ═══ TAB: REGISTRY (PIMM_Registry) ═══ */
+function registryRows(){
+  const rows=[];
+  state.pins.filter(p=>p.pin!=null).forEach(p=>{
+    const b=boardById(p.board); if(!b) return;
+    const roleR = b.role==="OUTPUT" ? "OUTPUT" : "INPUT"; // GAMING은 INPUT 계열
+    rows.push({
+      boardRole: roleR, boardId:b.id, pin:"D"+p.pin, serialId:serialId(p),
+      project:state.meta.projectCode, code:deviceCode(p.type), type:p.type,
+      name:p.name, seq:p.seq||"", g:seqToG(p.seq), pimmId:pimmId(p), mode:p.mode,
+    });
+  });
+  rows.sort((a,b)=>{ if(a.boardId!==b.boardId) return a.boardId<b.boardId?-1:1; return a.serialId<b.serialId?-1:1; });
+  return rows;
+}
+function renderRegistry(){
+  const rows=registryRows();
+  let h='<div class="card" style="padding:13px 16px;margin-bottom:16px;background:linear-gradient(180deg,rgba(68,221,255,0.05),transparent)">'+
+    '<div style="display:flex;align-items:center;gap:8px;color:var(--cyan);font-weight:700;font-size:13px;margin-bottom:4px">'+icon("table",15)+'PIMM_Registry — 자동생성</div>'+
+    '<div class="hint">핀↔디바이스 매핑을 표준 Registry로 생성 (260502 §7 컬럼: Board Role · Pin · Serial ID · Project · PIMM_ID). PIMM_ID 명명: 입력 <span class="mono">Bl_[Map]_P_*</span> · 출력 <span class="mono">Out_[Code]_*</span>.</div>'+
+  '</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:12px">'+
+    '<button class="btn btn-accent" id="reg-csv">'+icon("download",13)+'CSV 다운로드</button>'+
+    '<button class="btn btn-ghost" id="reg-copy">'+icon("copy",13)+'CSV 복사</button></div>';
+  h+='<div class="card table-wrap" style="padding:0"><table><thead><tr>'+
+    ['Board Role','Board','Pin','Serial ID','Type','Device','SEQ / G','Project','PIMM_ID','Mode'].map(x=>'<th>'+x+'</th>').join('')+
+    '</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const rc = r.boardRole==="OUTPUT"?"var(--yellow)":"var(--accent)";
+    h+='<tr>'+
+      '<td><span class="badge" style="background:'+rc+'22;color:'+rc+'">'+r.boardRole+'</span></td>'+
+      '<td class="mono" style="color:var(--dim2)">'+esc(r.boardId)+'</td>'+
+      '<td class="mono">'+r.pin+'</td>'+
+      '<td class="mono" style="color:'+rc+';font-weight:700">'+r.serialId+'</td>'+
+      '<td class="mono" style="color:var(--dim2)">'+esc(r.code)+'</td>'+
+      '<td>'+esc(r.name||'-')+' <span style="color:var(--dim);font-size:10px">'+esc(r.type)+'</span></td>'+
+      '<td class="mono" style="color:var(--violet)">'+(r.seq?esc(r.seq)+(r.g?' · '+r.g:''):'-')+'</td>'+
+      '<td class="mono" style="color:var(--dim2)">'+esc(r.project)+'</td>'+
+      '<td class="mono" style="color:var(--cyan);font-size:11px">'+esc(r.pimmId)+'</td>'+
+      '<td class="mono" style="color:var(--dim);font-size:10px">'+esc(r.mode)+'</td>'+
+    '</tr>';
+  });
+  if(rows.length===0) h+='<tr><td colspan="10" style="text-align:center;color:var(--dim);padding:16px">매핑된 핀 없음</td></tr>';
+  h+='</tbody></table></div>';
+  return h;
+}
+function registryCSV(){
+  const head=["Board Role","Board","Pin","Serial ID","Type Code","Device Name","SEQ","G","Project","PIMM_ID","Mode"];
+  const rows=registryRows().map(r=>[r.boardRole,r.boardId,r.pin,r.serialId,r.code,r.name,r.seq,r.g,r.project,r.pimmId,r.mode]);
+  const enc=v=>{ v=String(v==null?"":v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  return [head].concat(rows).map(r=>r.map(enc).join(",")).join("\n");
+}
+function bindRegistry(){
+  const csv=document.getElementById("reg-csv");
+  if(csv) csv.onclick=()=>downloadFile(safeName()+"_PIMM_Registry.csv", registryCSV(), "text/csv;charset=utf-8");
+  const cp=document.getElementById("reg-copy");
+  if(cp) cp.onclick=()=>copyText(registryCSV(), cp);
+}
+
+/* ═══ TAB: HANDOFF ═══ */
+function generateHandoff(){
+  const m=state.meta;
+  const ts=new Date().toISOString().slice(0,16).replace("T"," ");
+  let d="# "+m.projectName+" — PIMM DeviceAssistant HANDOFF\n";
+  d+="> Generated: "+ts+" · Project Code: `"+m.projectCode+"` · MAP base: "+m.mapNo+"\n";
+  d+="> 규격(편집가능·기본값 260502): Baud "+sp().baud+" · 디바운스 "+sp().debounce+"ms · 핀 D"+sp().pinMin+"~D"+sp().pinMax+" = ID_"+String(sp().idBase).padStart(2,"0")+"~\n\n---\n\n";
+
+  d+="## BOARDS\n\n| Board | Role | 별칭 | Pins |\n|---|---|---|---|\n";
+  state.boards.forEach(b=>{ d+="| `"+b.id+"` | "+b.role+" | "+b.alias+" | "+pinsOf(b.id).length+" |\n"; });
+  d+="\n";
+
+  d+="## PIN MAP\n\n";
+  state.boards.forEach(b=>{
+    const ps=pinsOf(b.id).slice().sort(sortPins); if(!ps.length) return;
+    d+="### "+b.id+" — "+b.alias+" ("+b.role+")\n\n";
+    const gaming=b.role==="GAMING";
+    d+=gaming ? "| Pin | ID | Serial | SEQ/G | 장치명 | 타입(코드) | 모드 |\n|---|---|---|---|---|---|---|\n"
+             : "| Pin | ID | Serial | 장치명 | 타입(코드) | 모드 | PIMM_ID |\n|---|---|---|---|---|---|---|\n";
+    ps.forEach(p=>{
+      const idn="ID_"+pinToNN(p.pin);
+      if(gaming) d+="| D"+p.pin+" | "+idn+" | `"+serialId(p)+"` | "+(p.seq||"-")+(seqToG(p.seq)?" / "+seqToG(p.seq):"")+" | "+p.name+" | "+p.type+"("+deviceCode(p.type)+") | "+p.mode+" |\n";
+      else d+="| D"+p.pin+" | "+idn+" | `"+serialId(p)+"` | "+p.name+" | "+p.type+"("+deviceCode(p.type)+") | "+p.mode+" | `"+pimmId(p)+"` |\n";
+    });
+    d+="\n";
+  });
+
+  // Gaming SEQ 그룹
+  const gb=state.boards.filter(b=>b.role==="GAMING");
+  if(gb.length){
+    d+="## GAMING SEQUENCE GROUPS (combo_input_registry)\n\n";
+    gb.forEach(b=>{
+      const ps=pinsOf(b.id); const groups={};
+      ps.forEach(p=>{ const k=p.seq||"(미지정)"; (groups[k]=groups[k]||[]).push(p); });
+      SEQ_LIST.concat(["(미지정)"]).filter(k=>groups[k]).forEach(k=>{
+        d+="### "+b.id+" · "+k+(seqToG(k)?" ↔ "+seqToG(k):"")+"\n\n";
+        groups[k].slice().sort(sortPins).forEach(p=>{ d+="- `"+serialId(p)+"` D"+(p.pin==null?"?":p.pin)+" — "+(p.name||"(무명)")+" ["+p.type+"]\n"; });
+        d+="\n";
+      });
+    });
+  }
+
+  d+="## SERIAL PROTOCOL (규격 편집가능 · 기본값 260502)\n\n";
+  d+="**Handshake:** 보드→PC `"+sp().hsInput+"` / `"+sp().hsOutput+"`, PC→보드 `"+sp().hsAck+"` (all `\\n` 종결)\n\n";
+  const inP=state.pins.filter(p=>{const b=boardById(p.board);return b&&b.role!=="OUTPUT"&&p.pin!=null;}).sort((a,b)=>serialId(a)<serialId(b)?-1:1);
+  const outP=state.pins.filter(p=>{const b=boardById(p.board);return b&&b.role==="OUTPUT"&&p.pin!=null;}).sort((a,b)=>serialId(a)<serialId(b)?-1:1);
+  d+="**입력 (보드→PC, `"+sp().inFmt+"`"+(sp().activeLow?" · 활성 LOW":"")+" · "+sp().debounce+"ms):**\n\n";
+  inP.forEach(p=>{ d+="- `"+inSig(p.pin)+"` — "+(p.name||"-")+(p.seq?" ["+p.seq+"]":"")+"\n"; });
+  d+="\n**출력 (PC→보드, 멱등, 응답 `"+sp().ackResp+"`):**\n\n";
+  outP.forEach(p=>{
+    d+="- `"+outOn(p.pin)+"` / `"+outOff(p.pin)+"`"+(isPwmPin(p.pin)?" / `"+outPwm(p.pin)+"`":"")+" — "+(p.name||"-")+"\n"; });
+  d+="\n";
+  if(state.protocols.length){
+    d+="**커스텀 규격:**\n\n";
+    state.protocols.forEach(pr=>{ d+="- **"+pr.name+"** ("+pr.category+") — "+pr.desc+" · signal `"+pr.signal+"` · ex `"+pr.example+"`\n"; });
+    d+="\n";
+  }
+
+  d+="## DEVICE FLOW\n\n";
+  const grouped={}; state.flows.forEach(f=>{ (grouped[f.tag]=grouped[f.tag]||[]).push(f); });
+  Object.keys(TAG_COLORS).filter(t=>grouped[t]).forEach(tag=>{
+    d+="### "+tag+"\n\n";
+    grouped[tag].forEach(f=>{ d+="- ["+String(f.id).padStart(2,"0")+"] "+f.text+"\n"; });
+    d+="\n";
+  });
+
+  d+="## PIMM_Registry\n\n";
+  d+="| Board Role | Board | Pin | Serial | Type | Device | SEQ/G | Project | PIMM_ID | Mode |\n|---|---|---|---|---|---|---|---|---|---|\n";
+  registryRows().forEach(r=>{ d+="| "+r.boardRole+" | "+r.boardId+" | "+r.pin+" | `"+r.serialId+"` | "+r.code+" | "+r.name+" | "+(r.seq?r.seq+(r.g?"/"+r.g:""):"-")+" | "+r.project+" | `"+r.pimmId+"` | "+r.mode+" |\n"; });
+  d+="\n---\n\n_PIMM DeviceAssistant ver0.1 — HANDOFF · 260502 장치통신표준 준수_\n";
+  return d;
+}
+function renderHandoff(){
+  let h='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
+    '<button class="btn btn-accent" id="ho-md">'+icon("download",13)+'HANDOFF.md 다운로드</button>'+
+    '<button class="btn btn-ghost" id="ho-json">'+icon("download",13)+'프로젝트 JSON</button>'+
+    '<button class="btn btn-ghost" id="ho-copy">'+icon("copy",13)+'마크다운 복사</button>'+
+    '<label class="btn btn-ghost" style="cursor:pointer">'+icon("export",13)+'JSON 불러오기<input type="file" id="ho-import" accept="application/json,.json" style="display:none"></label>'+
+  '</div>';
+  h+='<div class="hint" style="margin-bottom:10px">보드·핀맵·게이밍 그룹·프로토콜·플로우·Registry를 마크다운으로 내보냅니다. 모든 작업은 <b>localStorage에 자동저장</b>됩니다.</div>';
+  h+='<pre class="md" id="ho-preview">'+esc(generateHandoff())+'</pre>';
+  return h;
+}
+function bindHandoff(){
+  const md=document.getElementById("ho-md");
+  if(md) md.onclick=()=>downloadFile(safeName()+"_HANDOFF.md", generateHandoff(), "text/markdown;charset=utf-8");
+  const js=document.getElementById("ho-json");
+  if(js) js.onclick=()=>downloadFile(safeName()+"_project.pimmdev.json", JSON.stringify(state,null,2), "application/json;charset=utf-8");
+  const cp=document.getElementById("ho-copy");
+  if(cp) cp.onclick=()=>copyText(generateHandoff(), cp);
+  const im=document.getElementById("ho-import");
+  if(im) im.onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ try{ const s=JSON.parse(r.result); if(s&&s.boards&&s.pins){ state=migrate(s); save(); render(); } else alert("올바른 프로젝트 JSON이 아닙니다."); }
+      catch(err){ alert("JSON 파싱 실패: "+err.message); } };
+    r.readAsText(f);
+  };
+}
+
+/* ─── 공통 유틸 ─── */
+function safeName(){ return (state.meta.projectName||"project").replace(/\s+/g,"_").replace(/[^0-9A-Za-z가-힣_-]/g,""); }
+function downloadFile(fn, text, mime){
+  const blob=new Blob([text],{type:mime}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=fn; document.body.appendChild(a); a.click();
+  a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 500);
+}
+function copyText(text, btn){
+  const done=()=>{ if(btn){ const o=btn.innerHTML; btn.innerHTML=icon("copy",13)+"복사됨"; setTimeout(()=>btn.innerHTML=o,1200); } };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done)); }
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} ta.remove(); done&&done();
+}
+
+/* ─── per-tab bind dispatcher ─── */
+function bindTab(t){
+  if(t==="boards") bindBoards();
+  else if(t==="pinmap"){ bindPinCommon(); }
+  else if(t==="gaming"){ bindPinCommon(); bindGaming(); }
+  else if(t==="protocol") bindProtocol();
+  else if(t==="flow") bindFlow();
+  else if(t==="registry") bindRegistry();
+  else if(t==="handoff") bindHandoff();
+}
+
+render();
+</script>
+</body>
+</html>
