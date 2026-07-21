@@ -85,10 +85,16 @@
 - **데스크톱 앱(2.0, Electron)**: 폴더/파일시스템을 네이티브급으로 → 브라우저 제약 없이 드라이브 폴더 안정 사용. .exe/.dmg 듀얼빌드. → `electron-app-spec.md`
 
 ## 5. 코워크가 빌드하는 법 (폴더 → 핌플레이어)
+
+> **정본 경로 = 코워크가 폴더를 읽고 판단해서 빌드**(고정 임포터 X). 매번 다른 게임·AI 기반이라
+> 자기문서화된 폴더(README + json + config)를 **코워크가 이해·적응**하는 게 고정 스크립트보다 안전.
+
 - 입력: 프로젝트 폴더의 **README + `encode/<SEQ#>.pimmgame.json`(자체완결) + `assets/assetsIngame/`**. 결정론적 절차·스키마 → `docs/encoding-and-build.md`.
-- 핌플레이어 repo: **`pimmprofile-byte/PIMM_unityPIMMplayer`**(세션에 add하면 임포터·런타임 로더 구현 가능).
 - **리스킨**(기존 메커니즘 + config + 에셋)이면 **C# 0줄**. 새 메커니즘만 코워크가 플래그하고 그 부분만 추가.
 - 프레임유형·클립·크롭 → Unity 매핑(RectMask2D/SpriteMask, anchor). WYSIWYG 보장, 텍스트 폰트만 Play에서 확인. → `guide-cowork-unity.md`
+- **안전장치 = 폴더 자기문서화**: README에 필드별 Unity 해석 치트시트 + 코워크 빌드 체크리스트를 명시(오독 방지).
+- **핸드오프/아카이브 패키저(툴 내)**: 개발폴더 전체 대신 **넘길·보관용 정제본**(project.pimm.json + encode + assetsIngame + README)만 폴더/zip로 내보내기. 코워크 인계·아카이빙 공용. → `asset-pipeline-spec.md §5.1` (ver1.13 예정)
+- **핌플레이어 임포터(고정 C# 스크립트) = 보류/선택.** 매번 다른 게임엔 코워크-폴더 판독이 더 안전. 동일 구조 대량 리스킨 정착 시 재검토. (repo `pimmprofile-byte/PIMM_unityPIMMplayer` add 시 가능하나 현재 불필요.)
 
 ## 6. 이어서 할 것 (로드맵)
 - 🚧 **에셋 파이프라인 완성**(ver1.13): 에셋에디터·에셋저장소·프레임그래픽·이미지박스 통합 빌드/회귀.
