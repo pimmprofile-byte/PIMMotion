@@ -29,16 +29,18 @@
 ### B. 재생/실행 (자주)
 | 재생(전체화면 게임뷰) | **Alt+P** | ESC 복귀(네이티브) |
 
-### C. 박스/노드 생성 (자주) — Ctrl 기반
-| 이미지박스 | **Ctrl+I** |
-| 텍스트박스 | **Ctrl+T** | ※브라우저 새탭과 충돌 → 데스크톱 앱에서 완전 동작. 브라우저용 대체 Alt+T 동시 바인드 |
-| 배경 이미지 | **Ctrl+B** |
-| 클리핑박스 | **Ctrl+7** | Illustrator "클리핑마스크 만들기"와 동일 |
-| 상태 추가(이미지박스) | Ctrl+Shift+S |
-| 씬 추가 | Ctrl+Shift+N |
-| 시퀀스 추가 | Ctrl+Shift+Q |
-| 시퀀스그룹 추가 | Ctrl+Shift+G |
-| 템플릿 삽입(복사) | Ctrl+Shift+I |
+### C. 박스/노드 생성 (자주) — **Alt 기반 (브라우저 안전, 사용자 요청)**
+> 생성 계열은 브라우저 선점키(Ctrl+T=새탭, Ctrl+숫자=탭전환, Ctrl+Shift+N=시크릿 등)를 피해 **전부 `Alt+문자`로 통일**.
+> Alt 조합은 웹에서도 `preventDefault`로 동작 → **브라우저에서도 전부 작동.** (Alt+D 주소창만 회피.)
+| 이미지박스 | **Alt+I** |
+| 텍스트박스 | **Alt+T** | (기존 Ctrl+T는 브라우저 새탭 → Alt+T로) |
+| 배경 이미지 | **Alt+B** |
+| 클리핑박스 | **Alt+K** | (K=clip/mask; 기존 Ctrl+7은 탭전환) |
+| 상태 추가(이미지박스) | **Alt+S** |
+| 씬 추가 | **Alt+N** |
+| 시퀀스 추가 | **Alt+Q** |
+| 시퀀스그룹 추가 | **Alt+G** |
+| 템플릿 삽입(복사) | **Alt+M** |
 
 ### D. 편집 (자주) — Adobe 표준
 | 복사 Ctrl+C · 잘라내기 Ctrl+X · 붙여넣기 Ctrl+V · 복제 **Ctrl+D** | |
@@ -50,20 +52,21 @@
 ### E. 정렬·z순서 (보통) — Adobe 정렬
 | 맨 앞으로 Ctrl+Shift+] · 앞으로 Ctrl+] · 뒤로 Ctrl+[ · 맨 뒤로 Ctrl+Shift+[ | |
 | 가운데 가로 균등 Ctrl+Shift+H · 세로 균등 Ctrl+Shift+J | |
-| 잠금 토글 Ctrl+2 · 숨김 토글 Ctrl+3 | Illustrator lock/hide 계열 |
+| 잠금 토글 **Alt+L** · 숨김 토글 **Alt+H** | (Ctrl+2/3은 브라우저 탭전환 → Alt로) |
 
 ### F. 보기 (보통)
-| 확대 Ctrl+= · 축소 Ctrl+- · 화면맞춤 Ctrl+0 | Adobe 표준 |
-| 그리드 토글 Ctrl+' · 스냅 토글 Ctrl+Shift+' | |
+| 확대 **Alt+=** · 축소 **Alt+-** · 화면맞춤 **Alt+0** | (Ctrl+±0은 브라우저 줌 → Alt로) |
+| 그리드 토글 Alt+' · 스냅 토글 Alt+Shift+' | |
 
 ### G. 내보내기/고급 (덜 — 하단)
 | 데이터 내보내기 Ctrl+Shift+E · 인코딩 Ctrl+Shift+M · 레퍼런스 브라우즈 Ctrl+Shift+R | |
 | 단축키 편집 패널 열기 Ctrl+/ | |
 
 ## 3. 브라우저 vs 데스크톱 앱 (정직)
-- 일부 조합(**Ctrl+T/N/W** 등)은 **브라우저가 선점**해 웹에서 가로챌 수 없음 → 그 항목은 **데스크톱 앱(Electron)에서 완전 동작**. 브라우저용으로 **Alt+ 대체 조합을 함께 바인드**하거나 패널에서 안내.
-- 나머지(Alt+*, Ctrl+Shift+*, Ctrl+대부분 문자)는 `preventDefault`로 브라우저에서도 동작.
-- 리스트/툴팁에 조합 표기 + 버튼 title에 단축키 노출(배우기 쉽게).
+- **생성·잠금/숨김·보기 계열 = 전부 Alt 기반 → 브라우저에서도 동작**(사용자 요청 반영). Ctrl+숫자(탭전환)·Ctrl+±0(줌)·Ctrl+T/N/W(창/탭) 회피.
+- 편집 관용키(복사 Ctrl+C·붙여넣기 Ctrl+V·실행취소 Ctrl+Z·저장 Ctrl+S 등)는 브라우저에서도 `preventDefault`로 동작.
+- 남는 브라우저 선점키가 있으면 **데스크톱 앱(Electron)에서 완전 동작** + 편집 패널에서 안내(remap 가능).
+- 리스트/툴팁·버튼 title에 조합 표기(배우기 쉽게). Mac은 Ctrl→⌘, Alt=⌥ 표기.
 
 ## 4. QA 수용 기준
 - [ ] 기본 매핑 동작(뷰 Alt+1~n 이동, 재생 Alt+P, 생성 Ctrl+I 등), 입력 포커스 시 편집키 네이티브 우선
