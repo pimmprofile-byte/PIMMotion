@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- 프로그레시브 인핸스먼트: JS 있을 때만 스크롤 페이드 적용 (no-JS·크롤러는 전부 표시) -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <!-- ============ SEO (핸드오프 §6 — 필수) ============ -->
+  <title>핌아트웍스 | 브랜드 팝업스토어·체험형 전시·방탈출 제작 전문</title>
+  <meta name="description" content="브랜드 팝업스토어, 체험형 전시, 방탈출 카페, 이머시브 공포체험관 기획·제작·시공 전문 기업 핌아트웍스. 더현대·BEXCO 등 브랜드 협업 프로젝트 다수 수행." />
+  <meta name="theme-color" content="#05080a" />
+  <link rel="canonical" href="https://pimmartworks.com/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="핌아트웍스 PIMM ARTWORKS" />
+  <meta property="og:title" content="핌아트웍스 | 브랜드 팝업스토어·체험형 전시·방탈출 제작 전문" />
+  <meta property="og:description" content="브랜드 팝업스토어, 체험형 전시, 방탈출 카페, 이머시브 공포체험관 기획·제작·시공 전문 기업 핌아트웍스. 몰입이 주는 밀도 높은 경험을 지향합니다." />
+  <meta property="og:image" content="https://pimmartworks.com/assets/og_cover.jpg" />
+  <meta property="og:url" content="https://pimmartworks.com/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="핌아트웍스 | 브랜드 팝업스토어·체험형 전시·방탈출 제작 전문" />
+  <meta name="twitter:description" content="브랜드 팝업스토어, 체험형 전시, 방탈출, 이머시브 공포체험관 기획·제작·시공 전문 기업 핌아트웍스." />
+  <meta name="twitter:image" content="https://pimmartworks.com/assets/og_cover.jpg" />
+
+  <!-- 구조화 데이터: 크롤러가 회사 정체성을 정확히 읽도록 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "핌아트웍스",
+    "alternateName": "PIMM ARTWORKS",
+    "url": "https://pimmartworks.com/",
+    "description": "브랜드 팝업스토어, 체험형 전시, 방탈출 카페, 이머시브 공포체험관을 기획·제작·시공하는 이머시브 콘텐츠 제작사.",
+    "slogan": "몰입이 주는 밀도 높은 경험을 지향합니다.",
+    "knowsAbout": ["브랜드 팝업스토어", "체험형 전시", "방탈출", "이머시브 공포체험관", "특수장치 제작", "실내 건축 시공"]
+  }
+  </script>
+
+  <style>
+    /* ============================================================
+       핌아트웍스 리뉴얼 시안 — 미니멀 리퀴드 글래스모피즘
+       원칙: 형태가 먼저 읽히고, 재질은 보조. (핸드오프 §3)
+       - 글래스는 nav / 카드 오버레이 / CTA / 섹션 패널에만 절제 적용
+       - 본문 가독 영역에는 글래스 금지
+       ============================================================ */
+
+    :root {
+      /* 브랜드 고정값 (§2) */
+      --green:      #00ff99;
+      --green-soft: #7dffce;      /* 밝은 그린 1 — 그라데이션 2번째 색 */
+      --cyan:       #18d6ff;
+
+      /* 다크 베이스 */
+      --bg:      #05080a;
+      --bg-2:    #080d10;
+      --panel:   #0b1114;
+
+      /* 텍스트 */
+      --ink:     #eef4f1;
+      --ink-2:   #aeb9b4;   /* 보조 텍스트 */
+      --ink-3:   #6f7a75;   /* 캡션 / 메타 */
+      --line:    rgba(255,255,255,.08);
+
+      /* 글래스 파라미터 (§3 확정 기준) */
+      --glass-bg:      rgba(255,255,255,.055);   /* opacity 낮게, 투명도 우선 */
+      --glass-bg-2:    rgba(255,255,255,.09);
+      --glass-edge:    rgba(255,255,255,.14);    /* Edge Highlight 가늘게 */
+      --glass-spec:    rgba(255,255,255,.40);    /* Specular 40% */
+      --glass-blur:    18px;
+
+      --radius:  18px;
+      --radius-s: 12px;
+
+      --maxw: 1200px;
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+                   'Segoe UI', 'Malgun Gothic', 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.7;
+      letter-spacing: -.01em;
+      word-break: keep-all;      /* 한글: 어절(공백) 단위 줄바꿈 — 단어 중간 끊김 방지 */
+      overflow-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    /* 은은한 배경 그라데이션 (그린 1 + 밝은 그린 1, 2색 이하) — 채도보다 투명도 */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(1100px 620px at 78% -8%, rgba(0,255,153,.10), transparent 60%),
+        radial-gradient(900px 620px at 8% 12%, rgba(24,214,255,.06), transparent 62%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    h1, h2, h3, p { margin: 0; }
+
+    .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+    .eyebrow {
+      font-size: 12px; letter-spacing: .28em; text-transform: uppercase;
+      color: var(--green); font-weight: 700;
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--green); opacity: .7; }
+
+    .section { padding: clamp(72px, 11vw, 140px) 0; position: relative; }
+    .section-head { max-width: 720px; margin-bottom: clamp(36px, 6vw, 60px); }
+    .section-head h2 {
+      font-size: clamp(28px, 5.4vw, 46px);
+      line-height: 1.18; font-weight: 800; letter-spacing: -.03em;
+      margin-top: 16px;
+    }
+    .section-head p { color: var(--ink-2); margin-top: 18px; font-size: clamp(15px, 2vw, 17px); }
+
+    /* ===== 글래스 유틸 ===== */
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-edge);
+      border-radius: var(--radius);
+      /* 큰 하이라이트 1 (상단 Specular rim) + Outer Shadow (blur 크게 opacity 낮게) */
+      box-shadow:
+        inset 0 1px 0 var(--glass-spec),
+        inset 0 0 0 1px rgba(255,255,255,.02),
+        0 18px 50px rgba(0,0,0,.28);
+    }
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass {
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
+        backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
+      }
+    }
+    /* 미지원 브라우저 폴백: 반투명 단색 (§7) */
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass { background: rgba(16,22,25,.86); }
+      .nav { background: rgba(9,13,15,.92); }
+    }
+
+    /* ============ 내비게이션 (글래스) ============ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      transition: transform .4s var(--ease), background .3s;
+    }
+    .nav-inner {
+      max-width: var(--maxw); margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 66px; padding: 0 24px;
+    }
+    .nav.scrolled {
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--line);
+    }
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .nav.scrolled {
+        -webkit-backdrop-filter: blur(16px) saturate(1.1);
+        backdrop-filter: blur(16px) saturate(1.1);
+      }
+    }
+    .brand { display: flex; align-items: baseline; gap: 9px; font-weight: 800; letter-spacing: -.02em; }
+    .brand .p1 { color: var(--ink); font-size: 18px; }
+    .brand .p2 { color: var(--green); font-size: 18px; }
+    .brand .dot { color: var(--green); }
+
+    .nav-links { display: flex; gap: 4px; align-items: center; }
+    .nav-links a {
+      font-size: 13px; font-weight: 600; letter-spacing: .04em;
+      color: var(--ink-2); padding: 9px 14px; border-radius: 999px;
+      transition: color .2s, background .2s;
+    }
+    .nav-links a:hover { color: var(--ink); background: rgba(255,255,255,.05); }
+    .nav-cta {
+      color: var(--green) !important;
+      border: 1px solid rgba(0,255,153,.32);
+      background: rgba(0,255,153,.08) !important;
+    }
+    .nav-cta:hover { background: rgba(0,255,153,.16) !important; }
+
+    .nav-toggle {
+      display: none; background: none; border: 0; cursor: pointer;
+      width: 40px; height: 40px; padding: 8px; color: var(--ink);
+    }
+    .nav-toggle span { display: block; height: 2px; background: currentColor; border-radius: 2px; margin: 5px 0; transition: .3s; }
+
+    /* ============ HERO ============ */
+    .hero {
+      min-height: 100svh; min-height: 100vh;
+      display: flex; align-items: flex-end;
+      position: relative; overflow: hidden;
+      padding-bottom: clamp(56px, 9vw, 96px);
+    }
+    .hero-bg { position: absolute; inset: 0; z-index: 0; }
+    /* 대표 비주얼 자리 — 실사진 교체 지점 (assets/hero_main.jpg). 지금은 다크 그라데이션 */
+    .hero-bg::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(80% 60% at 70% 10%, rgba(0,255,153,.14), transparent 55%),
+        radial-gradient(70% 70% at 15% 90%, rgba(24,214,255,.08), transparent 60%),
+        linear-gradient(180deg, rgba(5,8,10,.2) 0%, rgba(5,8,10,.86) 78%, var(--bg) 100%);
+    }
+    /* 미세한 유리 표면 광택 라인 (재질 보조 — 과잉 금지) */
+    .hero-sheen {
+      position: absolute; z-index: 1; inset: 0;
+      background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.05) 48%, transparent 56%);
+      transform: translateX(-10%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 2; width: 100%; }
+    .hero h1 {
+      font-size: clamp(44px, 12vw, 132px);
+      line-height: .92; font-weight: 800; letter-spacing: -.045em;
+      margin: 18px 0 0;
+    }
+    .hero h1 .line2 { color: var(--green); }
+    .hero-sub {
+      margin-top: 26px; max-width: 560px;
+      font-size: clamp(15px, 2.4vw, 19px); color: var(--ink-2);
+    }
+    .hero-scroll {
+      position: absolute; bottom: 26px; right: 24px; z-index: 2;
+      font-size: 11px; letter-spacing: .2em; color: var(--ink-3);
+      writing-mode: vertical-rl; text-transform: uppercase;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hero-scroll::after { content: ""; width: 1px; height: 44px; background: linear-gradient(var(--green), transparent); }
+
+    /* ============ 인트로 카피 ============ */
+    .intro { text-align: center; }
+    .intro .catch {
+      font-size: clamp(26px, 5.2vw, 52px);
+      font-weight: 800; letter-spacing: -.035em; line-height: 1.25;
+      max-width: 16ch; margin: 22px auto 0;
+    }
+    .intro .catch em { color: var(--green); font-style: normal; }
+    .intro-lead { max-width: 640px; margin: 30px auto 0; color: var(--ink-2); font-size: clamp(15px,2vw,17px); }
+
+    /* ============ ABOUT — PILOT·PLACE·PERSONA·IMMERSIVE ============ */
+    .about-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 12px;
+    }
+    .pcard { padding: 26px 22px 24px; border-radius: var(--radius); min-height: 190px; display: flex; flex-direction: column; }
+    .pcard .k { font-size: 12px; letter-spacing: .18em; color: var(--green); font-weight: 800; }
+    .pcard h3 { font-size: 20px; font-weight: 800; margin-top: 14px; letter-spacing: -.02em; }
+    .pcard p { color: var(--ink-2); font-size: 14px; margin-top: 10px; line-height: 1.65; }
+    .about-note {
+      margin-top: 22px; padding: 24px; border-radius: var(--radius);
+      border: 1px solid var(--line); background: rgba(255,255,255,.02);
+      color: var(--ink-2); font-size: clamp(15px, 2vw, 17px);
+    }
+    .about-note strong { color: var(--ink); font-weight: 700; }
+
+    /* ============ 비전 · 사업영역 ============ */
+    .biz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .biz {
+      padding: 30px 26px; border-radius: var(--radius);
+      border: 1px solid var(--line); background: rgba(255,255,255,.015);
+      transition: transform .4s var(--ease), border-color .3s;
+    }
+    .biz:hover { transform: translateY(-4px); border-color: rgba(0,255,153,.3); }
+    .biz .num { font-size: 13px; color: var(--ink-3); font-weight: 700; letter-spacing: .1em; }
+    .biz h3 { font-size: 22px; font-weight: 800; margin-top: 16px; letter-spacing: -.02em; }
+    .biz .en { color: var(--green); font-size: 12px; font-weight: 700; letter-spacing: .14em; margin-top: 6px; }
+    .biz p { color: var(--ink-2); font-size: 14.5px; margin-top: 14px; }
+
+    /* ============ PROJECT 그리드 ============ */
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
+    .filter {
+      font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+      color: var(--ink-2); padding: 9px 16px; border-radius: 999px;
+      border: 1px solid var(--line); background: transparent; cursor: pointer;
+      transition: .2s;
+    }
+    .filter:hover { color: var(--ink); border-color: rgba(255,255,255,.2); }
+    .filter.active {
+      color: #04120c; background: var(--green); border-color: var(--green); font-weight: 700;
+    }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;
+    }
+    .card {
+      position: relative; border-radius: var(--radius); overflow: hidden;
+      cursor: pointer; background: var(--panel);
+      border: 1px solid var(--line);
+      aspect-ratio: 4 / 3;
+      transition: transform .5s var(--ease);
+    }
+    .card:hover { transform: translateY(-5px); }
+    .card:hover .card-hero-img { transform: scale(1.05); }
+
+    .card-hero { position: absolute; inset: 0; }
+    .card-hero-img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .7s var(--ease);
+    }
+    /* 대표사진 없음 → 빗금 플레이스홀더 (§5 엣지케이스) */
+    .card-hero.is-empty { background: var(--bg-2); }
+    .card-hero.is-empty::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(45deg,
+        rgba(255,255,255,.05) 0 1px, transparent 1px 11px);
+    }
+    .ph-label {
+      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+      text-align: center; color: var(--ink-3); font-size: 13px; letter-spacing: .04em;
+      display: none;
+    }
+    .card-hero.is-empty .ph-label { display: block; }
+
+    /* 카드 상단 그라데이션 + 하단 글래스 오버레이 */
+    .card-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(5,8,10,.05) 0%, rgba(5,8,10,.15) 40%, rgba(5,8,10,.82) 100%);
+    }
+    .card-cat {
+      position: absolute; top: 14px; left: 14px; z-index: 3;
+      font-size: 10.5px; font-weight: 800; letter-spacing: .12em;
+      color: var(--green);
+      padding: 6px 11px; border-radius: 999px;
+    }
+    .card-film {
+      position: absolute; top: 14px; right: 14px; z-index: 3;
+      font-size: 10.5px; font-weight: 700; letter-spacing: .06em; color: var(--ink-2);
+      padding: 6px 11px; border-radius: 999px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .card-film::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); }
+
+    .card-meta {
+      position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 3;
+    }
+    .card-meta .num { font-size: 11px; color: var(--ink-3); font-weight: 700; letter-spacing: .1em; }
+    .card-meta h3 { font-size: clamp(18px, 2.6vw, 24px); font-weight: 800; letter-spacing: -.025em; margin-top: 4px; }
+    .card-meta .sub { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+
+    .grid-empty { grid-column: 1 / -1; text-align: center; color: var(--ink-3); padding: 60px 0; }
+
+    /* ============ PLACE — 자체 브랜드 ============ */
+    .place-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .place {
+      border-radius: var(--radius); overflow: hidden; position: relative;
+      border: 1px solid var(--line); background: var(--panel);
+      min-height: 340px; display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 28px 26px;
+      transition: transform .5s var(--ease), border-color .3s;
+    }
+    .place:hover { transform: translateY(-5px); border-color: rgba(0,255,153,.28); }
+    .place::before {
+      content: ""; position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(120% 90% at 80% 0%, rgba(0,255,153,.14), transparent 55%),
+                  linear-gradient(180deg, transparent 30%, rgba(5,8,10,.7) 100%);
+    }
+    .place.soon::before { background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(5,8,10,.6)); }
+    .place > * { position: relative; z-index: 1; }
+    .place .tag { font-size: 11px; letter-spacing: .16em; font-weight: 800; color: var(--green); }
+    .place.cyan .tag { color: var(--cyan); }
+    .place h3 { font-size: 28px; font-weight: 800; letter-spacing: -.03em; margin-top: 12px; }
+    .place p { color: var(--ink-2); font-size: 14px; margin-top: 10px; }
+    .place .en { color: var(--ink-3); font-size: 12px; letter-spacing: .1em; margin-top: 8px; }
+    .place.soon { align-items: center; justify-content: center; text-align: center; border-style: dashed; }
+    .place.soon h3 { color: var(--ink-3); font-size: 20px; }
+
+    /* ============ PROCESS 다이어그램 ============ */
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: step; }
+    .step {
+      padding: 28px 22px; border-radius: var(--radius);
+      border: 1px solid var(--line); background: rgba(255,255,255,.015);
+      position: relative;
+    }
+    .step .n {
+      font-size: 13px; font-weight: 800; color: var(--green);
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(0,255,153,.35); background: rgba(0,255,153,.06);
+      display: flex; align-items: center; justify-content: center; letter-spacing: 0;
+    }
+    .step h3 { font-size: 18px; font-weight: 800; margin-top: 18px; letter-spacing: -.02em; }
+    .step p { color: var(--ink-2); font-size: 13.5px; margin-top: 10px; line-height: 1.6; }
+    .step:not(:last-child)::after {
+      content: "→"; position: absolute; right: -12px; top: 42px;
+      color: var(--ink-3); font-size: 16px; z-index: 2;
+    }
+
+    /* ============ 팀 / 철학 ============ */
+    .str-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .str {
+      padding: 34px 28px; border-radius: var(--radius);
+      border: 1px solid var(--line); background: rgba(255,255,255,.02);
+    }
+    .str .ico {
+      width: 46px; height: 46px; border-radius: 13px;
+      background: rgba(0,255,153,.1); border: 1px solid rgba(0,255,153,.28);
+      display: flex; align-items: center; justify-content: center; color: var(--green);
+    }
+    .str h3 { font-size: 20px; font-weight: 800; margin-top: 20px; letter-spacing: -.02em; }
+    .str p { color: var(--ink-2); font-size: 14.5px; margin-top: 12px; }
+
+    /* ============ CONTACT ============ */
+    .contact-wrap { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; align-items: start; }
+    .contact-info h2 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -.03em; line-height: 1.2; margin-top: 16px; }
+    .contact-info p { color: var(--ink-2); margin-top: 18px; }
+    .contact-info dl { margin-top: 30px; display: grid; gap: 16px; }
+    .contact-info dt { font-size: 11px; letter-spacing: .16em; color: var(--ink-3); font-weight: 700; text-transform: uppercase; }
+    .contact-info dd { margin: 4px 0 0; font-size: 15px; color: var(--ink); }
+    .contact-info dd a:hover { color: var(--green); }
+
+    .form { padding: 30px; border-radius: var(--radius); }
+    .field { margin-bottom: 16px; }
+    .field.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    label { display: block; font-size: 12.5px; color: var(--ink-2); font-weight: 600; margin-bottom: 7px; }
+    label .req { color: var(--green); }
+    input, select, textarea {
+      width: 100%; font: inherit; font-size: 15px; color: var(--ink);
+      background: rgba(255,255,255,.03); border: 1px solid var(--line);
+      border-radius: var(--radius-s); padding: 12px 14px; transition: border-color .2s, background .2s;
+    }
+    input::placeholder, textarea::placeholder { color: var(--ink-3); }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: rgba(0,255,153,.5); background: rgba(0,255,153,.03);
+    }
+    select { appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f7a75' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+    textarea { resize: vertical; min-height: 110px; }
+
+    .consent { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 20px; }
+    .consent input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--green); }
+    .consent label { font-size: 13px; color: var(--ink-2); margin: 0; font-weight: 400; }
+    .consent a { color: var(--green); text-decoration: underline; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 15px 24px; font: inherit; font-weight: 700; font-size: 15px;
+      cursor: pointer; border-radius: var(--radius-s);
+      color: #04120c; background: var(--green);
+      border: 1px solid rgba(0,255,153,.4);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 10px 30px rgba(0,255,153,.14);
+      transition: transform .15s, box-shadow .3s, opacity .2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 14px 36px rgba(0,255,153,.22); }
+    .btn:active { transform: translateY(0); }
+    .btn[disabled] { opacity: .6; cursor: not-allowed; transform: none; }
+    .form-status { margin-top: 14px; font-size: 13.5px; text-align: center; min-height: 20px; }
+    .form-status.ok { color: var(--green); }
+    .form-status.err { color: #ff7a7a; }
+
+    /* ============ 푸터 ============ */
+    footer { border-top: 1px solid var(--line); padding: 56px 0 46px; margin-top: 40px; }
+    .foot { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px; }
+    .foot .brand { margin-bottom: 12px; }
+    .foot-copy { color: var(--ink-3); font-size: 13px; line-height: 1.9; }
+    .foot-links { display: flex; gap: 22px; font-size: 13px; color: var(--ink-2); }
+    .foot-links a:hover { color: var(--green); }
+
+    /* ============ 프로젝트 상세 모달 (라이트박스) ============ */
+    .modal { position: fixed; inset: 0; z-index: 200; display: none; }
+    .modal.open { display: block; }
+    .modal-scrim { position: absolute; inset: 0; background: rgba(3,5,6,.72); }
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .modal-scrim { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+    }
+    .modal-panel {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+      width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto;
+      border-radius: var(--radius); background: var(--panel); border: 1px solid var(--glass-edge);
+      box-shadow: inset 0 1px 0 var(--glass-spec), 0 30px 80px rgba(0,0,0,.5);
+    }
+    .modal-close {
+      position: sticky; top: 12px; margin-left: auto; margin-right: 12px; z-index: 5;
+      display: block; width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--line); background: rgba(10,15,17,.8); color: var(--ink);
+      cursor: pointer; font-size: 18px; line-height: 1;
+    }
+    .modal-hero { width: 100%; aspect-ratio: 16/9; object-fit: cover; margin-top: -52px; background: var(--bg-2); }
+    .modal-hero.is-empty { display: flex; align-items: center; justify-content: center; color: var(--ink-3); font-size: 13px;
+      background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 1px, transparent 1px 11px); }
+    .modal-body { padding: 30px clamp(22px, 4vw, 44px) 40px; }
+    .modal-body .card-cat { position: static; padding: 0; color: var(--green); font-size: 11px; letter-spacing: .12em; font-weight: 800; }
+    .modal-body h3 { font-size: clamp(26px, 5vw, 40px); font-weight: 800; letter-spacing: -.03em; margin-top: 10px; }
+    .modal-facts { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+    .modal-facts div .l { font-size: 11px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
+    .modal-facts div .v { font-size: 15px; margin-top: 4px; }
+    .modal-desc { margin-top: 24px; }
+    .modal-desc p { color: var(--ink-2); font-size: 15.5px; margin-bottom: 16px; line-height: 1.8; }
+    .modal-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+    .modal-gallery .gitem { aspect-ratio: 1; border-radius: var(--radius-s); overflow: hidden; background: var(--bg-2); border: 1px solid var(--line); }
+    .modal-gallery .gitem img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-gallery .film {
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;
+      color: var(--cyan); font-size: 13px; font-weight: 600;
+      background-image: repeating-linear-gradient(45deg, rgba(24,214,255,.06) 0 1px, transparent 1px 12px);
+    }
+    .modal-link {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 24px;
+      color: var(--green); font-weight: 700; font-size: 14px;
+      border: 1px solid rgba(0,255,153,.3); padding: 11px 18px; border-radius: 999px;
+    }
+    .modal-link:hover { background: rgba(0,255,153,.08); }
+
+    /* ============ 스크롤 페이드 (IntersectionObserver) ============ */
+    /* .js 게이트: 스크립트가 켜졌을 때만 숨김 → no-JS·크롤러는 콘텐츠 항상 노출 */
+    .js .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .js .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; } }
+
+    /* ============ 반응형 ============ */
+    @media (max-width: 900px) {
+      .about-grid { grid-template-columns: repeat(2, 1fr); }
+      .biz-grid, .place-grid, .steps, .str-grid { grid-template-columns: 1fr; }
+      .step:not(:last-child)::after { display: none; }
+      .contact-wrap { grid-template-columns: 1fr; gap: 28px; }
+      .nav-links { display: none; }
+      .nav-toggle { display: block; }
+      .nav.menu-open .nav-links {
+        display: flex; flex-direction: column; align-items: stretch; gap: 2px;
+        position: absolute; top: 66px; left: 0; right: 0; padding: 14px 20px 20px;
+        background: var(--glass-bg); border-bottom: 1px solid var(--line);
+      }
+      @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        .nav.menu-open .nav-links { -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+      }
+      .nav.menu-open .nav-links a { padding: 13px 12px; font-size: 15px; }
+    }
+    @media (max-width: 620px) {
+      .grid { grid-template-columns: 1fr; }
+      .field.row { grid-template-columns: 1fr; }
+      .modal-gallery { grid-template-columns: repeat(2, 1fr); }
+      .foot { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ==================== NAV ==================== -->
+  <nav class="nav" id="nav" aria-label="주요 메뉴">
+    <div class="nav-inner">
+      <a href="#top" class="brand" aria-label="핌아트웍스 홈">
+        <span class="p1">PIMM</span><span class="p2">ARTWORKS</span><span class="dot" aria-hidden="true">.</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="#about">ABOUT PIMM</a>
+        <a href="#artworks">ARTWORKS</a>
+        <a href="#process">PROCESS</a>
+        <a href="#contact" class="nav-cta">CONTACT</a>
+      </div>
+    </div>
+  </nav>
+
+  <span id="top"></span>
+
+  <!-- ==================== HERO ==================== -->
+  <header class="hero" role="banner">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-sheen" aria-hidden="true"></div>
+    <div class="hero-inner wrap">
+      <p class="eyebrow">IMMERSIVE CONTENT STUDIO</p>
+      <h1>
+        <span class="line1">몰입을 짓는</span><br />
+        <span class="line2">공간 회사</span>
+      </h1>
+      <p class="hero-sub">
+        브랜드 팝업스토어, 체험형 전시, 방탈출과 이머시브 공포체험관까지 —
+        핌아트웍스는 기획부터 제작·시공까지 하나의 공간으로 완성합니다.
+      </p>
+    </div>
+    <div class="hero-scroll" aria-hidden="true">SCROLL</div>
+  </header>
+
+  <main>
+    <!-- ==================== 인트로 카피 ==================== -->
+    <section class="section intro" aria-label="브랜드 캐치프레이즈">
+      <div class="wrap reveal">
+        <p class="eyebrow" style="justify-content:center;">PIMM ARTWORKS</p>
+        <!-- 캐치프레이즈: 브랜드 고정값, 변형 금지 (§2) -->
+        <p class="catch">몰입이 주는 <em>밀도 높은 경험</em>을 지향합니다.</p>
+        <p class="intro-lead">
+          핌아트웍스는 이머시브 콘텐츠 제작사입니다. 브랜드의 이야기를 공간의 언어로 번역하고,
+          방문객이 직접 만지고 움직이며 겪는 체험형 콘텐츠를 아트디렉팅합니다.
+          스쳐 지나가는 이벤트가 아니라, 오래 기억되는 밀도를 만드는 일입니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== ABOUT PIMM ==================== -->
+    <section class="section" id="about" aria-labelledby="about-h">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">ABOUT PIMM</p>
+          <h2 id="about-h">P·I·M·M — 우리가 공간을 대하는 네 가지 태도</h2>
+          <p>
+            핌(PIMM)은 네 개의 키워드로 스스로를 정의합니다. 조종사의 시선으로 흐름을 설계하고,
+            장소에 이야기를 심고, 브랜드의 인격을 세워, 끝내 몰입에 다다르게 하는 것.
+          </p>
+        </div>
+
+        <div class="about-grid">
+          <article class="pcard glass reveal">
+            <span class="k">P — PILOT</span>
+            <h3>흐름을 조종하다</h3>
+            <p>방문객의 동선과 감정 곡선을 처음부터 끝까지 설계합니다. 우연이 아니라 의도된 경험.</p>
+          </article>
+          <article class="pcard glass reveal">
+            <span class="k">I — PLACE</span>
+            <h3>장소에 심다</h3>
+            <p>실내 건축과 시공으로 콘텐츠가 살아갈 실제 공간을 짓습니다. 화면이 아닌 현장.</p>
+          </article>
+          <article class="pcard glass reveal">
+            <span class="k">M — PERSONA</span>
+            <h3>인격을 세우다</h3>
+            <p>브랜드와 테마에 고유한 성격을 부여해, 공간이 하나의 캐릭터처럼 말하게 합니다.</p>
+          </article>
+          <article class="pcard glass reveal">
+            <span class="k">M — IMMERSIVE</span>
+            <h3>몰입에 다다르다</h3>
+            <p>오감을 끌어들여 방문객이 이야기의 안쪽에 서 있게 만드는 것. 우리의 최종 목표.</p>
+          </article>
+        </div>
+
+        <p class="about-note reveal">
+          <strong>이머시브(Immersive)란,</strong> 관람이 아니라 참여입니다.
+          벽 너머의 구경꾼이 아니라 이야기 한가운데의 주인공이 되는 경험 —
+          체험형 전시, 방탈출, 공포체험관은 모두 이 몰입을 향한 서로 다른 문(門)입니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== 비전 · 사업영역 ==================== -->
+    <section class="section" aria-labelledby="biz-h">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">WHAT WE DO</p>
+          <h2 id="biz-h">기획부터 시공까지, 한 팀 안에서</h2>
+          <p>
+            콘텐츠와 공간이 따로 놀지 않도록, 세 개의 전문 영역을 하나의 제작 프로세스로 묶습니다.
+            외주로 흩어지지 않는 일관된 완성도가 핌아트웍스의 방식입니다.
+          </p>
+        </div>
+        <div class="biz-grid">
+          <article class="biz reveal">
+            <div class="num">01</div>
+            <h3>콘텐츠 기획</h3>
+            <div class="en">CONTENT DIRECTION</div>
+            <p>브랜드 팝업스토어, 체험형 전시, 방탈출 테마의 시나리오·연출·아트디렉팅을 설계합니다.</p>
+          </article>
+          <article class="biz reveal">
+            <div class="num">02</div>
+            <h3>실내 건축</h3>
+            <div class="en">INTERIOR ARCHITECTURE</div>
+            <p>기획을 실제 공간으로 옮기는 설계와 인테리어 시공. 도면부터 마감까지 직접 짓습니다.</p>
+          </article>
+          <article class="biz reveal">
+            <div class="num">03</div>
+            <h3>특수장치 제작</h3>
+            <div class="en">SPECIAL DEVICE</div>
+            <p>몰입을 완성하는 기믹과 인터랙션 장치를 자체 제작합니다. 방탈출 장치부터 연출 특수효과까지.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PROJECT (ARTWORKS) ==================== -->
+    <section class="section" id="artworks" aria-labelledby="art-h">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">ARTWORKS</p>
+          <h2 id="art-h">우리가 지은 몰입의 순간들</h2>
+          <p>브랜드 협업 팝업스토어부터 체험형 전시, 방탈출 테마까지. 카테고리로 필터해 살펴보세요.</p>
+        </div>
+        <div class="filters reveal" id="filters" role="tablist" aria-label="프로젝트 카테고리 필터"></div>
+        <div class="grid" id="grid"></div>
+      </div>
+    </section>
+
+    <!-- ==================== PLACE — 자체 브랜드 ==================== -->
+    <section class="section" id="place" aria-labelledby="place-h">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">PLACE — OUR OWN BRANDS</p>
+          <h2 id="place-h">직접 운영하는 상설 공간</h2>
+          <p>의뢰받아 짓기만 하는 것이 아니라, 우리가 직접 기획하고 운영하는 상설 브랜드를 갖고 있습니다.</p>
+        </div>
+        <div class="place-grid">
+          <article class="place reveal">
+            <span class="tag">PREMIUM ESCAPE</span>
+            <h3>파노라마</h3>
+            <div class="en">PANORAMA</div>
+            <p>공간의 스케일과 서사에 집중한 프리미엄 방탈출. 단서를 푸는 게임을 넘어 한 편의 이야기를 통과하는 경험.</p>
+          </article>
+          <article class="place cyan reveal">
+            <span class="tag">IMMERSIVE HORROR</span>
+            <h3>파문</h3>
+            <div class="en">PAMUN</div>
+            <p>배우와 공간이 함께 밀어붙이는 이머시브 공포체험관. 관람하는 공포가 아니라 겪어내는 공포.</p>
+          </article>
+          <article class="place soon reveal" aria-label="새 브랜드 준비중">
+            <span class="tag" style="opacity:.6;">NEXT PLACE</span>
+            <h3>COMING SOON</h3>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PROCESS ==================== -->
+    <section class="section" id="process" aria-labelledby="proc-h">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">PROCESS</p>
+          <h2 id="proc-h">상권 분석에서 유지 관리까지, 네 단계</h2>
+          <p>공간 사업은 오픈이 끝이 아닙니다. 자리를 고르는 일부터 운영을 지키는 일까지 함께합니다.</p>
+        </div>
+        <div class="steps">
+          <article class="step reveal">
+            <div class="n">01</div>
+            <h3>상권 분석</h3>
+            <p>타깃과 유동 인구, 입지 조건을 분석해 콘텐츠가 통할 자리를 찾습니다.</p>
+          </article>
+          <article class="step reveal">
+            <div class="n">02</div>
+            <h3>테마 개발</h3>
+            <p>브랜드와 공간에 맞는 시나리오·연출·아트디렉팅을 설계합니다.</p>
+          </article>
+          <article class="step reveal">
+            <div class="n">03</div>
+            <h3>인테리어 시공</h3>
+            <p>도면 설계부터 마감·특수장치 설치까지 실제 공간으로 짓습니다.</p>
+          </article>
+          <article class="step reveal">
+            <div class="n">04</div>
+            <h3>유지 관리</h3>
+            <p>오픈 이후 운영과 보수, 콘텐츠 업데이트까지 지속적으로 관리합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 팀 / 철학 ==================== -->
+    <section class="section" aria-labelledby="str-h">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">WHY PIMM</p>
+          <h2 id="str-h">핌아트웍스를 선택하는 세 가지 이유</h2>
+        </div>
+        <div class="str-grid">
+          <article class="str reveal">
+            <div class="ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 20l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg>
+            </div>
+            <h3>핌만의 테마</h3>
+            <p>어디서 본 듯한 공간이 아닌, 핌아트웍스만이 만들 수 있는 고유한 세계관과 몰입감을 짓습니다.</p>
+          </article>
+          <article class="str reveal">
+            <div class="ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            </div>
+            <h3>전문적인 프로세스</h3>
+            <p>기획·건축·특수장치를 한 팀에서 다루는 통합 프로세스로, 흩어지지 않는 완성도를 보장합니다.</p>
+          </article>
+          <article class="str reveal">
+            <div class="ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 106 0 3 3 0 00-6 0z"/><path d="M3 20c0-3 3-5 9-5s9 2 9 5"/></svg>
+            </div>
+            <h3>모두가 즐기는 놀이문화</h3>
+            <p>소수의 마니아가 아니라 누구나 몰입할 수 있는, 넓고 건강한 체험 놀이문화를 지향합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CONTACT ==================== -->
+    <section class="section" id="contact" aria-labelledby="contact-h">
+      <div class="wrap contact-wrap">
+        <div class="contact-info reveal">
+          <p class="eyebrow">CONTACT</p>
+          <h2 id="contact-h">공간으로 풀어야 할<br />이야기가 있나요?</h2>
+          <p>
+            브랜드 팝업스토어, 체험형 전시, 방탈출 테마, 이머시브 공간 —
+            아이디어 단계여도 좋습니다. 편하게 문의를 남겨주세요.
+          </p>
+          <dl>
+            <div>
+              <dt>Email</dt>
+              <dd><a href="mailto:contact@pimmartworks.com">contact@pimmartworks.com</a></dd>
+            </div>
+            <div>
+              <dt>Studio</dt>
+              <dd>서울특별시 · 방문 상담 예약제</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Formspree 연동 구조: 아래 YOUR_FORM_ID 를 실제 폼 ID로 교체 -->
+        <form class="form glass reveal" id="contactForm" novalidate>
+          <div class="field">
+            <label for="f-name">성함 <span class="req">*</span></label>
+            <input id="f-name" name="name" type="text" required placeholder="홍길동" autocomplete="name" />
+          </div>
+          <div class="field row">
+            <div>
+              <label for="f-phone">전화번호 <span class="req">*</span></label>
+              <input id="f-phone" name="phone" type="tel" required placeholder="010-0000-0000" autocomplete="tel" inputmode="tel" />
+            </div>
+            <div>
+              <label for="f-email">이메일 <span class="req">*</span></label>
+              <input id="f-email" name="email" type="email" required placeholder="you@email.com" autocomplete="email" inputmode="email" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-region">지역 <span class="req">*</span></label>
+            <select id="f-region" name="region" required>
+              <option value="" disabled selected>지역을 선택하세요</option>
+              <option>서울</option>
+              <option>경기</option>
+              <option>경상</option>
+              <option>전라</option>
+              <option>충청</option>
+              <option>제주</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-memo">문의 내용</label>
+            <textarea id="f-memo" name="memo" placeholder="프로젝트 개요, 예산, 일정 등 편하게 적어주세요."></textarea>
+          </div>
+          <div class="consent">
+            <input id="f-agree" name="privacy" type="checkbox" required />
+            <label for="f-agree">
+              문의 처리를 위한 <a href="#privacy">개인정보 수집·이용</a>에 동의합니다. <span class="req">*</span>
+            </label>
+          </div>
+          <button class="btn" type="submit" id="submitBtn">문의 보내기</button>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer id="privacy">
+    <div class="wrap foot">
+      <div>
+        <a href="#top" class="brand"><span class="p1">PIMM</span><span class="p2">ARTWORKS</span><span class="dot">.</span></a>
+        <p class="foot-copy">
+          핌아트웍스 &nbsp;|&nbsp; 이머시브 콘텐츠 제작사<br />
+          브랜드 팝업스토어 · 체험형 전시 · 방탈출 · 공포체험관 기획·제작·시공<br />
+          © 2026 PIMM ARTWORKS. All rights reserved.
+        </p>
+      </div>
+      <div class="foot-links">
+        <a href="#terms">이용약관</a>
+        <a href="#privacy">개인정보처리방침</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== 프로젝트 상세 모달 ==================== -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-scrim" data-close></div>
+    <div class="modal-panel" id="modalPanel">
+      <button class="modal-close" data-close aria-label="닫기">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ============================================================
+     PROJECT 데이터 (§5) — PROJECTS 배열 + renderProject() 패턴
+     필드: cat, title, client, place, date, hero, desc[]  (필수)
+           gallery[], filmSoon, link/linkText              (선택)
+     id·WORK 번호는 자동 생성. 이미지는 assets/ (파일명 프로젝트명_용도).
+     ============================================================ */
+  const FORMSPREE = "https://formspree.io/f/YOUR_FORM_ID"; // ← 실제 폼 ID로 교체
+
+  // 카테고리 표준 순서 (§5)
+  const CATEGORY_ORDER = [
+    "BRAND CONTENT POP-UP",
+    "ARTIST IMMERSIVE POP-UP",
+    "PLAY BOOTH",
+    "IMMERSIVE EXHIBITION",
+    "ESCAPE THEME",
+    "PLACE"
+  ];
+
+  const PROJECTS = [
+    {
+      cat: "IMMERSIVE EXHIBITION",
+      title: "퇴마록 체험展",
+      client: "더현대 서울",
+      place: "서울 여의도",
+      date: "2024",
+      hero: "assets/toemarok_hero.jpg",
+      desc: [
+        "영화 《퇴마록》의 세계관을 오프라인으로 옮긴 체험형 전시. 관람객이 퇴마사의 시선으로 사건 현장을 통과하도록 동선과 연출을 설계했습니다.",
+        "어두운 공간 연출과 특수장치, 사운드를 결합해 '보는 전시'가 아닌 '겪는 전시'로 구성했습니다. 더현대 서울의 유동 관객을 몰입형 서사로 붙잡는 것이 과제였습니다."
+      ],
+      filmSoon: true
+    },
+    {
+      cat: "BRAND CONTENT POP-UP",
+      title: "베스트펜",
+      client: "더현대 서울",
+      place: "서울 여의도",
+      date: "2024",
+      hero: "assets/bestpen_hero.jpg",
+      desc: [
+        "브랜드 제품을 하나의 세계관으로 확장한 브랜드 팝업스토어. 제품 진열을 넘어 방문객이 브랜드의 이야기 안에서 놀 수 있도록 체험 요소를 심었습니다.",
+        "짧은 운영 기간 안에서도 강한 인상을 남기도록, 포토 스팟과 인터랙션 장치를 밀도 있게 배치했습니다."
+      ],
+      gallery: ["assets/bestpen_g1.jpg", "assets/bestpen_g2.jpg"]
+    },
+    {
+      cat: "ARTIST IMMERSIVE POP-UP",
+      title: "xikers : the ora",
+      client: "KQ Entertainment",
+      place: "서울",
+      date: "2024",
+      hero: "assets/xikers_hero.jpg",
+      desc: [
+        "아티스트 'xikers'의 세계관 'the ora'를 오프라인 공간으로 구현한 아티스트 이머시브 팝업스토어. 팬이 아티스트의 서사 안으로 걸어 들어가는 경험을 목표로 했습니다.",
+        "굿즈 판매 공간을 넘어, 콘셉트 존과 포토 존을 이야기 순서대로 배치해 하나의 여정으로 엮었습니다."
+      ],
+      filmSoon: true
+    },
+    {
+      cat: "PLAY BOOTH",
+      title: "도전의 겹",
+      client: "건국대학교",
+      place: "서울 광진",
+      date: "2023",
+      // 대표사진 없음 → 빗금 플레이스홀더 + "공간 사진 준비중" (§5 엣지케이스 시연)
+      hero: null,
+      desc: [
+        "캠퍼스 축제를 위한 참여형 플레이 부스. 학생들이 직접 미션에 도전하며 즐기는 체험 콘텐츠로 기획·제작했습니다.",
+        "짧은 대기 회전과 반복 참여를 유도하는 게임 규칙을 설계해, 좁은 부스에서도 높은 참여율을 만들었습니다."
+      ]
+    }
+  ];
+
+  /* ---------- 렌더링 ---------- */
+  const grid = document.getElementById("grid");
+  const filtersEl = document.getElementById("filters");
+  let activeFilter = "ALL";
+
+  const slug = (s, i) => "work-" + String(i + 1).padStart(2, "0");
+
+  function heroInner(p) {
+    if (p.hero) {
+      // 실제 이미지가 없으면 onerror로 빗금 플레이스홀더 전환 (시안 안전장치)
+      return `<img class="card-hero-img" src="${p.hero}" alt="${p.title} — ${p.cat} 대표 이미지"
+                loading="lazy" decoding="async"
+                onerror="this.closest('.card-hero,.modal-hero-wrap')?.classList.add('is-empty');this.remove();">
+              <span class="ph-label">공간 사진 준비중</span>`;
+    }
+    return `<span class="ph-label">공간 사진 준비중</span>`;
+  }
+
+  function renderProject(p, i) {
+    const num = "WORK " + String(i + 1).padStart(2, "0");
+    const emptyClass = p.hero ? "" : " is-empty";
+    const film = p.filmSoon ? `<span class="card-film">영상 준비중</span>` : "";
+    return `
+      <article class="card reveal" data-cat="${p.cat}" data-idx="${i}"
+               tabindex="0" role="button" aria-label="${p.title} 프로젝트 자세히 보기">
+        <div class="card-hero${emptyClass}">${heroInner(p)}</div>
+        <div class="card-scrim" aria-hidden="true"></div>
+        <span class="card-cat">${p.cat}</span>
+        ${film}
+        <div class="card-meta">
+          <div class="num">${num}</div>
+          <h3>${p.title}</h3>
+          <div class="sub">${p.client} · ${p.place} · ${p.date}</div>
+        </div>
+      </article>`;
+  }
+
+  function renderGrid() {
+    const list = PROJECTS
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => activeFilter === "ALL" || p.cat === activeFilter);
+
+    if (!list.length) {
+      grid.innerHTML = `<p class="grid-empty">해당 카테고리의 프로젝트를 준비 중입니다.</p>`;
+      return;
+    }
+    grid.innerHTML = list.map(({ p, i }) => renderProject(p, i)).join("");
+    // 새로 그린 카드에 reveal 관찰 재적용
+    grid.querySelectorAll(".reveal").forEach((el) => { el.classList.add("in"); });
+  }
+
+  function renderFilters() {
+    const present = CATEGORY_ORDER.filter((c) => PROJECTS.some((p) => p.cat === c));
+    const cats = ["ALL", ...present];
+    filtersEl.innerHTML = cats
+      .map((c) => `<button class="filter${c === activeFilter ? " active" : ""}"
+                     role="tab" data-filter="${c}">${c}</button>`)
+      .join("");
+  }
+
+  filtersEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".filter");
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    renderFilters();
+    renderGrid();
+  });
+
+  /* ---------- 상세 모달 ---------- */
+  const modal = document.getElementById("modal");
+  const modalContent = document.getElementById("modalContent");
+  let lastFocus = null;
+
+  function openModal(i) {
+    const p = PROJECTS[i];
+    if (!p) return;
+    lastFocus = document.activeElement;
+
+    const heroBlock = p.hero
+      ? `<div class="modal-hero-wrap"><img class="modal-hero" src="${p.hero}"
+            alt="${p.title} 대표 이미지" onerror="this.classList.add('is-empty');this.alt='';">
+         </div>`
+      : `<div class="modal-hero is-empty">공간 사진 준비중</div>`;
+
+    const facts = [
+      ["CLIENT", p.client], ["PLACE", p.place], ["DATE", p.date], ["CATEGORY", p.cat]
+    ].map(([l, v]) => `<div><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+
+    const descBlock = `<div class="modal-desc">${p.desc.map((d) => `<p>${d}</p>`).join("")}</div>`;
+
+    let gallery = "";
+    const tiles = [];
+    (p.gallery || []).forEach((g) => {
+      tiles.push(`<div class="gitem"><img src="${g}" alt="${p.title} 갤러리 이미지" loading="lazy"
+                    onerror="this.parentElement.style.display='none'"></div>`);
+    });
+    if (p.filmSoon) tiles.push(`<div class="gitem film">▶<span>영상 준비중</span></div>`);
+    if (tiles.length) gallery = `<div class="modal-gallery">${tiles.join("")}</div>`;
+
+    const link = p.link
+      ? `<a class="modal-link" href="${p.link}" target="_blank" rel="noopener">${p.linkText || "자세히 보기"} ↗</a>`
+      : "";
+
+    modalContent.innerHTML = `
+      ${heroBlock}
+      <div class="modal-body">
+        <span class="card-cat">${p.cat}</span>
+        <h3 id="modalTitle">${p.title}</h3>
+        <div class="modal-facts">${facts}</div>
+        ${descBlock}
+        ${gallery}
+        ${link}
+      </div>`;
+
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+    document.querySelector(".modal-close").focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+    if (lastFocus) lastFocus.focus();
+  }
+
+  grid.addEventListener("click", (e) => {
+    const card = e.target.closest(".card");
+    if (card) openModal(+card.dataset.idx);
+  });
+  grid.addEventListener("keydown", (e) => {
+    const card = e.target.closest(".card");
+    if (card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openModal(+card.dataset.idx); }
+  });
+  modal.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal.classList.contains("open")) closeModal(); });
+
+  /* ---------- 초기 렌더 ---------- */
+  renderFilters();
+  renderGrid();
+
+  /* ============================================================
+     인터랙션 — 가볍게 (§7)
+     ============================================================ */
+  // NAV: 스크롤 시 글래스 활성 + 모바일 토글
+  const nav = document.getElementById("nav");
+  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 20);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  const navToggle = document.getElementById("navToggle");
+  navToggle.addEventListener("click", () => {
+    const open = nav.classList.toggle("menu-open");
+    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.getElementById("navLinks").addEventListener("click", (e) => {
+    if (e.target.tagName === "A") { nav.classList.remove("menu-open"); navToggle.setAttribute("aria-expanded", "false"); }
+  });
+
+  // IntersectionObserver 페이드 인
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+  /* ============================================================
+     CONTACT — Formspree 연동 구조
+     ============================================================ */
+  const form = document.getElementById("contactForm");
+  const statusEl = document.getElementById("formStatus");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    statusEl.className = "form-status";
+    statusEl.textContent = "";
+
+    if (!form.checkValidity()) {
+      statusEl.classList.add("err");
+      statusEl.textContent = "필수 항목과 개인정보 동의를 확인해 주세요.";
+      form.reportValidity();
+      return;
+    }
+
+    // 폼 ID 미교체 시 안내 (시안 상태)
+    if (FORMSPREE.includes("YOUR_FORM_ID")) {
+      statusEl.classList.add("ok");
+      statusEl.textContent = "시안 모드입니다. Formspree 폼 ID를 연결하면 실제 접수가 시작됩니다.";
+      form.reset();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "보내는 중…";
+    try {
+      const res = await fetch(FORMSPREE, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(form)
+      });
+      if (res.ok) {
+        statusEl.classList.add("ok");
+        statusEl.textContent = "문의가 접수되었습니다. 빠르게 회신드리겠습니다.";
+        form.reset();
+      } else {
+        throw new Error("bad response");
+      }
+    } catch (err) {
+      statusEl.classList.add("err");
+      statusEl.textContent = "전송에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "문의 보내기";
+    }
+  });
+  </script>
+</body>
+</html>
