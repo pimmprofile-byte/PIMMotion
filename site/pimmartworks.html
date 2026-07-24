@@ -203,34 +203,47 @@
     }
     .nav-toggle span { display: block; height: 2px; background: currentColor; border-radius: 2px; margin: 5px 0; transition: .3s; }
 
-    /* ============ HERO ============ */
+    /* ============ HERO — 랜덤스튜디오식 풀블리드 필름 ============ */
     .hero {
       min-height: 100svh; min-height: 100vh;
       display: flex; align-items: flex-end;
       position: relative; overflow: hidden;
       padding-bottom: clamp(56px, 9vw, 96px);
     }
-    .hero-bg { position: absolute; inset: 0; z-index: 0; }
-    /* 대표 비주얼 자리 — 실사진 교체 지점 (assets/hero_main.jpg). 지금은 다크 그라데이션 */
-    .hero-bg::after {
-      content: ""; position: absolute; inset: 0;
+    .hero-media { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--bg); }
+    /* 캔버스 = 실제 스케치필름 전 '살아있는' 플레이스홀더 (저해상 렌더 + CSS 블러로 부드러운 빛) */
+    .hero-canvas {
+      position: absolute; inset: -4%; width: 108%; height: 108%;
+      filter: blur(38px) saturate(1.15); opacity: .92;
+    }
+    /* 실제 필름 교체 지점 — assets/hero.mp4 넣으면 캔버스를 덮고 재생 (muted·loop·playsinline·뷰인 재생) */
+    .hero-video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0; transition: opacity .8s var(--ease); z-index: 1;
+    }
+    .hero-video.playing { opacity: 1; }
+    /* 스크림: 그린을 '빛 속에' 녹임 + 하단 가독 확보 */
+    .hero-scrim {
+      position: absolute; inset: 0; z-index: 2;
       background:
-        radial-gradient(80% 60% at 70% 10%, rgba(0,255,153,.14), transparent 55%),
-        radial-gradient(70% 70% at 15% 90%, rgba(24,214,255,.08), transparent 60%),
-        linear-gradient(180deg, rgba(5,8,10,.2) 0%, rgba(5,8,10,.86) 78%, var(--bg) 100%);
+        radial-gradient(70% 55% at 72% 8%, rgba(0,255,153,.10), transparent 55%),
+        linear-gradient(180deg, rgba(5,8,10,.34) 0%, rgba(5,8,10,.18) 42%, rgba(5,8,10,.88) 82%, var(--bg) 100%);
     }
-    /* 미세한 유리 표면 광택 라인 (재질 보조 — 과잉 금지) */
-    .hero-sheen {
-      position: absolute; z-index: 1; inset: 0;
-      background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.05) 48%, transparent 56%);
-      transform: translateX(-10%);
-      pointer-events: none;
+    /* 시그니처 그린 라이트 스윕 — 로드 시 1회 (브랜드 모션) */
+    .hero-sweep {
+      position: absolute; inset: 0; z-index: 3; pointer-events: none;
+      background: linear-gradient(115deg, transparent 42%, rgba(0,255,153,.14) 49%, rgba(255,255,255,.06) 50%, transparent 58%);
+      transform: translateX(-120%);
     }
-    .hero-inner { position: relative; z-index: 2; width: 100%; }
+    .js .hero-sweep { animation: heroSweep 1.5s var(--ease) .25s 1 both; }
+    @keyframes heroSweep { to { transform: translateX(120%); } }
+    @media (prefers-reduced-motion: reduce) { .js .hero-sweep { animation: none; } }
+
+    .hero-inner { position: relative; z-index: 4; width: 100%; }
     .hero h1 {
       font-size: clamp(44px, 12vw, 132px);
       line-height: .92; font-weight: 800; letter-spacing: -.045em;
-      margin: 18px 0 0;
+      margin: 18px 0 0; text-wrap: balance;
     }
     .hero h1 .line2 { color: var(--green); }
     .hero-sub {
@@ -238,7 +251,7 @@
       font-size: clamp(15px, 2.4vw, 19px); color: var(--ink-2);
     }
     .hero-scroll {
-      position: absolute; bottom: 26px; right: 24px; z-index: 2;
+      position: absolute; bottom: 26px; right: 24px; z-index: 4;
       font-size: 11px; letter-spacing: .2em; color: var(--ink-3);
       writing-mode: vertical-rl; text-transform: uppercase;
       display: flex; align-items: center; gap: 12px;
@@ -546,6 +559,7 @@
       .field.row { grid-template-columns: 1fr; }
       .modal-gallery { grid-template-columns: repeat(2, 1fr); }
       .foot { flex-direction: column; align-items: flex-start; }
+      .hero-scroll { display: none; } /* 좁은 화면에서 본문 카피와 겹침 방지 */
     }
   </style>
 </head>
@@ -572,9 +586,16 @@
   <span id="top"></span>
 
   <!-- ==================== HERO ==================== -->
-  <header class="hero" role="banner">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="hero-sheen" aria-hidden="true"></div>
+  <header class="hero" id="hero" role="banner">
+    <div class="hero-media" aria-hidden="true">
+      <canvas class="hero-canvas" id="heroCanvas"></canvas>
+      <!-- 실제 스케치필름 교체 지점: data-src 에 assets/hero.mp4, poster 에 정지 프레임.
+           파일이 들어오면 뷰인 시 로드·재생되어 캔버스를 덮습니다. -->
+      <video class="hero-video" id="heroVideo" muted loop playsinline preload="none"
+             poster="assets/hero_poster.jpg" data-src="assets/hero.mp4"></video>
+      <div class="hero-scrim"></div>
+      <div class="hero-sweep"></div>
+    </div>
     <div class="hero-inner wrap">
       <p class="eyebrow">IMMERSIVE CONTENT STUDIO</p>
       <h1>
@@ -1120,6 +1141,56 @@
     entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
   }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
   document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+  /* ===== 히어로: 앰비언트 캔버스(필름 플레이스홀더) + 실필름 뷰인 재생 ===== */
+  (function () {
+    const cv = document.getElementById("heroCanvas");
+    const hero = document.getElementById("hero");
+    if (!cv || !hero) return;
+    const ctx = cv.getContext("2d");
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W, H, raf = 0, running = false;
+    // 저해상 렌더(성능) — CSS 블러가 부드럽게 처리
+    function size() { W = cv.width = Math.max(1, Math.round(innerWidth / 6)); H = cv.height = Math.max(1, Math.round(innerHeight / 6)); }
+    size(); addEventListener("resize", size, { passive: true });
+    // 브랜드 컬러 광(그린 2 + 시안 1)이 아주 느리게 흐름 — 재질 보조, 과잉 금지
+    const blobs = [
+      { c: "0,255,153", x: .72, y: .12, r: .58, ax: .06, ay: .04, p: 0 },
+      { c: "24,214,255", x: .16, y: .86, r: .5, ax: .05, ay: .05, p: 2 },
+      { c: "0,255,153", x: .46, y: .55, r: .44, ax: .04, ay: .03, p: 4 }
+    ];
+    function draw(t) {
+      ctx.fillStyle = "#05080a"; ctx.fillRect(0, 0, W, H);
+      const s = t / 1000;
+      for (const b of blobs) {
+        const cx = (b.x + Math.sin(s * .18 + b.p) * b.ax) * W;
+        const cy = (b.y + Math.cos(s * .15 + b.p) * b.ay) * H;
+        const rr = b.r * Math.min(W, H);
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+        g.addColorStop(0, "rgba(" + b.c + ",0.5)");
+        g.addColorStop(1, "rgba(" + b.c + ",0)");
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 7); ctx.fill();
+      }
+    }
+    function loop(t) { draw(t); raf = requestAnimationFrame(loop); }
+    function start() { if (running || reduce) return; running = true; raf = requestAnimationFrame(loop); }
+    function stop() { running = false; cancelAnimationFrame(raf); }
+    if (reduce) draw(0); else start();
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+    new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? start() : stop())), { threshold: .01 }).observe(hero);
+
+    // 실제 필름: 파일이 존재하면 뷰인 시 로드·재생 (없으면 캔버스 유지)
+    const v = document.getElementById("heroVideo");
+    if (v && v.dataset.src && !reduce) {
+      let loaded = false;
+      new IntersectionObserver((es) => es.forEach((e) => {
+        if (e.isIntersecting) {
+          if (!loaded) { v.src = v.dataset.src; loaded = true; }
+          const pr = v.play(); if (pr) pr.then(() => v.classList.add("playing")).catch(() => {});
+        } else { v.pause(); }
+      }), { threshold: .2 }).observe(hero);
+    }
+  })();
 
   /* ============================================================
      CONTACT — Formspree 연동 구조
