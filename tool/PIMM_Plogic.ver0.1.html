@@ -119,7 +119,10 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .flist{margin:11px 0 0;padding:0;list-style:none;display:grid;gap:6px}
 .flist li{font-size:13.5px;color:var(--ink2);padding-left:18px;position:relative}
 .flist li::before{content:"";position:absolute;left:2px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--fc)}
-.frole{margin-top:14px;font-size:12px;font-weight:800;color:var(--fc);background:color-mix(in srgb,var(--fc) 12%,transparent);border:1px solid color-mix(in srgb,var(--fc) 26%,transparent);border-radius:999px;padding:5px 12px;display:inline-block}
+.fuse{margin-top:13px;background:color-mix(in srgb,var(--fc) 8%,transparent);border:1px dashed color-mix(in srgb,var(--fc) 34%,transparent);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--ink2);line-height:1.55}
+.fuse .lb{display:block;font-size:10px;font-weight:800;letter-spacing:.05em;color:var(--fc);margin-bottom:3px;text-transform:uppercase}
+.fuse b{color:var(--ink);font-weight:700}
+.frole{margin-top:13px;font-size:12px;font-weight:800;color:var(--fc);background:color-mix(in srgb,var(--fc) 12%,transparent);border:1px solid color-mix(in srgb,var(--fc) 26%,transparent);border-radius:999px;padding:5px 12px;display:inline-block}
 .axis{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:16px;box-shadow:var(--sh)}
 .axis h4{font-size:15px;font-weight:800}.axis p{color:var(--ink2);font-size:13.5px;margin-top:6px}
 .axis .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
@@ -348,18 +351,22 @@ const FORGES=[
  {key:"Plogic",ko:"플로직",tag:"이론 · 학습",color:"green",icon:"📚",
   one:"핌의 마스터로직을 배우고 이론을 쌓는 곳. '왜/무엇을'의 기준을 정의하는 논리 볼트.",
   what:["테마제작 방법론(파이프라인·크래프트·판단로직) 학습","핌이 일하는 원칙과 판단 기준을 정의","<b>지금 보고 있는 이 교육 도구가 바로 플로직</b>"],
+  use:"신입 오세원이 첫 출근. '테마제작이 뭔지'조차 막막할 때 → <b>플로직 「이해하기」로 파이프라인·용어를 익히고</b>, 제안서 쓰기 전 크래프트 이론을 다시 펴본다. 이해도 점검은 「풀어보기」로.",
   role:"머리 · 원칙과 기준"},
  {key:"Poffice",ko:"포피스",tag:"업무보고 · 운영",color:"amber",icon:"🗂️",
   one:"코워크로 진행한 업무를 기록·보고·자동화하는 업무보고체계. 누가 무엇을 어디까지 했는지.",
   what:["개인 세션로그 → 마더로그 집계 → 대시보드 시각화","미션 · 게이트(🔴🟡🟢) · 투두 · 워크오더 관리","페르소나 브리핑으로 변경사항 알림"],
+  use:"월요일 아침, '내가 지난주 뭘 했고 대표 검수(🔴) 대기가 뭐지?' → <b>포피스 대시보드에서 내 미션·게이트·투두를 한눈에 확인.</b> 코워크와의 대화는 세션로그로 자동 기록되고, 마더로그로 집계돼 대표에게 보고된다.",
   role:"관리 · 진행과 보고"},
  {key:"PIMMotion",ko:"피모션",tag:"소프트워크 실전툴",color:"blue",icon:"🛠️",
   one:"유니티·어도비 등과 코워크로 함께 작업하는 실전 툴. 컴퓨터작업(소프트워크)의 파트너.",
   what:["비주얼 시나리오·제안서·기획안 등 <b>송부용 HTML</b> 빌드","유니티 게임·인터랙션 콘텐츠(PIMMplayer) 제작","가장 많은 툴이 모이는 영역"],
+  use:"내일까지 클라이언트에 보낼 <b>제안서와 비주얼 시나리오</b>가 필요할 때 → 코워크와 어도비·유니티로 에셋을 만들고, <b>피모션으로 송부용 HTML을 빌드</b>해 그대로 발송. 인게임 씬이 필요하면 PIMMplayer로 게임까지.",
   role:"손(컴퓨터) · 만드는 도구"},
  {key:"Partwork",ko:"파트웍",tag:"하드워크 트래커",color:"purple",icon:"🧱",
   one:"프로젝트 진행·아트워크를 아카이빙하고 현장 공정 워크플로우를 담는 트래커. 현장작업(하드워크)의 파트너.",
   what:["프로젝트별 진행·아트워크 아카이빙 (포피스와 별개)","공정 순서·산출물·주의사항 워크플로우","예: 목공인부 구인법, 트랙별 공정 체크리스트"],
+  use:"새 방탈출 현장 시공을 앞두고 '<b>목공 인부는 어떻게 구하지? 이 트랙 공정 순서가 뭐였지?</b>' → 파트웍에서 트랙별 공정 체크리스트·구인법을 꺼내보고, 이전 프로젝트의 아트워크·주의사항을 참고해 실수를 막는다.",
   role:"손(현장) · 짓는 기록"}
 ];
 function renderSystem(){
@@ -368,6 +375,7 @@ function renderSystem(){
      <div class="fh"><span class="fi">${f.icon}</span><div><div class="fk">${f.ko}<span class="fen">${f.key}</span></div><div class="ftag">${f.tag}</div></div></div>
      <p class="fone">${f.one}</p>
      <ul class="flist">${f.what.map(x=>`<li>${x}</li>`).join("")}</ul>
+     ${f.use?`<div class="fuse"><span class="lb">이럴 때 써요</span>${f.use}</div>`:""}
      <div class="frole">${f.role}</div>
    </div>`).join("");
   $("#app").innerHTML=`<div class="wrap sys">
