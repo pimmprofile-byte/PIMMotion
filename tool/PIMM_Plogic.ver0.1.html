@@ -116,7 +116,8 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .fi{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:23px;background:color-mix(in srgb,var(--fc) 14%,transparent);border:1px solid color-mix(in srgb,var(--fc) 30%,transparent);flex:none}
 .fk{font-size:18px;font-weight:800}.fk .fen{font-size:12px;color:var(--fc);font-weight:700;margin-left:5px;letter-spacing:.02em}
 .ftag{font-size:11.5px;color:var(--ink3);font-weight:700;margin-top:2px}
-.fone{color:var(--ink);font-size:14px;font-weight:600;margin-top:13px}
+.fone{color:var(--ink);font-size:14.5px;font-weight:700;margin-top:13px;letter-spacing:-.01em}
+.fdesc{color:var(--ink2);font-size:13px;margin-top:8px;line-height:1.62}
 .flist{margin:11px 0 0;padding:0;list-style:none;display:grid;gap:6px}
 .flist li{font-size:13.5px;color:var(--ink2);padding-left:18px;position:relative}
 .flist li::before{content:"";position:absolute;left:2px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--fc)}
@@ -446,20 +447,32 @@ function renderSystem(){
 
 /* ===== 핌 아티잔 — 6개 도메인 · 3단계 성숙도 (회사 인재가치) ===== */
 const DOMAINS=[
- {n:1,name:"현장제작과 시공",desc:"각종 공구와 공정을 이해하고 오프라인 공간에 테마를 짓는 능력",type:"하드워크",color:"purple"},
- {n:2,name:"장치디바이스",desc:"장치의 개념을 이해하고 코딩과 회로작업을 하는 능력",type:"하드워크",color:"purple"},
- {n:3,name:"설계와 디자인",desc:"각종 툴을 활용해 설계도와 그래픽, 미디어를 만드는 능력",type:"소프트워크",color:"blue"},
- {n:4,name:"미학적 감각",desc:"개인의 취향을 상업적인 색감으로 바꿔서 상품화 시키는 능력",type:"미학·예술",color:"green"},
- {n:5,name:"사업적 감각",desc:"시장의 흐름을 파악해 트렌드를 발견하고 이를 적용하고 팀을 시장의 흐름에 올리는 능력",type:"시장·사업성",color:"amber"},
- {n:6,name:"서사창작",desc:"세계관을 구축하고 이야기를 만들어나가며 이를 공간서사와 콘텐츠로 만드는 능력",type:"미학·예술",color:"green"}
+ {n:1,name:"현장제작과 시공",type:"하드워크",color:"purple",
+  sum:"도면을 진짜 공간으로 바꾸는, 손으로 짓는 힘.",
+  detail:"목공·도장·전기 등 각종 공구와 시공 공정을 이해하고, 안전·마감·일정을 지키며 오프라인 공간에 테마를 물리적으로 구현한다. 설계 단계의 상상을 현장의 자재·구조·마감으로 옮겨 방문객이 '겪을 수 있는' 실체로 만드는, 하드워크의 근간이 되는 능력이다."},
+ {n:2,name:"장치디바이스",type:"하드워크",color:"purple",
+  sum:"공간에 상호작용을 심어, 기술로 마법을 증명하는 힘.",
+  detail:"센서·아두이노·회로와 코딩을 다뤄 방문객의 행동에 반응하는 인터랙티브 장치를 설계·제작한다. '장치'의 개념을 이해해 트리거→반응의 아다리를 맞추고, 가동률을 최우선으로 안정적으로 작동하는 기믹을 통해 몰입의 결정적 순간을 만든다."},
+ {n:3,name:"설계와 디자인",type:"소프트워크",color:"blue",
+  sum:"상상을 예측 가능한 도면·비주얼로 확정하는 힘.",
+  detail:"CAD·스케치업·그래픽·영상 툴을 활용해 설계도·컨셉 비주얼·미디어를 만들어낸다. 아이디어를 '100% 예측 가능한 결과값'으로 문서화해, 현장과 클라이언트가 같은 그림을 보게 만드는 소프트워크의 중심 능력이다."},
+ {n:4,name:"미학적 감각",type:"미학·예술",color:"green",
+  sum:"취향을 '팔리는 완성도'로 끌어올리는 눈.",
+  detail:"개인의 취향과 감각을 상업적으로 통하는 색감·톤·완성도로 번역해 상품이 되는 결과물로 만든다. 무엇이 세련되고 무엇이 아쉬운지를 판별하고, 그 기준을 공간·비주얼 전반에 일관되게 적용하는 심미안이다."},
+ {n:5,name:"사업적 감각",type:"시장·사업성",color:"amber",
+  sum:"시장을 읽어 팀을 흐름 위에 올리는 판단력.",
+  detail:"시장의 흐름과 트렌드를 먼저 감지해 어떤 콘텐츠·방향이 통할지 판단하고, 이를 실제 기획과 수주로 연결한다. 개인의 작업을 넘어 팀 전체를 시장의 흐름에 태우는, 사업성과 직결되는 감각이다."},
+ {n:6,name:"서사창작",type:"미학·예술",color:"green",
+  sum:"세계관과 이야기를 공간의 경험으로 짓는 힘.",
+  detail:"세계관을 구축하고 이야기를 전개하며, 이를 공간서사(PlaceNarrative)와 콘텐츠로 옮겨 방문객이 '겪는' 서사로 만든다. 단순한 설정을 넘어 동선·장면·연출과 맞물리는 이야기를 설계하는 능력이다."}
 ];
 const LEVELS=[
- {k:"플로어",en:"Floor",cls:"l1",d:"이제 막 이해가 된 상태 + 주니어로서, 리더가 있으면 해당 업무를 수행 가능한 단계."},
- {k:"리더",en:"Leader",cls:"l2",d:"주니어와 함께 실무 업무를 수행할 수 있으며, 실질 작업물을 남길 수 있는 단계."},
- {k:"마스터",en:"Master",cls:"l3",d:"유의미한 지표와 평가가 가능하여 리더를 평가할 수 있으며, 스스로는 도메인을 심화시키거나 다른 영역으로 넘어갈 수 있는 단계."}
+ {k:"플로어",en:"Floor",cls:"l1",d:"해당 도메인을 이제 막 이해한 단계. 주니어로서, 리더의 지시·감독이 있으면 실무를 수행할 수 있다."},
+ {k:"리더",en:"Leader",cls:"l2",d:"주니어와 함께 실무를 이끌며, 스스로 실질적인 작업물을 완성해 남길 수 있는 단계."},
+ {k:"마스터",en:"Master",cls:"l3",d:"유의미한 지표로 성과를 평가할 수 있어 리더를 평가·육성하는 위치. 스스로는 도메인을 더 깊이 심화하거나 새로운 영역으로 확장해 나간다."}
 ];
 function renderArtisan(){
-  const domCards=DOMAINS.map(d=>`<div class="forge f-${d.color}"><div class="fh"><span class="fi">${d.n}</span><div><div class="fk">${d.name}<span class="fen">${d.type}</span></div></div></div><p class="fone" style="font-weight:500">${d.desc}</p></div>`).join("");
+  const domCards=DOMAINS.map(d=>`<div class="forge f-${d.color}"><div class="fh"><span class="fi">${d.n}</span><div><div class="fk">${d.name}<span class="fen">${d.type}</span></div></div></div><p class="fone">${d.sum}</p><p class="fdesc">${d.detail}</p></div>`).join("");
   const lvlCards=LEVELS.map((l,i)=>`<div class="lvl ${l.cls}"><div class="step">STEP ${i+1}</div><h4>${l.k}<small>${l.en}</small></h4><p>${l.d}</p></div>`).join("");
   $("#app").innerHTML=`<div class="wrap sys">
     <div class="sys-hero">
@@ -495,9 +508,9 @@ function renderArtisan(){
     <h2 class="sec-h">도달 지점 — 단계가 쌓이면</h2>
     <p class="lead" style="margin-top:6px;font-size:14px">도메인 확보 수와 레벨이 쌓이면 이런 위치에 도달해.</p>
     <div class="lvls">
-      <div class="lvl m1"><div class="step">2개 이상 도메인</div><h4>아티잔<small>Artisan</small></h4><p>6개 핵심 도메인 중 <b>2개 이상을 전문가 수준으로</b> 확보한 사람.</p></div>
-      <div class="lvl m2"><div class="step">전 도메인 리더</div><h4>마스터 PD<small>Master PD</small></h4><p><b>모든 도메인에서 리더 레벨</b> 이상에 오르면 마스터 PD가 된다.</p></div>
-      <div class="lvl m3"><div class="step">전 도메인 마스터</div><h4>사업 총괄 역량<small>Business Lead</small></h4><p><b>전 분야에서 마스터 레벨</b>이 되면, 사업을 총괄·진행할 역량(능력적인 부분)이 확보된다.</p></div>
+      <div class="lvl m1"><div class="step">2개 이상 도메인</div><h4>아티잔<small>Artisan</small></h4><p>6개 핵심 도메인 중 <b>2개 이상을 전문가 수준으로</b> 확보한 사람. 서로 다른 강점이 겹치며 팀의 유기적 연결과 안정성을 만든다.</p></div>
+      <div class="lvl m2"><div class="step">전 도메인 리더</div><h4>마스터 PD<small>Master PD</small></h4><p><b>모든 도메인에서 리더 레벨</b> 이상에 오른 사람. 전 영역을 이해하기에 팀 전체의 작업을 판단·조율하는 총괄 프로듀서가 된다.</p></div>
+      <div class="lvl m3"><div class="step">전 도메인 마스터</div><h4>사업 총괄 역량<small>Business Lead</small></h4><p><b>전 분야에서 마스터 레벨.</b> 모든 영역을 스스로 평가·심화할 수 있어, 능력 면에서 사업 자체를 총괄·진행할 역량이 확보된 상태다.</p></div>
     </div>
 
     <h2 class="sec-h">평가 · 훈련 · 보상</h2>
