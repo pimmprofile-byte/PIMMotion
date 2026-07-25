@@ -44,6 +44,7 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 - **신선도 파생**: 인별 `freshness{last_log_ts, status}` — `green`(24h 이내)/`yellow`(24~72h)/`red`(72h+ stale). **숨기지 않는다**(기록 공백 가시화).
 - **메타**: `meta{generated_at(ISO 분단위), generator, source_files[{member,file,drive_id,modified}], warnings[]}`. 롤업 동일파일명 다중 존재 시 **modifiedTime 최신본만 채택** + 채택 근거를 `source_files`에.
 - **사용 지침**: `guide{title, items[]}`(대시보드 상단 렌더 — 하드코딩 금지, config가 정본).
+- **사내공지**: 그린필드 `06_Notice_사내공지/`의 **active 공지**를 `notices[]`(최신순, `active=true`만)로 집계. 대표 발화 **"사내공지로 해줘: {내용}"** → 소스 파일 생성 → 다음 run 반영, **"공지 내려줘"** → `active:false`. body **원문 보존**(요약 금지). 스키마·트리거 정본 = spec §I-4.
 - 심상윤 `master:true`. 게이트 권한: 🔴 대표검수 / 🟡 팀장판단·보고(`yellow_policy`) / 🟢 자율.
 
 ## 4. 출력 = 대시보드 config (구형 폐기)
