@@ -158,6 +158,8 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 .lvl{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-top:3px solid var(--green)}
 .lvl.l1{border-top-color:var(--line2)}.lvl.l2{border-top-color:var(--green)}.lvl.l3{border-top-color:var(--green-d)}
+.lvl.m1{border-top-color:var(--green)}.lvl.m2{border-top-color:var(--blue)}.lvl.m3{border-top-color:var(--amber)}
+.lvl.m1 .step{color:var(--green)}.lvl.m2 .step{color:var(--blue)}.lvl.m3 .step{color:var(--amber)}
 .lvl .step{font-size:11px;font-weight:800;color:var(--green);letter-spacing:.06em}
 .lvl h4{font-size:16px;font-weight:800;margin-top:4px}.lvl h4 small{font-size:12px;color:var(--ink3);font-weight:600;margin-left:5px}
 .lvl p{color:var(--ink2);font-size:13px;margin-top:8px;line-height:1.6}
@@ -468,12 +470,21 @@ function renderArtisan(){
     </div>
 
     <div class="lesson"><h3>성장 모델 한눈에 <span class="tag">개요</span></h3>
-      <div class="pipe"><span class="st">STP 성향 파악</span><span class="ar">→</span><span class="st">6도메인 중 설정</span><span class="ar">→</span><span class="st">플로어→리더→마스터</span><span class="ar">→</span><span class="st">2개+ 멀티도메인 = 아티잔</span></div>
-      <div class="plain"><span class="lb">쉽게 말하면</span>내 성향에 맞는 도메인을 골라 단계를 밟아 마스터하고, 그걸 <b>2개 이상</b> 갖추면 '아티잔'이야. 서로 도메인이 겹치는 동료가 반드시 있어서 팀이 유기적으로 연결되고, 한 사람이 빠져도 무너지지 않아(단일 실패점 방지).</div></div>
+      <div class="pipe"><span class="st">STP로 6도메인 진단</span><span class="ar">→</span><span class="st">도메인 성장(플로어→리더→마스터)</span><span class="ar">→</span><span class="st">2개+ 확보 = 아티잔</span><span class="ar">→</span><span class="st">전 도메인 리더 = 마스터PD</span></div>
+      <div class="plain"><span class="lb">쉽게 말하면</span>내 도메인을 진단해 단계를 밟아 키우고, 전문가 수준을 <b>2개 이상</b> 갖추면 '아티잔'이야. 서로 도메인이 겹치는 동료가 반드시 있어서 팀이 유기적으로 연결되고, 한 사람이 빠져도 무너지지 않아(단일 실패점 방지).</div></div>
 
     <h2 class="sec-h">6개 핵심 도메인</h2>
     <div class="legend"><span><i style="background:var(--purple)"></i>하드워크 (1·2)</span><span><i style="background:var(--blue)"></i>소프트워크 (3)</span><span><i style="background:var(--green)"></i>미학·예술 감각 (4·6)</span><span><i style="background:var(--amber)"></i>사업적 감각 (5)</span></div>
     <div class="forge-grid" style="margin-top:14px">${domCards}</div>
+
+    <div class="axis" style="margin-top:16px">
+      <h4>도메인의 두 갈래 축</h4>
+      <p>같은 6개라도 익히는 성격이 서로 달라.</p>
+      <div class="grid2">
+        <div class="ac"><div class="h">🛠️ 기술·작업물 축 (1·2·3)</div>현장제작·장치디바이스·설계와 디자인. <b>작업물과 기술력</b>에 관한 것으로, 배우면 느는 <b>가장 익히기 쉬운 축</b>.</div>
+        <div class="ac"><div class="h">✨ 감각 축 (4·5·6)</div>미학적 감각·비지니스·서사창작. <b>감각</b>에 관한 것으로, 익히기보다 <b>깨닫고 타고나는 것에 가까운 축</b>.</div>
+      </div>
+    </div>
 
     <div class="note" style="margin-top:16px"><b>목표이자 원칙</b> — 이 6개 핵심 도메인 중 <b>2개 이상의 영역</b>에서 '전문가'라 불릴 만한 능력·경험·경력을 갖추는 것. <span style="color:var(--ink3)">(핌 팀스피릿 원칙 — "각 멤버는 최소 2개의 전문 도메인을 확보하고, 두 영역 모두에서 깊이를 추구한다.")</span></div>
 
@@ -481,11 +492,19 @@ function renderArtisan(){
     <p class="lead" style="margin-top:6px;font-size:14px">각 도메인은 이 세 단계로 깊어져. 도메인마다 내 단계는 다를 수 있어(예: 설계는 리더, 시공은 플로어).</p>
     <div class="lvls">${lvlCards}</div>
 
+    <h2 class="sec-h">도달 지점 — 단계가 쌓이면</h2>
+    <p class="lead" style="margin-top:6px;font-size:14px">도메인 확보 수와 레벨이 쌓이면 이런 위치에 도달해.</p>
+    <div class="lvls">
+      <div class="lvl m1"><div class="step">2개 이상 도메인</div><h4>아티잔<small>Artisan</small></h4><p>6개 핵심 도메인 중 <b>2개 이상을 전문가 수준으로</b> 확보한 사람.</p></div>
+      <div class="lvl m2"><div class="step">전 도메인 리더</div><h4>마스터 PD<small>Master PD</small></h4><p><b>모든 도메인에서 리더 레벨</b> 이상에 오르면 마스터 PD가 된다.</p></div>
+      <div class="lvl m3"><div class="step">전 도메인 마스터</div><h4>사업 총괄 역량<small>Business Lead</small></h4><p><b>전 분야에서 마스터 레벨</b>이 되면, 사업을 총괄·진행할 역량(능력적인 부분)이 확보된다.</p></div>
+    </div>
+
     <div class="axis" style="margin-top:20px">
       <h4>측정과 훈련은 이렇게</h4>
       <p>내 도메인 역량을 재고(측정), 새 도메인을 내 것으로 만드는(훈련) 방법이야.</p>
       <div class="grid2">
-        <div class="ac"><div class="h">🧪 STP · AST — 측정</div>상황 시나리오 기반 <b>아티잔 시뮬레이션 테스트</b>로 도메인별 역량을 진단(S/A/B/C).</div>
+        <div class="ac"><div class="h">🧪 STP — 측정</div>6개 도메인을 심층 분석하는 테스트. <b>질문에 의도가 드러나지 않으면서도 각 도메인이 서로 얽히도록</b> 설계돼, 이 조건만 지키면 <b>코워크(Claude)가 매번 새 질문을 갱신·생성</b>할 수 있다.</div>
         <div class="ac"><div class="h">🔀 MPA — 도메인 마스터 훈련</div>새 도메인 진입 시 <b>M-T-B</b>(Middle→Top→Bottom Point)로 가치를 분해·내재화 — 직접 숙련할지 관리할지까지 정한다.</div>
       </div>
     </div>
