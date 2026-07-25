@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIMM 플로직 — 이해하기 · 풀어보기</title>
+<style>
+/* ============================================================
+   PIMM Plogic 교육 — 신입→마스터. 데이(Day) 가이드 · 퍼즐식.
+   두 모드: 플로직 이해하기(학습) / 플로직 풀어보기(연습→JSON→코워크 채점)
+   원칙: 알기 쉽고 실용적. 어려운 개념이 이해되게. 외부 의존 0.
+   ============================================================ */
+:root{
+  --bg:#f6f8f7; --card:#ffffff; --ink:#151a18; --ink2:#5a655f; --ink3:#93a09a;
+  --line:#e4e9e6; --line2:#d2dad6;
+  --green:#00b877; --green-d:#00925e; --mint:#e7f7f0; --mintline:#bfe9d7;
+  --amber:#ef9a3d; --red:#e5675e; --blue:#3f8bd6; --purple:#8a6bd1;
+  --r:16px; --rs:11px; --sh:0 2px 10px rgba(20,40,30,.05), 0 12px 30px rgba(20,40,30,.06);
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0e1512; --card:#141c18; --ink:#e9f0ec; --ink2:#9aa8a1; --ink3:#5f6c66;
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14); --mint:rgba(0,184,119,.1); --mintline:rgba(0,184,119,.28);
+  --sh:0 2px 10px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.35);
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Segoe UI','Malgun Gothic',sans-serif;
+  line-height:1.65;letter-spacing:-.01em;word-break:keep-all;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer} h1,h2,h3,h4,p{margin:0}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.mono{font-family:var(--mono);letter-spacing:0}
+
+/* Day 마스코트 */
+.day{width:44px;height:52px;flex:none}
+.day.sm{width:30px;height:36px}
+.bubble{position:relative;background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:13px 16px;box-shadow:var(--sh)}
+.bubble::before{content:"";position:absolute;left:-8px;top:18px;width:14px;height:14px;background:var(--card);border-left:1px solid var(--line2);border-bottom:1px solid var(--line2);transform:rotate(45deg)}
+.dayrow{display:flex;gap:14px;align-items:flex-start;margin:18px 0}
+
+/* 헤더 */
+header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.head{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 20px}
+.logo{font-weight:800;letter-spacing:-.02em}.logo b{color:var(--green)}
+.logo .bc{font-size:11px;color:var(--ink3);font-weight:600;margin-left:6px}
+.head .sp{flex:1}
+.mode-pills{display:flex;gap:6px}
+.mode-pills button{font-size:12.5px;font-weight:700;color:var(--ink2);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 14px}
+.mode-pills button.on{color:#fff;background:var(--green);border-color:var(--green)}
+.prog{height:5px;background:var(--line);position:relative}
+.prog > i{display:block;height:100%;background:linear-gradient(90deg,var(--green-d),var(--green));width:0;transition:width .4s}
+
+/* 랜딩 */
+.landing{text-align:center;padding:56px 20px 40px}
+.landing .day{width:96px;height:114px;margin:0 auto 10px}
+.landing h1{font-size:clamp(28px,6vw,44px);font-weight:800;letter-spacing:-.03em}
+.landing h1 b{color:var(--green)}
+.landing p{color:var(--ink2);margin-top:12px;font-size:clamp(15px,2.4vw,17px)}
+.choose{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:680px;margin:34px auto 0}
+.choose button{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);padding:26px 22px;text-align:left;box-shadow:var(--sh);transition:transform .18s,border-color .2s}
+.choose button:hover{transform:translateY(-4px);border-color:var(--green)}
+.choose .ic{font-size:30px}
+.choose h3{font-size:20px;font-weight:800;margin-top:10px}
+.choose p{color:var(--ink2);font-size:13.5px;margin-top:6px}
+.choose .go{color:var(--green);font-weight:700;font-size:13px;margin-top:12px}
+@media(max-width:620px){.choose{grid-template-columns:1fr}}
+
+/* 학습 레이아웃 */
+.learn{display:grid;grid-template-columns:220px 1fr;gap:26px;padding:26px 0 80px}
+.mnav{position:sticky;top:70px;align-self:start;display:grid;gap:4px}
+.mnav button{text-align:left;background:transparent;border:0;border-radius:10px;padding:10px 12px;color:var(--ink2);font-size:13.5px;display:flex;align-items:center;gap:9px}
+.mnav button:hover{background:var(--mint)}
+.mnav button.on{background:var(--mint);color:var(--green-d);font-weight:700}
+.mnav button .n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+.mnav button.on .n{background:var(--green);color:#fff;border-color:var(--green)}
+.mnav button.done .n{background:var(--green-d);color:#fff;border-color:var(--green-d)}
+.mnav button.done .n::after{content:"✓"}
+.mnav button.done .n span{display:none}
+
+.mod .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);font-weight:800}
+.mod h2{font-size:clamp(24px,4vw,32px);font-weight:800;letter-spacing:-.03em;margin-top:6px}
+.mod .lead{color:var(--ink2);margin-top:10px;font-size:15px}
+.lesson{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-top:16px;box-shadow:var(--sh)}
+.lesson h3{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
+.lesson h3 .tag{font-size:10px;font-weight:800;color:var(--green-d);background:var(--mint);border:1px solid var(--mintline);border-radius:999px;padding:2px 8px;letter-spacing:.02em}
+.lesson p{color:var(--ink2);font-size:14.5px;margin-top:8px}
+.lesson .k{color:var(--ink);font-weight:700}
+.lesson ul{margin:10px 0 0;padding-left:2px;list-style:none;display:grid;gap:7px}
+.lesson ul li{font-size:14px;color:var(--ink2);padding-left:20px;position:relative}
+.lesson ul li::before{content:"";position:absolute;left:4px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+.lesson ul li b{color:var(--ink)}
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 2px}
+.pipe .st{background:var(--mint);border:1px solid var(--mintline);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;color:var(--green-d)}
+.pipe .ar{color:var(--ink3);font-weight:800}
+.note{background:var(--mint);border:1px solid var(--mintline);border-radius:var(--rs);padding:12px 14px;margin-top:14px;font-size:13.5px;color:var(--green-d)}
+.note b{color:var(--green-d)}
+
+/* 인라인 퀴즈(이해하기 자가확인) */
+.check{border:1px dashed var(--line2);border-radius:var(--r);padding:18px;margin-top:18px;background:var(--card)}
+.check .q{font-weight:700;font-size:14.5px;display:flex;gap:8px;align-items:flex-start}
+.check .q .b{color:var(--amber)}
+.opts{display:grid;gap:8px;margin-top:12px}
+.opts button{text-align:left;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:11px 13px;font-size:14px;transition:.15s}
+.opts button:hover{border-color:var(--green)}
+.opts button.correct{background:var(--mint);border-color:var(--green);color:var(--green-d);font-weight:700}
+.opts button.wrong{background:color-mix(in srgb,var(--red) 12%,var(--bg));border-color:var(--red)}
+.fb{margin-top:10px;font-size:13px;display:none}.fb.show{display:block}
+.fb.ok{color:var(--green-d)}.fb.no{color:var(--red)}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.matchgrid .cell{background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:9px 11px;font-size:13px}
+
+.modfoot{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.btn{background:var(--green);color:#fff;border:0;border-radius:999px;padding:11px 22px;font-weight:700;font-size:14px}
+.btn:hover{background:var(--green-d)} .btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line2)}
+.badge-pop{display:inline-flex;align-items:center;gap:7px;background:var(--mint);border:1px solid var(--mintline);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--green-d)}
+
+/* 풀어보기 */
+.solve{padding:26px 0 90px}
+.solve-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.solve-head h2{font-size:clamp(22px,4vw,30px);font-weight:800}
+.solve-head .sp{flex:1}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-top:14px;box-shadow:var(--sh)}
+.qcard .meta{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--ink3);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.qcard .meta .lv{padding:2px 8px;border-radius:999px;border:1px solid var(--line2)}
+.qcard .meta .lv.recall{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
+.qcard .meta .lv.create{color:var(--purple);border-color:color-mix(in srgb,var(--purple) 40%,transparent)}
+.qcard .qt{font-size:16px;font-weight:700;margin-top:8px}
+.qcard .hint{font-size:13px;color:var(--ink2);margin-top:6px}
+.qcard textarea{width:100%;margin-top:12px;background:var(--bg);border:1px solid var(--line2);border-radius:var(--rs);color:var(--ink);font:inherit;font-size:14px;padding:12px;resize:vertical;min-height:90px}
+.qcard textarea:focus{outline:none;border-color:var(--green)}
+.qcard .saved{font-size:12px;color:var(--green-d);margin-top:6px;display:none}.qcard .saved.show{display:inline-block}
+.export-bar{position:sticky;bottom:0;background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:14px 0;margin-top:20px}
+.export-bar .in{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:12px}
+.export-bar .cnt{font-size:13px;color:var(--ink2)}
+.namein{background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;color:var(--ink)}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink3);font-size:12px;text-align:center}
+.hide{display:none!important}
+@media(max-width:720px){.learn{grid-template-columns:1fr}.mnav{position:static;grid-auto-flow:column;overflow-x:auto;padding-bottom:6px}.mnav button{white-space:nowrap}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <div class="logo"><b>PIMM</b> 플로직<span class="bc">핌허브 · Plogic</span></div>
+    <div class="sp"></div>
+    <div class="mode-pills" id="modePills" style="display:none">
+      <button data-mode="learn" class="on">이해하기</button>
+      <button data-mode="solve">풀어보기</button>
+      <button data-mode="home" style="border:0;color:var(--ink3)">↺</button>
+    </div>
+  </div>
+  <div class="prog"><i id="progBar"></i></div>
+</header>
+
+<main id="app"></main>
+<footer>PIMM 플로직 교육 v0.1 — 이해하기(학습) · 풀어보기(연습→JSON 내보내기→코워크 채점) · 진도는 이 브라우저에 저장</footer>
+
+<script>
+/* ===== Day 마스코트 (SVG 토큰, SPRITE_URL로 실제 day.png 교체 가능) ===== */
+const SPRITE_URL=null; // 예: "assets/day.png"
+function daySVG(cls){return SPRITE_URL
+  ? `<img class="day ${cls||''}" src="${SPRITE_URL}" alt="Day">`
+  : `<svg class="day ${cls||''}" viewBox="0 0 44 52" aria-hidden="true">
+      <rect x="12" y="3" width="20" height="16" rx="5" fill="#00b877"/>
+      <rect x="15" y="19" width="14" height="17" rx="4" fill="#151a18"/>
+      <rect x="16" y="36" width="5" height="12" fill="#5a655f"/><rect x="23" y="36" width="5" height="12" fill="#5a655f"/>
+      <circle cx="19" cy="10" r="1.8" fill="#fff"/><circle cx="25" cy="10" r="1.8" fill="#fff"/>
+      <path d="M18 13 q4 3 8 0" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;}
+
+/* ============================================================
+   콘텐츠 데이터 — 플로직 그린필드 정본 대조 완료(원문 무왜곡).
+   출처: 00.4 아이디어 공정 / 01.0.x 파이프라인 제작가이드(T2) /
+        01.0.6·01.0.14 마스터로직 / 00.2 기술적 헌법 / 02.x 판단로직 / 용어사전.
+   ============================================================ */
+const MODULES=[
+ {id:0,eyebrow:"MODULE 0",title:"우리는 왜 몰입을 짓나",lead:"플로직에 들어가기 전, '왜'부터. 이머시브와 PIMM의 철학.",
+  day:"안녕! 난 Day야. 테마제작 하나도 몰라도 괜찮아 — 나랑 하나씩 가보자. 먼저 '우리가 뭘 하는 회사인지'부터.",
+  lessons:[
+   {h:"이머시브(Immersive)란?",tag:"개념",p:"관람이 아니라 <span class='k'>참여</span>. 벽 너머 구경꾼이 아니라 이야기 <span class='k'>한가운데의 주인공</span>이 되는 경험. 방탈출·팝업·전시·공포체험이 모두 이 '몰입'으로 가는 서로 다른 문이야."},
+   {h:"PIMM이 만드는 것",tag:"범위",list:["<b>방탈출</b> — 단서를 풀며 이야기를 통과 (PIMMscape)","<b>브랜드 팝업스토어</b> — 브랜드를 공간으로 체험 (PIMM-UP)","<b>체험형 전시 · 플레이부스</b> — 직접 만지고 움직이는 콘텐츠","<b>이머시브 공포체험관</b> — 겪어내는 공포 (PIMMex)"]},
+   {h:"PPP → IMM 철학",tag:"핵심",p:"<span class='k'>PIMM = Place + Play + Persona → Immersive.</span> '몰입이 체험을 경험으로 만든다'가 코어 룰. 플로직 전체의 뿌리야.",
+    list:["<b>Place(공간)</b> — 서사를 전달하는 물리적 무대. 시공 기반 현실주의로 '여기는 진짜다'라는 무의식적 확신을 줌","<b>Play(놀이)</b> — 관찰자를 주인공으로. 즉각적 Action-Reaction 피드백, 센서·아두이노가 마법을 기술로 증명","<b>Persona(페르소나)</b> — 공간·놀이에 영혼. 일관된 내러티브와 '나는 누구인가'의 명확한 역할","<b>Immersive(몰입)</b> — 위 셋이 합쳐져 끝내 다다르는 목적지"]},
+   {h:"재미 vs 실현가능성",tag:"핵심",p:"플로직이 늘 저울질하는 두 축이야.",
+    list:["<b>재미 = '의도된 인과관계의 보상'</b> — Input에 대해 예상 못 한, 그러나 개연성 있는 즉각적 Output이 돌아올 때 생김","<b>실현가능성</b> — 기술·예산·공간 안에서 물리적으로 구현되는가","<b>치환</b> — 구현 어려운 아이디어는 기술적 대안으로 바꾼다 (예: 방 전체 회전 대신 영상맵핑+진동)"]},
+   {h:"플로직이란?",tag:"정의",p:"<span class='k'>플로직(Plogic) = PIMM + Logic.</span> 핌아트웍스의 논리 체계·프레임워크 볼트야. 플로직은 <span class='k'>'왜/무엇을'</span>을 정의하고, <span class='k'>'어떻게/얼마로'</span>는 파트웍(현장)·포피스(운영)가 담당해 — 이 경계가 전체를 관통하는 대원칙. 이 교육의 목표는 이 어려운 체계를 <span class='k'>쉽고 실용적으로</span> 손에 익히는 거야."}
+  ],
+  check:{type:"mc",q:"플로직은 '재미'를 무엇으로 정의할까?",opts:["화려하고 비싼 세트","의도된 인과관계의 보상","긴 러닝타임","최신 장치의 개수"],ans:1,fb:"맞아! 재미 = 의도된 인과관계의 보상. Input에 개연성 있는 즉각 Output이 돌아올 때 생겨."}
+ },
+ {id:1,eyebrow:"MODULE 1",title:"지도 읽기 — 체급·트랙·용어",lead:"제작에 들어가기 전 '어떤 규모, 어떤 종류'인지 읽고, 현장 용어에 익숙해지기.",
+  day:"이제 지도를 볼 차례. 같은 테마라도 '체급(Tier)'과 '종류(트랙)'에 따라 만드는 법이 달라. 현장에서 쓰는 말들도 미리 익혀두자!",
+  lessons:[
+   {h:"Tier — 프로젝트 티어 vs 서류 티어",tag:"분류",p:"티어는 두 종류야. 헷갈리지 마!",list:["<b>프로젝트 티어</b> — 프로젝트 자체 규모. <b>T1 프리미엄 / T2 스탠다드 / T3 베이직.</b> 표기에 '비트·노트' 접미사 안 붙임 (그냥 'T2 테마')","<b>서류 티어</b> — 각 공정단계 서식의 등급. 여기서만 접미사를 씀 ('T2 테마비트', 'T2 스페이스노트')","<b>서류 4종</b> — 프리미엄비트(T1·60~70p) / <b>테마비트(T2·PIMMscape·15~25p)</b> / 스페이스비트(T2·PIMM-UP·10~15p) / 베이직비트(T3·5~10p)"]},
+   {h:"Track — 무엇을 만드나",tag:"분류",p:"사업 계열이야. 크게 방탈출·공포·팝업, 그리고 팝업 하위의 B2C/B2G.",list:["<b>PIMMscape</b> — 방탈출 테마 (예: 파노라마)","<b>PIMMex</b> — 이머시브 공포체험","<b>PIMM-UP</b> — 팝업스토어·단기행사 (상위 카테고리)","<b>PIMMercial</b> — B2C 커머셜(브랜드·IP) 트랙","<b>PIMMvention</b> — B2G 공공·정부·이벤트 트랙"]},
+   {h:"티어는 어떻게 판정하나 (5-Axis)",tag:"실용",p:"5개 축을 상/중/하로 보고 파트별 가중치로 결정해. 한 축이 압도적이면 부족분을 보상하기도 해.",list:["① 예산규모(5천만↑=H) ② 공간규모(100평↑=H) ③ 행사기간(2주↑·상설=H) ④ 파급력(대중IP=H) ⑤ 베뉴입지(랜드마크=H)","<b>수율</b>(마진 슬랭) 300만원 이하면 통상 T3"]},
+   {h:"신입 필수 용어사전",tag:"용어",p:"현장에서 바로 튀어나오는 말들. 뜻만 알아도 대화가 통해.",list:["<b>아다리</b> — 기계적 맞물림·인과가 완벽히 들어맞는 상태 (핌 미감의 핵심 판정어)","<b>스라</b> — 단차 없이 면이 딱 맞는 상태(Flush). 점검구가 벽과 스라 맞아야 장치가 숨음","<b>와리</b> — 타일·패널·배선을 일정 간격으로 나누는 배치","<b>데나오시</b> — 시공오류로 처음부터 재작업 (최악)","<b>가쇼</b> — 정식시공 전 임시 가조립 테스트","<b>뚝</b> — 억지·논리빈약으로 플레이어 머리 아프게 하는 문제. '핌은 뚝을 배제한다'","<b>장치(Device)</b> — 자물쇠가 아닌 센서+아두이노 인터랙티브 기믹. 핌은 '장치 위주 테마' 지향","<b>수율</b> — 수익률(마진) 슬랭 · <b>PlaceNarrative</b> — 공간이 전달하는 핵심 키워드(공간서사)"]}
+  ],
+  check:{type:"mc",q:"'T2 테마비트' 처럼 비트·노트 접미사를 붙이는 건 어느 티어일 때?",opts:["프로젝트 티어","서류 티어","둘 다","둘 다 아님"],ans:1,fb:"정답! 접미사는 서류(서식) 티어에서만. 프로젝트 규모는 그냥 'T2 테마'라고 써."}
+ },
+ {id:2,eyebrow:"MODULE 2",title:"아이디어 공정 — 테마제작의 심장",lead:"모든 테마가 지나는 5단계 파이프라인. 여기가 플로직의 심장이야.",
+  day:"제일 중요한 장! 아이디어가 실제 공간이 되기까지 5단계를 꼭 순서대로 지나. 이거 하나만 확실히 익혀도 절반은 마스터야.",
+  lessons:[
+   {h:"파이프라인",tag:"핵심",pipeline:["Beat","Note","Render","Work","Max"],
+    p:"<span class='k'>Beat → Note → Render → Work → Max.</span> 원초적 영감(Beat)이 논리(Note)를 얻고, SW로 설계(Render)돼, 현장에서 시공(Work)되고, 끝으로 회사 자산이 되는(Max) 흐름. '상상을 물리적 실체로 변환하는 안정화의 과정'이야."},
+   {h:"① Beat — 원초적 영감의 파편",tag:"단계",p:"인과·기술검토 <span class='k'>이전</span>의 순수 아이디어. 한 문장이나 이미지로 존재하며 '핌의 맛'을 결정해. 예: '폐쇄된 우주선의 정체 모를 심리적 공포'.",list:["산출: <b>비트제안서 + 버추얼 스토리보드</b> 2종 세트 (클라이언트 대응용)"]},
+   {h:"② Note — 논리의 골조",tag:"단계",p:"비트에 <span class='k'>'Plogic의 질서'</span>를 부여해. '우주선 공포'가 '산소부족 수치에 따른 조명변화+실시간 경보'로 구체화돼. 이 단계에서 비로소 <span class='k'>기술적 헌법 필터</span>가 작동(적외선 vs 마그네틱 센서 판단).",list:["산출: 정밀 스크립트 — 시퀀스·장치플로우·공간구조"]},
+   {h:"③ Render — 소프트워크(SW 설계)",tag:"단계",p:"노트를 <span class='k'>스케치업·CAD</span>로 설계·문서화해 '100% 예측 가능한 결과값'으로 확정해. 상상을 도면으로 못 박는 단계.",list:["<b>도면 이원화</b>(기획용/시공용), 레이어드 디자인, 표준 스펙시트","철칙 '<b>시안 = 설계도</b>' — 시안 속 모든 요소가 제작 대상. 요소 삭제는 클라이언트 승인 후에만"]},
+   {h:"④ Work — 하드워크(현장작업)",tag:"단계",p:"실제 <span class='k'>시공·설치·검증</span>. 여기서 도면이 진짜 공간이 돼.",list:["<b>시공 90% 시점에 전문 테스터 투입 QA</b> (난이도·로직오류·연출 타격감)","오픈 전 최종 밸런싱"]},
+   {h:"⑤ Max — 사후공정 (오해 주의!)",tag:"단계",p:"Max는 '최종 마감'이 아니야. Work 결과물을 <span class='k'>회사 자산·IP로 전환·극대화</span>하는 사후공정이야.",list:["산출: <b>스케치필름 · 마케팅 콘텐츠 · 고객피드백 · 재계약 · 아카이브</b>","핵심 원리: Max 산출물은 결과물 품질보다 <b>클라이언트·고객 관계에 종속</b> (관계 나쁘면 촬영·재계약 자체가 무산)"]},
+   {h:"Tier마다 깊이가 다르다",tag:"실용",p:"같은 단계라도 T1/T2/T3에 따라 산출물의 밀도가 달라. 각 단계엔 Tier·트랙별 <span class='k'>제작가이드</span>가 있어."}
+  ],
+  check:{type:"order",q:"아이디어 공정 순서를 맞춰봐 (클릭해서 순서대로).",items:["Beat","Note","Render","Work","Max"],fb:"완벽! Beat(영감)→Note(논리)→Render(SW설계)→Work(현장시공)→Max(사후·자산화). 이게 테마제작의 뼈대야."}
+ },
+ {id:3,eyebrow:"MODULE 3",title:"크래프트 이론 — '겪게' 만드는 기술",lead:"예쁜 세트를 넘어 '몰입'을 설계하는 범용 마스터로직들.",
+  day:"세트만 예쁘면 전시야. 방문객이 '겪게' 만들려면 기술이 필요해. 칙센트미하이·노먼·카네먼·디즈니에서 빌려와 핌식으로 다듬은 범용 프레임워크들을 소개할게.",
+  lessons:[
+   {h:"서사구조 — 8-Cell 감정역학",tag:"이론",p:"3막 구조를 시퀀스 타임라인으로 해체·재조합한 8칸. 방문객의 <span class='k'>감정 곡선</span>을 의도적으로 설계해.",list:["Cell 1~2 도입·사건 (첫인상=세계관 선언) / 3~4 전환·고조 / <b>5~6 충격·폭발 = Peak</b>(하드웨어 총동원, Sensory Override)","<b>7 쉼(Pause)</b> — 정보 비대칭·성찰로 낙차를 벌림 / <b>8 결말 = End</b>(변화된 페르소나 확인)"]},
+   {h:"환경적 스토리텔링 4계층",tag:"이론",p:"디즈니 이매지니어링식 4겹. 한 계층만 빠져도 '세트', 전부 완성되면 '세계'.",list:["L1 하드스케이프(골조·마감)에서 압도 · L2 테크/인프라(조명·음향·특효) · L3 프롭(기능/데코 엄격 분리)에서 쾌감 · L4 오버레이(그래픽·텍스트, 최소운용·임팩트극대화)"]},
+   {h:"플로우 & 어포던스 (공식으로 기억)",tag:"이론",list:["<b>Flow = Density × (1/Friction)</b> — 상호작용 밀도가 높으면 인지비용(마찰)을 낮춰라. 둘 다 높으면 몰입이 붕괴돼","<b>어포던스 = Mechanical Instinct = Physical Volume × Auditory Feedback</b> — 형태로 조작법이 읽히고, 피드백은 0.1초 이내. 물리 조작기 > 평면 터치"]},
+   {h:"로그라인 · 피크엔드 · 엔딩 3단계",tag:"이론",list:["<b>P-Logline = Concept Clash × Clear Mission</b> — 모든 테마는 한 문장으로. 비트제안서 첫 장에 명기","<b>피크-엔드 법칙</b>(카네먼) — 사람은 Peak(5~6)과 End(8)로 전체를 기억. 사이에 7(쉼)을 넣어 낙차 극대화","<b>엔딩 3단계</b> — 목적성 완결 → 감각적 해방(전 하드웨어 동시폭발) → 큐레이팅된 쿨다운(전환음악으로 현실복귀). 쿨다운 없이 즉시 퇴장하면 고양감이 '혼란'이 됨"]},
+   {h:"게임퍼즐 — MDA · 장면연출",tag:"이론",list:["<b>MDA</b> — Mechanics(장치)→Dynamics(작동)→Aesthetics(감정). 힌트는 3레이어링","<b>장면연출</b> — 미장센, <b>Synchresis</b>(소리·영상 0.1초 싱크), Gateway Effect, Pacing. 톤은 밝고 압도적으로(무의미한 어둠·공포 지양)"]}
+  ],
+  check:{type:"mc",q:"'밀도가 높으면 마찰(인지비용)을 낮춰라'를 담은 공식은?",opts:["Concept Clash × Clear Mission","Density × (1/Friction)","Physical Volume × Auditory Feedback","Mechanics→Dynamics→Aesthetics"],ans:1,fb:"맞아! Flow = Density × (1/Friction). 밀도·마찰이 동시에 높으면 몰입이 무너져."}
+ },
+ {id:4,eyebrow:"MODULE 4",title:"실전 — 헌법·트랙·제안서",lead:"반드시 지켜야 할 기술 표준, 트랙별 적용 차이, 그리고 파는 기술.",
+  day:"이제 실전이야. 아무리 좋은 아이디어도 '안 돌면' 끝. 먼저 절대 지켜야 할 기술적 헌법부터, 그다음 트랙별 차이와 제안서까지.",
+  lessons:[
+   {h:"기술적 헌법 — '안정성이 창의성보다 우선'",tag:"표준",p:"결벽에 가까운 가동률이 원칙. 통제 불가능한 외부변수에 의존하는 기획은 폐기해.",list:["<b>센서 블랙리스트</b> — 적외선·무게·진동·조도 (오반응·데이터 튐)","<b>센서 화이트리스트</b> — 마그네틱·RFID·물리버튼/리미트스위치","<b>'유선이 곧 진리'</b> — 주력 Arduino Mega 2560, 1:1 USB 유선직결(무선 금지)","<b>500-500-200</b> — 모든 장치는 가로500×세로500×깊이200mm 이상 점검구를 확보해야 설계 승인","브릿지 SW: <b>PIMM Player</b>(센서신호→변수), <b>PIMMotion</b>(스위치·변수 직관 도구)"]},
+   {h:"트랙별 적용 차이",tag:"트랙",list:["<b>PIMMscape(방탈출)</b> — 단서·퍼즐·서사 통과. MDA·어포던스가 핵심. 렌더 산출물은 <b>디벨롭기획안</b>(발주리스트 별도)","<b>PIMMex(공포)</b> — 배우+공간이 함께 밀어붙임. 장면연출(빛·소리·타이밍)이 생명","<b>PIMM-UP(팝업)</b> — 브랜드 단기 행사. 집객·화제성 목표. 렌더 산출물은 <b>최종시안</b>(발주·치수·입면도·공정표 포함, 공기제약)"]},
+   {h:"소형테마 특화로직 (핌스케이프 노트단계)",tag:"실전",p:"6평을 2~3배로 쓰는 핌만의 기술.",list:["<b>공간 가변성</b>(천장하강·가구매립) · <b>연출적 분리</b>(디지털존 vs 아날로그존 감각대비)","<b>하이브리드 에셋관리</b>(동일 HW 위 SW만 교체) · <b>심리적 타격감</b>(강제실패·전원코드 뽑기)"]},
+   {h:"제안서 마스터로직 — 파는 기술",tag:"실전",p:"두 직교 축: <span class='k'>Tier(분량·증명깊이) × 표현타입</span>.",list:["<b>표현 4타입</b> — A 비주얼(톤앤매너·연출) / B 인터랙션(퍼즐·기믹) / C 비즈니스(매출·실현가능성, 가장 포멀) / D 공간(한 슬라이드 한 렌더)","<b>CI 표준</b> — 다크그레이 #262626 + #00FF99, Pretendard, .page 1920×1080, 격식체(~습니다)","<b>그리드 규율 최우선</b> — 텍스트 넘침·이미지 가림 0. 5단계 QC로 앞에서부터 누적 확정"]}
+  ],
+  check:{type:"mc",q:"기술적 헌법에서 신뢰(화이트리스트)하는 센서는?",opts:["적외선","진동","마그네틱·RFID","조도"],ans:2,fb:"맞아! 마그네틱·RFID·물리버튼이 화이트리스트. 적외선·무게·진동·조도는 블랙리스트야."}
+ },
+ {id:5,eyebrow:"MODULE 5",title:"마스터 — 판단하는 사람",lead:"만드는 사람에서 판단하는 사람으로. 경영·판단로직과 아티잔 마인드셋.",
+  day:"마지막 관문. 마스터는 '잘 만드는 사람'을 넘어 '옳게 판단하는 사람'이야.",
+  lessons:[
+   {h:"채산성·견적 — 이 프로젝트 남는가",tag:"판단",p:"견적 = <span class='k'>콘크리트(외주비+공정비) + 동액의 진행비.</span> 그래서 <span class='k'>총견적 ≈ 콘크리트 × 2.</span>",list:["<b>콘크리트는 최소화</b> 대상(원가율↑·통제불능) / <b>진행비는 마진의 원천</b>","협상은 항상 진행비에서 빼줌(콘크리트는 안 건드림). 커트라인은 마진율이 아니라 <b>절대 마진액</b>","마진 깎는 3조건: 클라이언트 밸류↑ / 활용도↑ / 급함"]},
+   {h:"운영 — 실패의 뿌리는 설계에 있다",tag:"판단",p:"모든 운영실패의 공통 뿌리는 <span class='k'>설계·기획 단계의 시스템 부재</span>(전사 1순위). 레드라이트는 설계에서 이미 보이지만 명분·시스템이 없어 못 잡는 것.",list:["<b>위임 가능성 = 산출물·검수기준의 독립성</b>. 검수에 전체 이해가 필요한 일은 대표에게 회귀","자원배분: 로스 큰 곳·팝업 우선 / 상설 후순위"]},
+   {h:"법무·계약·IP",tag:"판단",list:["<b>계약 킬스위치 = 잔금 기준 = '고객 체험 완료 시점'</b>","<b>책임 경계</b> — 외부공사(소방·건축·누수·간판·화장실)는 완전 배제, PIMM은 중개만","현 상태: 자체 IP 자산이 사실상 전무 → '마진 양보 근거'로 IP를 쓰던 관행은 갭"]},
+   {h:"파트너십·벤더",tag:"판단",list:["고정 파트너 = 반복 발주처(CNC·장치스위치·그래픽)만. 시공 인력은 대부분 일회성·긴급납기","외주는 내부처리 대비 <b>약 10배</b>로 부풀려짐 = '외주로 이득 본 적 없음'","자체기술 우위영역(장치·GRC·미술·그래픽)은 외주 안 함"]},
+   {h:"아티잔 마인드셋 (Artisan Plogic)",tag:"심화",p:"5인 페르소나 역할(Master PD, Main Producer, Utility, Construction Lead·Asst)과 <span class='k'>MPA 훈련</span> — 경계를 넘나드는 숙련."},
+   {h:"플로직 마스터",tag:"수료",p:"철학→공정→이론→헌법·트랙→판단까지 꿰면 <span class='k'>플로직 마스터</span>. 이제 '풀어보기'로 실력을 증명해봐!"}
+  ],
+  check:{type:"mc",q:"총견적은 대략 무엇의 2배로 잡을까?",opts:["진행비","콘크리트(외주비+공정비)","마진","범퍼"],ans:1,fb:"정답! 총견적 ≈ 콘크리트 × 2. 콘크리트는 최소화하고, 협상은 진행비에서 빼줘."}
+ }
+];
+
+/* 풀어보기 — 기존내용 질문(recall) + 심화 창작·퍼즐(create). create는 코워크 채점용. */
+const CHALLENGES=[
+ {mod:0,type:"recall",q:"PPP→IMM 4요소를 쓰고, '재미'를 플로직이 어떻게 정의하는지 한 줄로 적어라.",hint:"Place / Play / Persona / Immersive · 재미=의도된 인과관계의 보상"},
+ {mod:1,type:"recall",q:"'프로젝트 티어'와 '서류 티어'의 차이를 설명하고, 5개 트랙(PIMMscape·PIMMex·PIMM-UP·PIMMercial·PIMMvention)이 각각 무엇인지 쓰라.",hint:"규모 등급 vs 서식 등급 / 방탈출·공포·팝업·B2C·B2G"},
+ {mod:2,type:"recall",q:"아이디어 공정 5단계를 순서대로 쓰고, 특히 Render·Work·Max가 각각 무엇인지(산출물 포함) 정확히 적어라.",hint:"Beat→Note→Render(SW설계)→Work(현장시공)→Max(사후·자산화)"},
+ {mod:3,type:"recall",q:"Flow 공식과 어포던스(Mechanical Instinct) 공식을 쓰고, 방탈출 퍼즐 예시로 각각 설명하라.",hint:"Flow=Density×(1/Friction) / 어포던스=Physical Volume×Auditory Feedback"},
+ {mod:2,type:"create",q:"[창작] '오래된 등대'를 소재로 T2 방탈출 테마의 Beat(한 줄 영감)와, 그 Beat에 논리를 부여한 Note의 핵심 설정 3가지를 만들어라.",hint:"Beat는 영감의 파편, Note는 Plogic의 질서(기술 헌법 필터 포함)."},
+ {mod:3,type:"create",q:"[창작] 위 등대 테마의 첫 존에 넣을 퍼즐 1개를 MDA로 설계하라. Mechanics(장치)/Dynamics(작동)/Aesthetics(느낌)를 나눠서, 8-Cell의 어느 구간에 놓을지도 적어라.",hint:"장치→작동→감정 / Peak(5~6)·쉼(7)·End(8) 중 어디?"},
+ {mod:4,type:"create",q:"[적용] 어떤 브랜드가 '3주 팝업으로 화제성'을 원한다. 트랙·Tier를 고르고 이유, 그리고 기술적 헌법(화이트리스트 센서·유선·500-500-200)을 지키면서 쓸 집객 장치 2개를 제시하라.",hint:"PIMM-UP·PIMMercial / Tier 근거 + 안정성 우선 장치"},
+ {mod:5,type:"create",q:"[판단] 위 팝업 의뢰의 예산이 빠듯하다. 견적을 '콘크리트+진행비'로 나눠, 채산성 관점에서 무엇을 줄이고(콘크리트?) 무엇을 지킬지, 그 판단 근거를 써라.",hint:"총견적≈콘크리트×2 · 협상은 진행비에서 · 절대 마진액 사수"}
+];
+
+/* ===== 상태 ===== */
+let mode="home", curMod=0;
+const store={done:{},checks:{},answers:{},learner:""};
+try{Object.assign(store,JSON.parse(localStorage.getItem("plogic")||"{}"))}catch(e){}
+function save(){try{localStorage.setItem("plogic",JSON.stringify(store))}catch(e){}}
+const $=s=>document.querySelector(s);
+
+/* ===== 라우팅 ===== */
+function setMode(m){mode=m;$("#modePills").style.display=m==="home"?"none":"flex";
+  document.querySelectorAll("#modePills button").forEach(b=>b.classList.toggle("on",b.dataset.mode===m));
+  render();window.scrollTo(0,0);}
+function progress(){const done=Object.keys(store.done).filter(k=>store.done[k]).length;$("#progBar").style.width=(done/MODULES.length*100)+"%";}
+
+function render(){
+  progress();
+  if(mode==="home")return renderHome();
+  if(mode==="learn")return renderLearn();
+  if(mode==="solve")return renderSolve();
+}
+
+function renderHome(){
+  $("#app").innerHTML=`<div class="wrap landing">
+    ${daySVG("")}
+    <h1><b>플로직</b> 배우기</h1>
+    <p>테마제작을 하나도 몰라도 괜찮아요. Day와 함께 <b>신입 → 플로직 마스터</b>까지.</p>
+    <div class="choose">
+      <button data-mode="learn"><div class="ic">📖</div><h3>플로직 이해하기</h3><p>PPP·IMM 철학부터 아이디어 공정·크래프트 이론·판단로직까지. 어려운 개념을 쉽게, 퍼즐로 확인하며.</p><div class="go">학습 시작 →</div></button>
+      <button data-mode="solve"><div class="ic">🧩</div><h3>플로직 풀어보기</h3><p>배운 내용을 질문·창작·퍼즐로 풀어봐요. 답안을 JSON으로 내보내면 코워크가 채점해줍니다.</p><div class="go">문제 풀기 →</div></button>
+    </div></div>`;
+  $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+}
+
+/* ===== 이해하기 ===== */
+function renderLearn(){
+  const nav=MODULES.map(m=>`<button data-m="${m.id}" class="${m.id===curMod?'on':''} ${store.done[m.id]?'done':''}"><span class="n"><span>${m.id}</span></span>${m.title}</button>`).join("");
+  const m=MODULES[curMod];
+  const lessons=m.lessons.map(l=>{
+    let body=l.p?`<p>${l.p}</p>`:"";
+    if(l.pipeline)body+=`<div class="pipe">${l.pipeline.map((s,i)=>`<span class="st">${s}</span>${i<l.pipeline.length-1?'<span class="ar">→</span>':''}`).join("")}</div>`;
+    if(l.list)body+=`<ul>${l.list.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+    return `<div class="lesson"><h3>${l.h}${l.tag?`<span class="tag">${l.tag}</span>`:''}</h3>${body}</div>`;
+  }).join("");
+  const done=store.done[m.id];
+  $("#app").innerHTML=`<div class="wrap learn">
+    <nav class="mnav">${nav}</nav>
+    <section class="mod">
+      <div class="eyebrow">${m.eyebrow}</div><h2>${m.title}</h2><p class="lead">${m.lead}</p>
+      <div class="dayrow">${daySVG("sm")}<div class="bubble">${m.day}</div></div>
+      ${lessons}
+      ${checkHTML(m)}
+      <div class="modfoot">
+        <button class="btn ghost" ${curMod===0?'disabled style=opacity:.4':''} id="prevBtn">← 이전</button>
+        ${done?`<span class="badge-pop">✓ 이 모듈 완료</span>`:''}
+        <button class="btn" id="nextBtn">${curMod<MODULES.length-1?'다음 모듈 →':'풀어보기로 →'}</button>
+      </div>
+    </section></div>`;
+  $("#app").querySelectorAll(".mnav button").forEach(b=>b.onclick=()=>{curMod=+b.dataset.m;render();window.scrollTo(0,0)});
+  bindCheck(m);
+  $("#prevBtn").onclick=()=>{if(curMod>0){curMod--;render();window.scrollTo(0,0)}};
+  $("#nextBtn").onclick=()=>{store.done[m.id]=true;save();if(curMod<MODULES.length-1){curMod++;render();window.scrollTo(0,0)}else setMode("solve")};
+}
+function checkHTML(m){
+  const c=m.check;if(!c)return"";
+  if(c.type==="mc")return `<div class="check" id="chk"><div class="q"><span class="b">퀴즈</span><span>${c.q}</span></div>
+    <div class="opts">${c.opts.map((o,i)=>`<button data-i="${i}">${o}</button>`).join("")}</div><div class="fb" id="fb"></div></div>`;
+  if(c.type==="order")return `<div class="check" id="chk"><div class="q"><span class="b">퍼즐</span><span>${c.q}</span></div>
+    <div class="opts" id="orderpool">${c.items.slice().sort(()=>0.5-Math.random()).map(x=>`<button data-v="${x}">${x}</button>`).join("")}</div>
+    <div class="pipe" id="orderpick" style="min-height:20px"></div><div class="fb" id="fb"></div></div>`;
+  return"";
+}
+function bindCheck(m){
+  const c=m.check;if(!c)return;
+  if(c.type==="mc"){document.querySelectorAll("#chk .opts button").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i,ok=i===c.ans;b.classList.add(ok?"correct":"wrong");
+    const fb=$("#fb");fb.className="fb show "+(ok?"ok":"no");fb.textContent=ok?("⭕ "+c.fb):"❌ 다시 생각해봐. Day 힌트: 위 레슨을 다시 보자!";
+    if(ok)document.querySelectorAll("#chk .opts button").forEach(x=>x.disabled=true);});}
+  if(c.type==="order"){const pick=[];
+    document.querySelectorAll("#orderpool button").forEach(b=>b.onclick=()=>{
+      if(b.disabled)return;b.disabled=true;b.style.opacity=.35;pick.push(b.dataset.v);
+      $("#orderpick").innerHTML=pick.map((v,i)=>`<span class="st">${v}</span>${i<pick.length-1?'<span class="ar">→</span>':''}`).join("");
+      if(pick.length===c.items.length){const ok=pick.join()===c.items.join();const fb=$("#fb");
+        fb.className="fb show "+(ok?"ok":"no");fb.textContent=ok?("⭕ "+c.fb):"❌ 순서가 달라. 리셋하고 다시!";
+        if(!ok){setTimeout(()=>render(),1200);}}
+    });}
+}
+
+/* ===== 풀어보기 ===== */
+function renderSolve(){
+  const cards=CHALLENGES.map((c,i)=>{
+    const a=store.answers[i]||"";
+    return `<div class="qcard"><div class="meta"><span class="lv ${c.type}">${c.type==="recall"?"기존내용":"심화·창작"}</span><span>MODULE ${c.mod}</span></div>
+      <div class="qt">${c.q}</div><div class="hint">힌트: ${c.hint}</div>
+      <textarea data-i="${i}" placeholder="여기에 답안 작성 (코워크가 채점)">${a}</textarea>
+      <span class="saved" id="sv${i}">저장됨</span></div>`;
+  }).join("");
+  $("#app").innerHTML=`<div class="wrap solve">
+    <div class="solve-head">${daySVG("sm")}<h2>플로직 풀어보기</h2><div class="sp"></div>
+      <input class="namein" id="learner" placeholder="이름" value="${store.learner||''}"></div>
+    <div class="dayrow" style="margin-top:12px">${daySVG("sm")}<div class="bubble">기존 내용 질문과 심화 창작·퍼즐이 섞여 있어. 편하게 써봐 — 다 쓰면 아래 <b>답안 내보내기</b>로 JSON 저장하고, 코워크한테 채점받으면 돼!</div></div>
+    ${cards}
+    <div class="export-bar"><div class="in"><span class="cnt" id="ansCnt"></span><div class="sp" style="flex:1"></div>
+      <button class="btn ghost" id="clearBtn">비우기</button>
+      <button class="btn" id="exportBtn">답안 내보내기 (JSON)</button></div></div>`;
+  $("#learner").oninput=e=>{store.learner=e.target.value;save()};
+  document.querySelectorAll(".qcard textarea").forEach(t=>t.oninput=()=>{store.answers[t.dataset.i]=t.value;save();
+    const sv=$("#sv"+t.dataset.i);sv.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>sv.classList.remove("show"),1000);updateCnt()});
+  $("#exportBtn").onclick=exportAnswers;
+  $("#clearBtn").onclick=()=>{if(confirm("답안을 모두 비울까요?")){store.answers={};save();render()}};
+  updateCnt();
+}
+function updateCnt(){const n=CHALLENGES.filter((c,i)=>(store.answers[i]||"").trim()).length;const el=$("#ansCnt");if(el)el.textContent=`${n} / ${CHALLENGES.length} 작성됨`;}
+function exportAnswers(){
+  const out={tool:"PIMM-Plogic",mode:"풀어보기",learner:store.learner||"(이름 미기재)",
+    note:"코워크 채점용. recall=기존내용 정확도, create=심화 창작/적용 품질을 플로직 기준으로 채점.",
+    answers:CHALLENGES.map((c,i)=>({module:c.mod,type:c.type,question:c.q,answer:store.answers[i]||""}))};
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=`plogic_answers_${(store.learner||"noname").replace(/\s+/g,"")}.json`;a.click();
+}
+
+document.querySelectorAll("#modePills button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+setMode("home");
+</script>
+</body>
+</html>
