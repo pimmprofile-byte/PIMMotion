@@ -103,9 +103,14 @@
 - 미션에는 **메모 필수 슬롯**.
 
 ## C. 데이터 계층 (개인세션로그 폴더) — §2 규칙 확정, 추가:
-- `memo/session/{로그ID}.md`, `memo/mission/{미션ID}.md` — 사람이 다는 유일한 mutable 레이어.
+- **폴더 구조·Drive 경로/ID 정본 = `pimm-artisan-session`** (개인세션로그는 `Session_세션로그` **바로 아래 평면 구조**; 중첩 폴더·평행 구조 신설 금지). Poffice 3종은 이 구조·ID 테이블을 **그대로 소비**한다.
+- 메모(사람이 다는 mutable)는 역방향 export의 `memo_overrides`(`"mission|{미션ID}"`/`"session|{ts}"` 키)로 반영 — 별도 `memo/` 폴더 트리 없음(평면 유지).
 - 세션로그 UX: **최근=선명 → 오래될수록 opacity 흐림 → 드롭다운/스크롤로 더 로드** (이메일 아닌 게임식). `poffice_board.json`은 최근 윈도우+롤업만.
 - 역방향 export = **체크 + 메모** 둘 다 (`poffice_export_{이름}.json`에 `memo_overrides` 포함).
+
+### C-1. 구형 주간보고 폐기 (v2.0 정합 · 사용자 확정)
+- 구형 **텍스트 주간보고**(리포트/브리프/워크오더 문서, `pimm-weekly-review → WK-` 조립기 개편안 포함)는 **폐기**.
+- 주간보고는 **`Poffice-Report-Bot` 페르소나 브리핑 + `poffice_board.json` config로 일원화**(대화가 서류가 된다). 별도 텍스트 리포트 산출물 없음.
 
 ## D. 개인화
 - 실행 시 **인물 선택**(자기 이름) → 개인 워크스페이스. 타인 내용 기본 비노출. 선택 이름 = 로컬 config.

@@ -12,16 +12,16 @@ description: 포피스 업무기록 코어 스킬. 기존 개인세션로그 스
 
 ## 1. 데이터 계층 (개인세션로그 폴더 · spec §2/C)
 저장 위치: **블루필드 `[2.블루필드:아카이브].PIMM_archive` > 개인DB > {이름} > Session_세션로그**.
+> **폴더 구조·Drive 경로/ID 정본 = `pimm-artisan-session`.** 개인세션로그는 `Session_세션로그` **바로 아래 평면 구조**(중첩 폴더 신설 X). poffice-skill은 artisan-session이 이미 쓰는 이 평면 구조·ID 테이블을 **그대로 소비**한다(평행 구조·마이그레이션 금지).
 ```
-개인DB/{이름}/Session_세션로그/
+개인DB/{이름}/Session_세션로그/            (평면 · 경로/ID 정본 = artisan-session 테이블)
+├─ {YYMMDD_HHMM}_{요약}_log.md        (세션로그 원본, append-only·불변)
 ├─ MISSION_보드.md · GATE_현황.md · TODO_현황.md   (롤업, 현재 상태)
 ├─ workorder/{YYMMDD_HHMM}_{요약}_wo.md            (대표 지시 WO)
-├─ logs/YYYY/MM/{YYMMDD_HHMM}_{요약}_log.md         (세션로그 원본, append-only·불변)
-├─ memo/session/{로그ID}.md · memo/mission/{미션ID}.md  (사람이 다는 유일한 mutable)
-└─ _export/poffice_export_{이름}.json              (대시보드→코워크 역방향 반영 입력)
+└─ poffice_export_{이름}.json          (대시보드→코워크 역방향 입력 · 체크+메모 반영)
 ```
-> ※ 대시보드 config `poffice_board.json`은 **여기 개인DB에 두지 않는다.** 그것은 `Poffice-MotherLog`가
->   전원 세션로그를 집계해 만드는 **단일 파일**로, 그린필드 `[1.그린필드:프레임워크].PIMM_framework > [2.포피스_섹터].Poffice`에 저장된다.
+> ※ 대시보드 config `poffice_board.json`은 **여기 개인DB에 두지 않는다.** `Poffice-MotherLog`가
+>   전원 세션로그를 집계해 만드는 **단일 파일**로, 그린필드 `[2.포피스_섹터].Poffice`에 저장(그 경로는 MotherLog 정의).
 
 ## 2. 세션로그 기록 규칙 (대화 → 로그)
 - 파일명 **`{YYMMDD_HHMM}_{요약}_log.md`** — **시간(HHMM)까지** 반드시 포함(날짜만 금지).

@@ -28,8 +28,10 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 - 구조 정본: 포피스영역 `README_포피스섹터구조.md`.
 
 ## 2. 입력
-- 각 인물 `개인DB/{이름}/Session_세션로그/` 의 `logs/YYYY/MM/*_log.md`(세션로그 원본), 롤업(`GATE_현황.md`·`TODO_현황.md`·`MISSION_보드.md`), `workorder/`(WO), `memo/`.
+- 각 인물 `개인DB/{이름}/Session_세션로그/`(**평면 구조** · 경로/ID 정본 = `pimm-artisan-session` 테이블)의
+  `{YYMMDD_HHMM}_{요약}_log.md`(세션로그 원본), 롤업(`GATE_현황.md`·`TODO_현황.md`·`MISSION_보드.md`), `workorder/`(WO), 역방향 입력 `poffice_export_{이름}.json`.
 - 대표 주간보고 판단(있으면) — 게이트(🔴/🟡/🟢)·WO 반영에 사용.
+> 개인세션로그 폴더 경로·Drive ID는 **artisan-session 정본을 따른다**(중첩 구조·평행 폴더 신설 금지). 이 스킬의 하드코딩 ID는 **출력처(그린필드 Poffice)** 에 한정.
 
 ## 3. 처리 (요약·분석 → 결정론 변환)
 - 세션로그를 읽어 **현재 상태**로 요약: 미션(마일스톤 progress·roadmap), 게이트(권한 신호등), 투두(체크·중요도·일자·WO), 최근 세션 `sessions[]`.
