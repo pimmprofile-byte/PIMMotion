@@ -44,8 +44,9 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .logo{font-weight:800;letter-spacing:-.02em}.logo b{color:var(--green)}
 .logo .bc{font-size:11px;color:var(--ink3);font-weight:600;margin-left:6px}
 .head .sp{flex:1}
-.mode-pills{display:flex;gap:6px}
-.mode-pills button{font-size:12.5px;font-weight:700;color:var(--ink2);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 14px}
+.mode-pills{display:flex;gap:6px;overflow-x:auto;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.mode-pills::-webkit-scrollbar{display:none}
+.mode-pills button{font-size:12.5px;font-weight:700;color:var(--ink2);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 14px;flex:none;white-space:nowrap}
 .mode-pills button.on{color:#fff;background:var(--green);border-color:var(--green)}
 .prog{height:5px;background:var(--line);position:relative}
 .prog > i{display:block;height:100%;background:linear-gradient(90deg,var(--green-d),var(--green));width:0;transition:width .4s}
@@ -201,7 +202,8 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink3);fo
     <div class="mode-pills" id="modePills" style="display:none">
       <button data-mode="learn" class="on">이해하기</button>
       <button data-mode="solve">풀어보기</button>
-      <button data-mode="deep">심화</button>
+      <button data-mode="deep">심화과정</button>
+      <button data-mode="artisan">아티잔</button>
       <button data-mode="system">작업체계</button>
       <button data-mode="home" style="border:0;color:var(--ink3)">↺</button>
     </div>
@@ -210,7 +212,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink3);fo
 </header>
 
 <main id="app"></main>
-<footer>PIMM 플로직 교육 v0.1 — 이해하기(개괄) · 풀어보기(연습→JSON→코워크 채점) · 심화(크래프트 이론 딥다이브) · 작업체계(플로직·포피스·피모션·파트웍) · 진도는 이 브라우저에 저장</footer>
+<footer>PIMM 플로직 교육 v0.1 — 이해하기(개괄) · 풀어보기(연습→JSON→코워크 채점) · 심화과정(크래프트 딥다이브) · 핌 아티잔(개인 숙련·학습법) · 작업체계(플로직·포피스·피모션·파트웍) · 진도는 이 브라우저에 저장</footer>
 
 <script>
 /* ===== Day 마스코트 (SVG 토큰, SPRITE_URL로 실제 day.png 교체 가능) ===== */
@@ -354,6 +356,7 @@ function render(){
   if(mode==="solve")return renderSolve();
   if(mode==="system")return renderSystem();
   if(mode==="deep")return renderDeep();
+  if(mode==="artisan")return renderArtisan();
 }
 
 function renderHome(){
@@ -364,8 +367,9 @@ function renderHome(){
     <div class="choose">
       <button data-mode="learn"><div class="ic">📖</div><h3>플로직 이해하기</h3><p>PPP·IMM 철학부터 아이디어 공정·크래프트 이론·판단로직까지. 어려운 개념을 쉽게, 퍼즐로 확인하며.</p><div class="go">학습 시작 →</div></button>
       <button data-mode="solve"><div class="ic">🧩</div><h3>플로직 풀어보기</h3><p>배운 내용을 질문·창작·퍼즐로 풀어봐요. 답안을 JSON으로 내보내면 코워크가 채점해줍니다.</p><div class="go">문제 풀기 →</div></button>
-      <button data-mode="deep"><div class="ic">🔬</div><h3>플로직 심화</h3><p>크래프트 이론(서사·공간·퍼즐·연출…)을 이론 하나하나 깊게. 개괄을 넘어 '만드는 손'까지.</p><div class="go">깊게 파기 →</div></button>
-      <button data-mode="system"><div class="ic">🧭</div><h3>핌 작업체계</h3><p><b>플로직·포피스·피모션·파트웍</b> — 핌허브 4개 작업 영역이 각각 무슨 일을 하는지.</p><div class="go">둘러보기 →</div></button>
+      <button data-mode="deep"><div class="ic">🔬</div><h3>플로직 심화과정</h3><p>크래프트 이론(서사·공간·퍼즐·연출…)을 이론 하나하나 깊게. 개괄을 넘어 '만드는 손'까지.</p><div class="go">깊게 파기 →</div></button>
+      <button data-mode="artisan"><div class="ic">🎖️</div><h3>핌 아티잔</h3><p>'잘 만드는 사람'을 넘어 '옳게 판단하는 사람'으로. 아티잔이 무엇이고 어떻게 자라는지 · 학습법.</p><div class="go">성장의 길 →</div></button>
+      <button data-mode="system" style="grid-column:1/-1"><div class="ic">🧭</div><h3>핌 작업체계</h3><p><b>플로직·포피스·피모션·파트웍</b> — 핌허브 4개 작업 영역이 각각 무슨 일을 하는지 한눈에.</p><div class="go">둘러보기 →</div></button>
     </div></div>`;
   $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 }
@@ -420,6 +424,57 @@ function renderSystem(){
     </div>
     <div class="note"><b>목표</b> — 이 허브 하나로 업무 온보딩과 진행이 대부분 가능하게. 노션의 상당 기능을 대체하고, 완성되면 <b>웹앱</b> 형태로 팀에 배포할 예정이에요. (핌허브 명칭·로고는 정비 예정)</div>
     <div class="modfoot"><button class="btn ghost" data-mode="home" id="sysHome">← 처음으로</button><button class="btn" data-mode="learn" id="sysLearn">플로직 배우러 가기 →</button></div>
+  </div>`;
+  $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+}
+
+/* ===== 핌 아티잔 — 개인 숙련·학습법 ===== */
+function renderArtisan(){
+  $("#app").innerHTML=`<div class="wrap sys">
+    <div class="sys-hero">
+      <div class="eyebrow">PIMM ARTISAN · 03_Artisan</div>
+      <h2>핌 아티잔 — 배우는 사람에서 장인으로</h2>
+      <p class="lead">플로직이 '<b>회사의 논리</b>'라면, 아티잔은 '<b>나 개인의 숙련</b>'이야. 핌은 개인의 성장을 회사의 자산으로 봐. 이 페이지는 <b>네가 어떻게 아티잔으로 자라는지</b>에 대한 안내야.</p>
+      <div class="dayrow">${daySVG("sm")}<div class="bubble">여기까지 왔다면 넌 이미 아티잔의 길 위에 있어. '잘 만드는 사람'을 넘어 '<b>옳게 판단하는 사람</b>'이 되는 게 목표야!</div></div>
+    </div>
+
+    <div class="forge-grid">
+      <div class="forge f-green"><div class="fh"><span class="fi">🎖️</span><div><div class="fk">아티잔이란</div><div class="ftag">개인 숙련 체계</div></div></div>
+        <p class="fone">장인(Artisan) — '잘 만드는 사람'을 넘어 '옳게 판단하는 사람'.</p>
+        <ul class="flist"><li>03_Artisan = 개인의 숙련·성장을 다루는 계층</li><li>플로직(회사 논리)을 <b>내 몸에 붙이는</b> 과정</li><li>개인의 판단력이 곧 회사의 위임 가능성</li></ul>
+        <div class="frole">머리+손 · 숙련</div></div>
+
+      <div class="forge f-amber"><div class="fh"><span class="fi">🔑</span><div><div class="fk">왜 아티잔인가</div><div class="ftag">위임의 조건</div></div></div>
+        <p class="fone">회사가 일을 맡기려면, 개인이 스스로 완결·판단할 수 있어야 해.</p>
+        <ul class="flist"><li><b>위임 가능성 = 산출물·검수기준의 독립성</b></li><li>검수에 대표의 전체 이해가 필요하면 → 일이 대표에게 회귀</li><li>아티잔이 자랄수록 회사가 더 많이 맡긴다</li></ul>
+        <div class="frole">판단 · 독립성</div></div>
+    </div>
+
+    <div class="axis">
+      <h4>아티잔의 기둥 (03_Artisan)</h4>
+      <p>개인 숙련은 이렇게 관리돼. (MPA 훈련·테스트의 세부 커리큘럼은 대표 확정 후 계속 보강)</p>
+      <div class="grid2">
+        <div class="ac"><div class="h">📇 프로파일</div>나의 강점·주력 트랙·이력을 기록. 포피스와 연동해 '내가 뭘 할 수 있는지'를 쌓아둠.</div>
+        <div class="ac"><div class="h">🔀 MPA 훈련</div>한 파트에 갇히지 않고 <b>인접 공정까지 경계를 넘나드는 숙련</b>. 넘나들수록 판단이 넓어짐.</div>
+        <div class="ac"><div class="h">🎖️ 테스트 · 칭호</div>숙련도를 검증하고 단계별 칭호를 얻음: <b>신입 → 숙련 아티잔 → 플로직 마스터</b>.</div>
+        <div class="ac"><div class="h">👥 5인 페르소나 역할</div>Master PD · Main Producer · Utility · Construction Lead · Asst. 각자 주특기 + MPA로 경계를 겹친다.</div>
+      </div>
+    </div>
+
+    <div class="lesson" style="margin-top:16px"><h3>어떻게 배우나 — 플로직 학습 사이클 <span class="tag">학습법</span></h3>
+      <p>이 도구를 이 순서로 돌리면 아티잔으로 자라. <b>배우고 → 써보고 → 깊이 파고 → 실전·기록</b>, 그리고 반복.</p>
+      <div class="pipe"><span class="st">이해하기</span><span class="ar">→</span><span class="st">풀어보기</span><span class="ar">→</span><span class="st">심화과정</span><span class="ar">→</span><span class="st">실전·기록</span><span class="ar">↻</span></div>
+      <ul>
+        <li><b>① 이해하기</b> — 전체 지도를 먼저. 철학·공정·트랙·용어를 개괄로 (한 입 크기)</li>
+        <li><b>② 풀어보기</b> — 손으로 써보고 코워크에게 채점받아 <b>내 약점</b>을 찾는다</li>
+        <li><b>③ 심화과정</b> — 크래프트 이론을 하나씩 깊게 파 <b>판별력(좋은 걸 알아보는 눈)</b>을 기른다</li>
+        <li><b>④ 실전 · 기록</b> — 피모션·파트웍으로 실제로 만들고, 포피스로 기록·피드백. OJT로 손에 붙인다</li>
+      </ul>
+      <div class="plain"><span class="lb">쉽게 말하면</span>이론만 알면 '눈'만 높아지고, 만들기만 하면 '손'만 바빠져. <b>배움(이해·심화) ↔ 실전(풀어보기·현장) ↔ 기록(포피스)</b>을 계속 돌려야 진짜 아티잔이 돼.</div>
+      <div class="note">MPA 훈련·테스트의 <b>세부 커리큘럼·평가 기준</b>은 대표 확정 후 이 페이지에 이어붙일 예정이야. (무왜곡 — 확정 전엔 개괄만)</div>
+    </div>
+
+    <div class="modfoot"><button class="btn ghost" data-mode="home">← 처음으로</button><button class="btn" data-mode="learn">이해하기부터 시작 →</button></div>
   </div>`;
   $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 }
