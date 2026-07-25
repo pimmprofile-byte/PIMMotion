@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIMM POFFICE · 관제 대시보드 v0.1</title>
+<style>
+/* ============================================================
+   PIMM POFFICE — 포피스 관제 대시보드 (읽기 전용 뷰어)
+   코어(엔진) + 데이터(poffice_board.json) 분리. 서버 불필요.
+   데이터는 코워크가 세션로그를 집계해 생성한 board.json.
+   유일한 로컬 인터랙션 = 투두 '체크'. 그 외 전부 읽기 전용.
+   CI: 다크 + #00FF99 절제. Pretendard/Space Grotesk.
+   ============================================================ */
+:root{
+  --bg:#0a0d0c; --bg2:#0e1211; --panel:#121613; --panel2:#161b18;
+  --ink:#eaf2ee; --ink2:#9aa8a1; --ink3:#5f6c66;
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+  --green:#00ff99; --green-d:#00c277;
+  --red:#ff6a6a; --yellow:#ffcf5a; --blue:#57c7ff;
+  --radius:14px; --radius-s:10px;
+  --mono:'Space Grotesk',ui-monospace,'SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Segoe UI','Malgun Gothic',sans-serif;
+  line-height:1.6;letter-spacing:-.01em;word-break:keep-all;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(900px 500px at 88% -10%,rgba(0,255,153,.07),transparent 60%),linear-gradient(180deg,var(--bg),var(--bg2))}
+a{color:inherit} h1,h2,h3,p{margin:0}
+.mono{font-family:var(--mono);letter-spacing:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* ===== header ===== */
+header{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;background:rgba(10,13,12,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 20px;max-width:1180px;margin:0 auto}
+.brand{display:flex;align-items:baseline;gap:9px;font-weight:800;letter-spacing:-.02em}
+.brand .p{color:var(--green)} .brand .v{font-size:11px;color:var(--ink3);font-weight:600}
+.ro{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--green);border:1px solid rgba(0,255,153,.3);background:rgba(0,255,153,.07);padding:4px 9px;border-radius:999px}
+.gen{font-size:11px;color:var(--ink3);margin-left:2px}
+.head .sp{flex:1}
+.btn{font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;transition:.2s;white-space:nowrap}
+.btn:hover{border-color:var(--green);color:var(--green)}
+.btn.primary{color:#04120c;background:var(--green);border-color:var(--green)}
+.btn.primary:hover{filter:brightness(1.06);color:#04120c}
+
+/* member chips + tabs */
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 20px;max-width:1180px;margin:0 auto;border-top:1px solid var(--line-soft)}
+.chip{font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink2);background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 14px;transition:.2s}
+.chip:hover{color:var(--ink);border-color:var(--line2)}
+.chip.on{color:#04120c;background:var(--green);border-color:var(--green);font-weight:700}
+.chip .role{opacity:.7;font-weight:500;font-size:11px;margin-left:4px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{font-size:13px;font-weight:700;cursor:pointer;color:var(--ink2);background:transparent;border:0;border-bottom:2px solid transparent;padding:8px 12px;transition:.2s}
+.tab:hover{color:var(--ink)} .tab.on{color:var(--green);border-bottom-color:var(--green)}
+.sortbar{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
+.sortbar button{font:inherit;font-size:12px;cursor:pointer;color:var(--ink2);background:transparent;border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+.sortbar button.on{color:var(--green);border-color:rgba(0,255,153,.4)}
+
+/* ===== WO pinned banner ===== */
+.wo-banner{border:1px solid rgba(255,106,106,.35);background:linear-gradient(180deg,rgba(255,106,106,.09),transparent);border-radius:var(--radius);padding:16px 18px;margin:22px 0}
+.wo-banner .t{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--red);text-transform:uppercase}
+.wo-banner .t::before{content:"⚡"}
+.wo-list{margin-top:12px;display:grid;gap:8px}
+.wo-item{display:flex;align-items:center;gap:12px;font-size:14px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-s)}
+.wo-item .who{font-size:11px;font-weight:800;color:var(--red);min-width:52px}
+.wo-item .mid{margin-left:auto;font-size:11px;color:var(--ink3)}
+
+/* ===== gamification strip ===== */
+.game{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:22px 0}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.gcard .nm{display:flex;align-items:baseline;gap:8px}
+.gcard .nm b{font-size:15px} .gcard .nm .r{font-size:11px;color:var(--ink3)}
+.gcard .rank{margin-top:8px;font-size:12px;font-weight:800;color:var(--green);letter-spacing:.02em}
+.gcard .rank .emoji{margin-right:5px}
+.gcard .num{font-family:var(--mono);font-size:26px;font-weight:700;margin-top:6px}
+.gcard .num small{font-size:12px;color:var(--ink3);font-weight:500}
+.prog{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}
+.prog > i{display:block;height:100%;background:linear-gradient(90deg,var(--green-d),var(--green))}
+.gcard .next{font-size:11px;color:var(--ink3);margin-top:6px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(0,255,153,.09);border:1px solid rgba(0,255,153,.25);color:var(--green)}
+
+/* ===== member block ===== */
+.mblock{margin:26px 0}
+.mblock > .mh{display:flex;align-items:baseline;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.mblock > .mh b{font-size:17px;font-weight:800}
+.mblock > .mh .r{font-size:11px;color:var(--ink3);letter-spacing:.08em}
+.mblock.master > .mh{border-bottom-color:rgba(0,255,153,.4)}
+.mblock.master > .mh .tag{font-size:10px;font-weight:800;color:var(--green);border:1px solid rgba(0,255,153,.4);border-radius:999px;padding:3px 8px;margin-left:auto}
+
+/* missions */
+.missions{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.mission{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.mission .top{display:flex;align-items:center;gap:8px}
+.mission .id{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.mission h3{font-size:15px;font-weight:700;margin-top:2px}
+.pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;margin-left:auto}
+.pill.예정{color:var(--ink2);background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.pill.진행{color:var(--green);background:rgba(0,255,153,.1);border:1px solid rgba(0,255,153,.3)}
+.pill.달성{color:#04120c;background:var(--green)}
+.pill.보류{color:var(--yellow);background:rgba(255,207,90,.1);border:1px solid rgba(255,207,90,.3)}
+.mission .dday{font-size:12px;color:var(--ink2);margin-top:10px}
+.mission .dday b{color:var(--red)}
+.roadmap{margin-top:12px;display:grid;gap:6px}
+.rstep{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink2)}
+.rstep .dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--ink3);flex:none;position:relative}
+.rstep.done .dot{background:var(--green);border-color:var(--green)}
+.rstep.done .dot::after{content:"";position:absolute;left:4px;top:1.5px;width:3px;height:7px;border:solid #04120c;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.rstep.done{color:var(--ink)}
+
+/* gates */
+.gates{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;min-height:80px}
+.gcol .gt{font-size:12px;font-weight:800;letter-spacing:.04em;display:flex;align-items:center;gap:7px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.gcol.red .gt{color:var(--red)} .gcol.yellow .gt{color:var(--yellow)} .gcol.green .gt{color:var(--green)}
+.gcol .gt .cnt{margin-left:auto;font-family:var(--mono);color:var(--ink3);font-size:12px}
+.gitem{font-size:13px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.gitem:last-child{border-bottom:0}
+.gitem .l1{display:flex;align-items:center;gap:8px}
+.gitem .st{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.gitem .st.완료{color:var(--green);border-color:rgba(0,255,153,.3)}
+.gitem .st.진행{color:var(--yellow);border-color:rgba(255,207,90,.3)}
+.gitem .ts{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-left:auto}
+.gitem .log{font-size:11px;color:var(--ink3);margin-top:4px}
+.ypolicy{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:6px}
+.ypolicy.report{color:var(--red);border:1px solid rgba(255,106,106,.35)}
+.ypolicy.auto{color:var(--green);border:1px solid rgba(0,255,153,.3)}
+.empty{color:var(--ink3);font-size:12px;padding:8px 0}
+
+/* todos */
+.todos{display:grid;gap:8px}
+.todo{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-s);transition:.2s}
+.todo.wo{border-color:rgba(255,106,106,.4);background:linear-gradient(180deg,rgba(255,106,106,.06),transparent)}
+.todo.done{opacity:.55}
+.cbox{width:19px;height:19px;flex:none;margin-top:1px;border:1.5px solid var(--line2);border-radius:5px;cursor:pointer;position:relative;background:transparent;transition:.15s}
+.cbox:hover{border-color:var(--green)}
+.cbox.on{background:var(--green);border-color:var(--green)}
+.cbox.on::after{content:"";position:absolute;left:6px;top:2px;width:4px;height:9px;border:solid #04120c;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.cbox.doing{border-color:var(--yellow)} .cbox.doing::after{content:"";position:absolute;left:3px;top:7.5px;width:11px;height:2px;background:var(--yellow)}
+.todo .body{flex:1;min-width:0}
+.todo .txt{font-size:14px}
+.todo.done .txt{text-decoration:line-through;text-decoration-color:var(--ink3)}
+.todo .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;align-items:center}
+.tg{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+.tg.wo{color:var(--red);background:rgba(255,106,106,.12);border:1px solid rgba(255,106,106,.35)}
+.tg.mid{color:var(--blue);background:rgba(87,199,255,.1);border:1px solid rgba(87,199,255,.3);font-family:var(--mono)}
+.tg.imp{border:1px solid var(--line2);color:var(--ink2)}
+.tg.imp.high{color:var(--red);border-color:rgba(255,106,106,.35)}
+.tg.imp.date{font-family:var(--mono);color:var(--ink3)}
+
+/* dropzone */
+#drop{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(4,7,6,.8);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#drop.show{display:flex}
+#drop .box{border:2px dashed var(--green);border-radius:20px;padding:60px 80px;text-align:center;color:var(--green);font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;color:var(--ink3);font-size:12px;text-align:center}
+@media(max-width:720px){.gates{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <header>
+    <div class="head">
+      <div class="brand"><span class="p">PIMM</span> POFFICE <span class="v">관제 대시보드 v0.1</span></div>
+      <span class="ro">READ ONLY</span>
+      <span class="gen" id="genAt">—</span>
+      <div class="sp"></div>
+      <button class="btn" id="loadBtn">board.json 불러오기</button>
+      <button class="btn primary" id="exportBtn">체크상태 내보내기</button>
+      <input type="file" id="fileInput" accept="application/json,.json" hidden />
+    </div>
+    <div class="bar">
+      <div class="chips" id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      <div class="sp" style="flex:1"></div>
+      <div class="sortbar" id="sortbar" hidden>정렬
+        <button data-sort="importance" class="on">중요도</button>
+        <button data-sort="date">일자</button>
+      </div>
+    </div>
+    <div class="bar" style="border-top:1px solid var(--line)">
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-tab="mission">미션보드</button>
+        <button class="tab" data-tab="gate">게이트보드</button>
+        <button class="tab" data-tab="todo">투두리스트</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="app"></main>
+  <footer>PIMM POFFICE — 세션로그 기반 읽기전용 관제 · 데이터: poffice_board.json (코워크 생성) · 로컬 인터랙션은 '체크'만</footer>
+
+  <div id="drop"><div class="box">poffice_board.json 을 여기에 놓으세요</div></div>
+
+<script>
+/* ============================================================
+   엔진 — board.json 을 로드해 3판 + 게이미피케이션 렌더.
+   체크상태만 로컬(checkState)에 보관, 내보내기 가능. 원본 불변.
+   ============================================================ */
+
+/* ---- 샘플 데이터 (파일 없이도 뼈대 시연) ---- */
+const SAMPLE = {
+  version:1, generated_at:"2026-07-25T16:00:00+09:00",
+  members:[
+    { name:"심상윤", role:"Master PD", yellow_policy:"auto", master:true,
+      missions:[
+        {id:"M0",title:"홈페이지 리뉴얼 런칭",status:"진행",due:"2026-08-15",progress:0.35,
+         roadmap:[{step:"파워링크 소재",done:true},{step:"핌 사이트 리뉴얼",done:false},{step:"파노라마 사이트",done:false}]},
+        {id:"M3",title:"브랜드 리포지셔닝",status:"진행",due:"2026-09-30",progress:0.2,
+         roadmap:[{step:"경쟁사 분석",done:true},{step:"포지셔닝 문장",done:false}]}
+      ],
+      gates:{ red:[{ts:"260725_1530",item:"M3 텀블벅 포함 여부 결정",state:"대기",log:"260725_1530_log.md"}], yellow:[], green:[{ts:"260725_1600",item:"포피스 대시보드 확정",state:"완료",log:"260725_1600_log.md"}] },
+      todos:[
+        {text:"홈페이지 작업 시작",state:"doing",wo:false,mission:"M0",importance:"high",date:"260725"},
+        {text:"파노라마 B&W 방향 확정",state:"done",wo:false,mission:"M0",importance:"mid",date:"260725"},
+        {text:"포피스 스키마 확정 회신",state:"todo",wo:false,mission:"M0",importance:"mid",date:"260725"}
+      ],
+      last_session:{file:"260725_1600_포피스대시보드확정_log.md",summary:"포피스 대시보드 읽기전용 확정"} },
+    { name:"이정민", role:"Device", yellow_policy:"report",
+      missions:[{id:"D1",title:"디바이스 트래킹 정리",status:"진행",due:"2026-08-05",progress:0.5,roadmap:[{step:"장치 목록화",done:true},{step:"연동 테스트",done:false}]}],
+      gates:{ red:[], yellow:[{ts:"260724_1100",item:"센서 발주 승인 요청",state:"진행",log:"260724_1100_log.md"}], green:[] },
+      todos:[{text:"장치 트래킹 시트 업데이트",state:"done",wo:false,mission:"D1",importance:"mid",date:"260724"},
+             {text:"긴급: 현장 센서 점검",state:"doing",wo:true,mission:"D1",importance:"high",date:"260725"}],
+      last_session:{file:"260724_1100_디바이스_log.md",summary:"센서 발주 검토"} },
+    { name:"유지호", role:"Build", yellow_policy:"auto",
+      missions:[{id:"B1",title:"시공 자동화 파이프라인",status:"예정",due:"2026-09-10",progress:0,roadmap:[{step:"요구 정리",done:false}]}],
+      gates:{ red:[], yellow:[], green:[{ts:"260723_1400",item:"자재 리스트 정리",state:"완료",log:"260723_log.md"}] },
+      todos:[{text:"파이프라인 리서치",state:"todo",wo:false,mission:"B1",importance:"low",date:"260723"}],
+      last_session:{file:"260723_1400_build_log.md",summary:"자재 정리"} },
+    { name:"오세원", role:"Art", yellow_policy:"auto",
+      missions:[{id:"A1",title:"파노라마 테마 포스터",status:"진행",due:"2026-08-20",progress:0.6,roadmap:[{step:"컨셉 3안",done:true},{step:"메인 포스터",done:true},{step:"서브컷",done:false}]}],
+      gates:{ red:[], yellow:[], green:[] },
+      todos:[{text:"봉인된 저택 포스터 완성",state:"done",wo:false,mission:"A1",importance:"high",date:"260725"},
+             {text:"마지막 실험실 포스터",state:"doing",wo:false,mission:"A1",importance:"high",date:"260725"},
+             {text:"잊혀진 극장 스케치",state:"done",wo:false,mission:"A1",importance:"mid",date:"260724"}],
+      last_session:{file:"260725_art_log.md",summary:"포스터 2종 진행"} },
+    { name:"신승희", role:"Content", yellow_policy:"report",
+      missions:[{id:"C1",title:"테마 시나리오 집필",status:"진행",due:"2026-08-25",progress:0.4,roadmap:[{step:"플롯",done:true},{step:"퍼즐 설계",done:false}]}],
+      gates:{ red:[], yellow:[{ts:"260725_0930",item:"시나리오 방향 보고",state:"대기",log:"260725_0930_log.md"}], green:[] },
+      todos:[{text:"봉인된 저택 퍼즐 5종",state:"doing",wo:true,mission:"C1",importance:"high",date:"260725"},
+             {text:"엔딩 분기 정리",state:"todo",wo:false,mission:"C1",importance:"mid",date:"260725"}],
+      last_session:{file:"260725_0930_content_log.md",summary:"시나리오 방향 보고 대기"} }
+  ],
+  docs:[{no:"MTG-20260725_포피스자동화",type:"회의록",source:"260725_1530_포피스자동화확정_log.md"}]
+};
+
+/* ---- 상태 ---- */
+let DATA=null, activeMember="ALL", activeTab="mission", sortKey="importance";
+const checkState={}; // key "member|idx" -> "todo|doing|done" (로컬 오버라이드)
+const IMP={high:0,mid:1,low:2};
+const RANKS=[{n:"게이트마스터",e:"🏆",min:30},{n:"베테랑 요원",e:"🥇",min:15},{n:"숙련 요원",e:"🥈",min:5},{n:"신입 요원",e:"🎖️",min:0}];
+
+/* ---- 유틸 ---- */
+const $=s=>document.querySelector(s);
+function ck(m,i,fallback){ const k=m+"|"+i; return checkState[k]!==undefined?checkState[k]:fallback; }
+function dday(due){ if(!due)return""; const d=new Date(due+"T00:00:00"); const now=new Date(); const diff=Math.ceil((d-now)/86400000);
+  return diff===0?"D-DAY":diff>0?"D-"+diff:"D+"+(-diff); }
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function doneCount(m){ return m.todos.reduce((a,t,i)=>a+(ck(m.name,i,t.state)==="done"?1:0),0); }
+function rankOf(n){ return RANKS.find(r=>n>=r.min); }
+
+/* ---- 렌더 ---- */
+function render(){
+  $("#genAt").textContent = DATA.generated_at ? "생성 "+DATA.generated_at.replace("T"," ").slice(0,16) : "";
+  renderChips();
+  $("#sortbar").hidden = activeTab!=="todo";
+  const members = activeMember==="ALL" ? DATA.members : DATA.members.filter(m=>m.name===activeMember);
+  // 마스터 보드 최상단
+  members.sort((a,b)=>(b.master?1:0)-(a.master?1:0));
+  let html = woBanner() + gameStrip();
+  html += members.map(m=>memberBlock(m)).join("");
+  $("#app").innerHTML = html;
+  bindChecks();
+}
+function renderChips(){
+  const chips=[`<button class="chip ${activeMember==='ALL'?'on':''}" data-m="ALL">전체</button>`]
+    .concat(DATA.members.map(m=>`<button class="chip ${activeMember===m.name?'on':''}" data-m="${esc(m.name)}">${esc(m.name)}<span class="role">${esc(m.role||'')}</span></button>`));
+  $("#chips").innerHTML=chips.join("");
+}
+function woBanner(){
+  const scope = activeMember==="ALL"?DATA.members:DATA.members.filter(m=>m.name===activeMember);
+  const items=[];
+  scope.forEach(m=>m.todos.forEach((t,i)=>{ if(t.wo && ck(m.name,i,t.state)!=="done") items.push({m:m.name,t}); }));
+  if(!items.length) return "";
+  return `<div class="wo-banner"><div class="t">Work Order · 대표 지시 (필수 확인)</div><div class="wo-list">`+
+    items.map(x=>`<div class="wo-item"><span class="who">${esc(x.m)}</span><span>${esc(x.t.text)}</span>${x.t.mission?`<span class="mid mono">${esc(x.t.mission)}</span>`:''}</div>`).join("")+`</div></div>`;
+}
+function gameStrip(){
+  const scope = activeMember==="ALL"?DATA.members:DATA.members.filter(m=>m.name===activeMember);
+  return `<div class="game">`+scope.map(m=>{
+    const done=doneCount(m), total=m.todos.length, pct=total?Math.round(done/total*100):0;
+    const rank=rankOf(done), nextR=RANKS.slice().reverse().find(r=>r.min>done);
+    const badges=[];
+    if(m.todos.some((t,i)=>t.wo&&ck(m.name,i,t.state)==="done")) badges.push("지시 완수");
+    if((m.missions||[]).some(x=>x.status==="달성")) badges.push("마일스톤");
+    if(!m.gates.red.length) badges.push("레드 클리어");
+    if(done>=5) badges.push(rank.n);
+    return `<div class="gcard"><div class="nm"><b>${esc(m.name)}</b><span class="r">${esc(m.role||'')}</span></div>
+      <div class="rank"><span class="emoji">${rank.e}</span>${rank.n}</div>
+      <div class="num">${done}<small> / ${total} 처리</small></div>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <div class="next">${nextR?`다음 칭호까지 ${nextR.min-done}건`:'최고 등급 달성'}</div>
+      ${badges.length?`<div class="badges">${badges.map(b=>`<span class="badge">${esc(b)}</span>`).join("")}</div>`:''}
+    </div>`;
+  }).join("")+`</div>`;
+}
+function memberBlock(m){
+  const head=`<div class="mh"><b>${esc(m.name)}</b><span class="r">${esc(m.role||'')}</span>${m.master?'<span class="tag">MASTER BOARD</span>':''}</div>`;
+  let inner="";
+  if(activeTab==="mission") inner=missionView(m);
+  else if(activeTab==="gate") inner=gateView(m);
+  else inner=todoView(m);
+  return `<section class="mblock ${m.master?'master':''}">${head}${inner}</section>`;
+}
+function missionView(m){
+  if(!m.missions||!m.missions.length) return `<div class="empty">등록된 미션이 없습니다.</div>`;
+  return `<div class="missions">`+m.missions.map(x=>`<div class="mission">
+    <div class="top"><div><div class="id">${esc(x.id)}</div><h3>${esc(x.title)}</h3></div><span class="pill ${x.status}">${x.status}</span></div>
+    ${x.due?`<div class="dday">${x.status!=='달성'?`<b>${dday(x.due)}</b> · `:''}${esc(x.due)}${x.progress!=null?` · 진행 ${Math.round(x.progress*100)}%`:''}</div>`:''}
+    ${x.roadmap?`<div class="roadmap">${x.roadmap.map(s=>`<div class="rstep ${s.done?'done':''}"><span class="dot"></span>${esc(s.step)}</div>`).join("")}</div>`:''}
+  </div>`).join("")+`</div>`;
+}
+function gateView(m){
+  const col=(key,label,items)=>{
+    const yp = key==="yellow" ? `<span class="ypolicy ${m.yellow_policy}">${m.yellow_policy==='report'?'필수보고':'자율진행'}</span>` : "";
+    const body = items&&items.length ? items.map(g=>`<div class="gitem"><div class="l1"><span class="st ${g.state}">${esc(g.state)}</span><span>${esc(g.item)}</span><span class="ts">${esc(g.ts||'')}</span></div>${g.log?`<div class="log">근거 ${esc(g.log)}</div>`:''}</div>`).join("") : `<div class="empty">—</div>`;
+    return `<div class="gcol ${key}"><div class="gt">${label}${yp}<span class="cnt">${items?items.length:0}</span></div>${body}</div>`;
+  };
+  return `<div class="gates">${col("red","🔴 보고처리",m.gates.red)}${col("yellow","🟡 자체결재",m.gates.yellow)}${col("green","🟢 기록만",m.gates.green)}</div>`;
+}
+function todoView(m){
+  if(!m.todos||!m.todos.length) return `<div class="empty">투두가 없습니다.</div>`;
+  const idx=m.todos.map((t,i)=>i);
+  idx.sort((a,b)=>{
+    const ta=m.todos[a], tb=m.todos[b];
+    if(tb.wo-ta.wo) return (tb.wo?1:0)-(ta.wo?1:0);
+    if(sortKey==="date") return String(tb.date||"").localeCompare(String(ta.date||""));
+    return (IMP[ta.importance]??1)-(IMP[tb.importance]??1);
+  });
+  return `<div class="todos">`+idx.map(i=>{
+    const t=m.todos[i], st=ck(m.name,i,t.state);
+    const cls = st==="done"?"on":st==="doing"?"doing":"";
+    return `<div class="todo ${t.wo?'wo':''} ${st==='done'?'done':''}">
+      <button class="cbox ${cls}" data-m="${esc(m.name)}" data-i="${i}" aria-label="체크"></button>
+      <div class="body"><div class="txt">${esc(t.text)}</div>
+        <div class="tags">
+          ${t.wo?'<span class="tg wo">WO 대표지시</span>':''}
+          ${t.importance?`<span class="tg imp ${t.importance}">${t.importance==='high'?'중요':t.importance==='mid'?'보통':'낮음'}</span>`:''}
+          ${t.mission?`<span class="tg mid">${esc(t.mission)}</span>`:''}
+          ${t.date?`<span class="tg imp date">${esc(t.date)}</span>`:''}
+        </div>
+      </div></div>`;
+  }).join("")+`</div>`;
+}
+
+/* ---- 체크 인터랙션 (유일한 로컬 쓰기) ---- */
+function bindChecks(){
+  document.querySelectorAll(".cbox").forEach(b=>b.addEventListener("click",()=>{
+    const m=b.dataset.m, i=+b.dataset.i, k=m+"|"+i;
+    const cur = checkState[k]!==undefined?checkState[k]:findState(m,i);
+    checkState[k] = cur==="done"?"todo":cur==="doing"?"done":"doing"; // 3-state 순환
+    render();
+  }));
+}
+function findState(m,i){ const mm=DATA.members.find(x=>x.name===m); return mm?mm.todos[i].state:"todo"; }
+
+/* ---- 데이터 로드 ---- */
+function load(obj){ DATA=obj; activeMember="ALL"; render(); }
+function readFile(f){ const r=new FileReader(); r.onload=()=>{ try{ load(JSON.parse(r.result)); }catch(e){ alert("board.json 파싱 실패: "+e.message); } }; r.readAsText(f); }
+
+/* ---- 체크상태 내보내기 (코워크가 세션로그에 반영) ---- */
+function exportChecks(){
+  const overrides={};
+  Object.keys(checkState).forEach(k=>{ const [m,i]=k.split("|"); (overrides[m]=overrides[m]||{})[i]=checkState[k]; });
+  const out={ generated_from:DATA.generated_at||null, exported_at:"(로컬시각 미기록 — 코워크 반영 시 타임스탬프 부여)", check_overrides:overrides };
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="poffice_check_export.json"; a.click();
+}
+
+/* ---- 이벤트 ---- */
+$("#chips").addEventListener("click",e=>{const b=e.target.closest(".chip"); if(b){activeMember=b.dataset.m; render();}});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab"); if(b){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");activeTab=b.dataset.tab;render();}});
+$("#sortbar").addEventListener("click",e=>{const b=e.target.closest("button"); if(b){document.querySelectorAll("#sortbar button").forEach(x=>x.classList.remove("on"));b.classList.add("on");sortKey=b.dataset.sort;render();}});
+$("#loadBtn").addEventListener("click",()=>$("#fileInput").click());
+$("#fileInput").addEventListener("change",e=>{if(e.target.files[0])readFile(e.target.files[0]);});
+$("#exportBtn").addEventListener("click",exportChecks);
+const drop=$("#drop");
+["dragenter","dragover"].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("show");}));
+["dragleave","drop"].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();if(ev==="drop"||e.clientX===0)drop.classList.remove("show");}));
+window.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("show");const f=e.dataTransfer.files[0];if(f)readFile(f);});
+
+/* ---- 초기: 샘플 로드 (뼈대 시연) ---- */
+load(SAMPLE);
+</script>
+</body>
+</html>
