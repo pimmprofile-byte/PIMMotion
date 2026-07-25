@@ -1,15 +1,15 @@
 # 포피스 대시보드 — poffice_board.json 스키마 (확정본 v1)
 
 > 핸드오프 회신: 코드 세션 → 코워크. 포피스 대시보드(현행 `tool/PIMM_Poffice.ver0.2.html`)가 이 스키마를 로드한다.
-> 원칙: **코어(엔진) + 데이터(JSON) 분리. 읽기 전용.** 유일한 로컬 인터랙션은 투두 '체크'뿐이며,
-> 그 결과는 `poffice_check_export.json` 으로만 내보내 코워크가 세션로그에 반영한다(역방향 쓰기 없음).
+> 원칙: **코어(엔진) + 데이터(JSON) 분리. 읽기 전용.** 로컬 인터랙션은 투두 '체크' + '메모'뿐이며,
+> 그 결과는 `poffice_export_{이름}.json` 으로만 내보내 코워크가 세션로그에 반영한다(그 외 역방향 쓰기 없음).
 
-## 데이터 흐름 (단방향 + 체크 예외)
+## 데이터 흐름 (단방향 + 체크·메모 예외)
 ```
 코워크: 세션로그 집계 → poffice_board.json 생성/갱신(동일 파일명, modifiedTime 최신본=정본)
    → 대시보드가 파일선택/드래그앤드롭으로 로드 (서버 불필요)
-대시보드: 투두 '체크'만 로컬 변경 → [체크상태 내보내기] → poffice_check_export.json
-   → 코워크가 읽어 세션로그에 반영 (데이터 꼬임 방지: 포피스는 '체크'만 다룸)
+대시보드: 투두 '체크' + '메모'만 로컬 변경 → [내보내기] → poffice_export_{이름}.json
+   → 코워크가 읽어 세션로그에 반영 (데이터 꼬임 방지: 포피스는 '체크·메모'만 다룸)
 ```
 
 ## 스키마 v1 (핸드오프안 확정 + 조정 3건)
@@ -23,7 +23,8 @@
       "name": "심상윤",
       "role": "Master PD",
       "yellow_policy": "auto",          // auto(자율진행) | report(필수보고) — 게이트 🟡 표시 구분
-      "master": true,                   // [조정1] 회사 마스터보드 → 항상 최상단 고정. 심상윤만 true
+      "master": true,                   // [조정1] 마스터보드 플래그(심상윤만 true). 데이터에는 존재하나
+                                        //          최상단 고정은 대시보드 미구현(ver0.3 예정)
       "missions": [
         { "id": "M0", "title": "홈페이지 리뉴얼 런칭",
           "status": "진행",             // 예정 | 진행 | 달성 | 보류
@@ -47,33 +48,39 @@
           "date": "260725" }            // [조정2] YYMMDD — '일자별' 정렬용
       ],
       "last_session": { "file": "260725_1600_..._log.md", "summary": "..." }
+                                        // [옵션·현재 대시보드 미사용] 로그 뷰는 sessions[]를 사용
     }
     // × 5인 (심상윤·이정민·유지호·오세원·신승희)
   ],
-  "docs": [ { "no": "MTG-20260725_포피스자동화", "type": "회의록",
+  "docs": [ { "no": "MTG-20260725_포피스자동화", "type": "회의록",   // [옵션·현재 대시보드 미사용]
               "source": "260725_1530_..._log.md" } ]
 }
 ```
 
 ### 조정 3건 (확정 요청)
-1. **`member.master: true`** — 심상윤 보드를 미션보드 최상단에 고정하기 위한 플래그.
+1. **`member.master: true`** — 심상윤 보드를 미션보드 최상단에 고정하기 위한 플래그. **데이터에는 존재하나 최상단 고정은 현재 대시보드(ver0.2) 미구현(ver0.3 예정)** — ver0.2는 인물선택 개인 워크스페이스라 `m.master`를 읽지 않는다.
 2. **`todo.importance` (high|mid|low) + `todo.date` (YYMMDD)** — 요구된 *중요도별/일자별 정렬*의 근거 필드. WO(`wo:true`)는 정렬과 무관하게 항상 최상단.
 3. **게이미피케이션은 데이터에서 파생(derive)** — 별도 스키마 불필요. 대시보드가 `todos` 중 `state==="done"` 수를 세어 **처리량·칭호(신입→숙련→베테랑→게이트마스터)·진행률·뱃지**를 자동 계산한다. 추후 수동 지정이 필요하면 `member.title` 오버라이드 필드를 옵션으로 추가 가능(현재는 미사용).
 
-## 체크상태 내보내기 포맷 (`poffice_check_export.json`)
+## 역방향 내보내기 포맷 (`poffice_export_{이름}.json`) — 인물별 단일 파일
 ```jsonc
 {
+  "member": "심상윤",                                // 내보낸 본인 이름(인물선택 워크스페이스)
   "generated_from": "2026-07-25T16:00:00+09:00",   // 원본 board.json의 generated_at
-  "check_overrides": {
-    "심상윤": { "0": "done", "2": "doing" },        // todos 인덱스 → 변경된 상태
-    "이정민": { "1": "done" }
-  }
+  "check_overrides": {                              // todos 인덱스 → 변경된 상태 (본인 것만)
+    "0": "done", "2": "doing"
+  },
+  "memo_overrides": {                               // "mission|{미션ID}" 또는 "session|{ts}" → 메모 텍스트
+    "mission|M0": "런칭 일정 재확인 필요",
+    "session|260725_1600": "이 세션 관련 후속 메모"
+  },
+  "note": "Poffice-Skill 이 세션로그·미션 메모/체크에 반영 (타임스탬프는 반영 시 부여)"
 }
 ```
-코워크는 이 오버라이드를 읽어 해당 팀원 세션로그의 투두 상태에 반영한다. (인덱스는 board.json의 `members[].todos` 배열 순서 기준)
+코워크(`Poffice-Skill`)는 이 오버라이드를 읽어 **본인** 세션로그의 투두 체크상태·메모에 반영한다. (인덱스는 board.json의 해당 인물 `todos` 배열 순서 기준 — 이름-키가 아니라 인덱스-키.)
 
-## 대시보드 3판 (구현 완료 — v0.1)
-1. **미션보드** — 인별 마일스톤 카드(상태 pill·D-day·진행률·역산 로드맵). 심상윤 마스터보드 최상단.
+## 대시보드 3판 (구현 완료 — v0.2)
+1. **미션보드** — 인별 마일스톤 카드(상태 pill·D-day·진행률·역산 로드맵). (심상윤 마스터보드 최상단 고정은 ver0.3 예정, ver0.2 미구현.)
 2. **게이트보드** — 🔴 보고처리 / 🟡 자체결재(yellow_policy로 자율·필수보고 표시) / 🟢 기록만. 항목별 상태·타임스탬프·근거로그.
 3. **투두리스트** — 인별 체크박스(3상태 순환 todo→doing→done), WO 태그·상단고정, 미션 id·중요도·일자 태그, 중요도/일자 정렬.
 
@@ -92,29 +99,29 @@
 
 ## B. 미션보드 = 마일스톤 + Day char 스프라이트
 - 골인지점(goal)과 현재 위치를 **경로 위 캐릭터 전진**으로 도식화(게임식). progress(0~1) → 캐릭터 위치.
-- 스프라이트 정본: Drive `RuleTheDay/day.png` (Day Mario 캐릭터). `_board.json`엔 이미지 미포함, 대시보드가 참조.
+- 스프라이트 정본: Drive `RuleTheDay/day.png` (Day Mario 캐릭터). `poffice_board.json`엔 이미지 미포함, 대시보드가 참조.
 - 미션에는 **메모 필수 슬롯**.
 
 ## C. 데이터 계층 (개인세션로그 폴더) — §2 규칙 확정, 추가:
 - `memo/session/{로그ID}.md`, `memo/mission/{미션ID}.md` — 사람이 다는 유일한 mutable 레이어.
-- 세션로그 UX: **최근=선명 → 오래될수록 opacity 흐림 → 드롭다운/스크롤로 더 로드** (이메일 아닌 게임식). `_board.json`은 최근 윈도우+롤업만.
-- 역방향 export = **체크 + 메모** 둘 다 (`poffice_check_export.json`에 `memo_overrides` 추가).
+- 세션로그 UX: **최근=선명 → 오래될수록 opacity 흐림 → 드롭다운/스크롤로 더 로드** (이메일 아닌 게임식). `poffice_board.json`은 최근 윈도우+롤업만.
+- 역방향 export = **체크 + 메모** 둘 다 (`poffice_export_{이름}.json`에 `memo_overrides` 포함).
 
 ## D. 개인화
 - 실행 시 **인물 선택**(자기 이름) → 개인 워크스페이스. 타인 내용 기본 비노출. 선택 이름 = 로컬 config.
 - 디자인: 기존 피모션(네온 터미널)과 다르게 **차분한 다크 워크스페이스** — 명확·직관·도식화 우선.
 
-## E. 두 스킬 아키텍처 (핌코프)
+## E. 스킬 아키텍처 → **§H(스킬 3종) 참조**
+현행 정본은 아래 **§H의 3-스킬 모델**이다: `Poffice-Skill`(기록) → `Poffice-MotherLog`(집계→config 생성) → `Poffice-Report-Bot`(페르소나 브리핑).
 ```
-① 개인세션로그 스킬 (기존): 대화 → 세션로그 자동저장 + 게이트/체크/미션 분류 → 개인DB 기록
-② Poffice-Update 스킬 (신규): [자동예약·주기적] 세션로그 + 개인DB 스캔
-     → 이전 스냅샷 대비 diff·중요도 판단·게이트 재분류
-     → _board.json 생성/갱신 (최근 윈도우+롤업)
-대시보드: 열 때 최신 _board.json 자동 로드 → 반영
-         (자동 로드 = 허브와 _board.json이 같은 Drive 동기 폴더에 있을 때 fetch,
+① Poffice-Skill (기록): 대화 → 개인세션로그 자동저장 + 게이트/체크/미션 분류 → 개인DB 기록
+② Poffice-MotherLog (집계→config): [자동예약·주기적] 각 개인세션로그 스캔·요약·분석
+     → poffice_board.json 생성/갱신 (최근 윈도우+롤업), 그린필드/포피스영역 저장
+대시보드: 열 때 최신 poffice_board.json 자동 로드 → 반영
+         (자동 로드 = 허브와 poffice_board.json이 같은 Drive 동기 폴더에 있을 때 fetch,
           아니면 드래그앤드롭 폴백)
 ```
-- **Poffice-Update 스킬 책무**: 개인세션로그 스킬의 산출물 형식을 정확히 알고, 그것을 이 문서의 `_board.json` 스키마로 결정론적으로 변환. 대표 주간보고 판단을 반영해 게이트(레드/옐로/그린)·WO를 세팅.
+- **집계 담당(`Poffice-MotherLog`) 책무**: `Poffice-Skill`의 산출물(개인세션로그) 형식을 정확히 알고, 그것을 이 문서의 `poffice_board.json` 스키마로 결정론적으로 변환. 대표 주간보고 판단을 반영해 게이트(레드/옐로/그린)·WO를 세팅.
 - 트리거: CronCreate 등 자동예약(예: 주 1회 또는 세션로그 갱신 시).
 
 ## F. 스킬 통합명 = `Poffice-Skill` (확정)
@@ -128,17 +135,20 @@
 ## G. v0.2 스키마 추가분 (`tool/PIMM_Poffice.ver0.2.html` 반영)
 - **`member.sessions`**: 세션로그 배열 — 대시보드의 시간순 opacity-fade 드롭다운 소스.
   `[{ "ts":"YYMMDD_HHMM", "summary":"...", "detail":"..." }]` (최근순 정렬, 오래될수록 흐림).
-  `_board.json`은 최근 윈도우만 담고, 더 오래된 건 개인세션로그 파일로.
-- **export 확장**: `poffice_export_{이름}.json` = `{ member, check_overrides, memo_overrides }`.
+  `poffice_board.json`은 최근 윈도우만 담고, 더 오래된 건 개인세션로그 파일로.
+- **export 확장**: `poffice_export_{이름}.json` = `{ member, generated_from, check_overrides, memo_overrides, note }` (인물별 단일 파일).
+  - `check_overrides` 키: **todos 인덱스 → 상태**(본인 것만, 이름-키 아님).
   - `memo_overrides` 키: `"mission|{미션ID}"` 또는 `"session|{ts}"` → 메모 텍스트.
   - Poffice-Skill 이 이 export를 읽어 세션로그·미션 메모/체크에 반영(타임스탬프는 반영 시 부여).
 - **진입**: 인물 선택 → `localStorage.poffice_me` 저장, 본인 데이터만 표시.
+- **옵션/미사용 필드**: `member.last_session`(로그 뷰는 `sessions[]` 사용), 최상위 `docs[]`, 샘플 스키마의 `generator` 는 **현재 대시보드가 사용하지 않는 옵션 필드**다(삭제하지 않고 보존 — 스키마·대시보드가 상충하는 것이 아니라 옵션임).
+- **스킬 표기 관례**: 스킬 frontmatter `name:`은 소문자(`poffice-skill`·`poffice-motherlog`·`poffice-report-bot`)이고 본문 산문은 `Poffice-Skill` 식 대문자 표기를 쓴다 — **의도된 관례이며 불일치가 아니다.**
 
 ## H. 스킬 3종 분리 (관심사·토큰 분리)
 | 스킬 | 역할 | 트리거 |
 |---|---|---|
 | **`Poffice-Skill`** | **기록** — 대화 → 개인세션로그 자동기록(게이트·체크·미션 분류) + 역방향 export(체크·메모) 반영 | 세션로그·세션·스케줄·작업보고·업무지시·업무보고·미션보드·포피스 / 포피스 업로드·수정 |
-| **`Poffice-MotherLog`** | **집계→config** — 각 개인세션로그를 요약·분석 → 대시보드가 읽는 `poffice_board.json`(마더 세션로그) 생성, **그린필드/포피스영역**에 저장, 자동예약 | 마더세션로그·마더로그·포피스 config 생성·포피스 대시보드 갱신·세션로그 집계·_board.json 생성 |
+| **`Poffice-MotherLog`** | **집계→config** — 각 개인세션로그를 요약·분석 → 대시보드가 읽는 `poffice_board.json`(마더 세션로그) 생성, **그린필드/포피스영역**에 저장, 자동예약 | 마더세션로그·마더로그·포피스 config 생성·포피스 대시보드 갱신·세션로그 집계·poffice_board.json 생성 |
 | **`Poffice-Report-Bot`** | **알림·브리핑** — 마더 config를 직전 버전과 diff → 갱신·특이사항·사내공지를 **개인별 페르소나 말투**로 전달. 강제 아님, "{이름} 포피스알림켜줘"로 예약 활성화 | 포피스 알림·포피스알림켜줘·주간보고·일일보고·브리핑 |
 
 흐름: `Poffice-Skill`(기록) → `Poffice-MotherLog`(집계→config) → 대시보드(로드·시각화) → export(체크·메모) → `Poffice-Skill` 반영 → `Poffice-Report-Bot`(diff 브리핑).

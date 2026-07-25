@@ -9,15 +9,21 @@
 - `poffice-report-bot/` — 페르소나 브리핑(마더 config diff, 예약, "{이름} 포피스알림켜줘")
 - 정본 스펙: `docs/poffice-board-spec.md`(A~H), 대시보드: `tool/PIMM_Poffice.ver0.2.html`
 
-## 2. 핌코프 플러그인 (Drive)
-- `pimm-cowork-plugin_v0.4.0.plugin` (최신) — **여기에 위 3종 통합**
+## 2. 핌코프 플러그인 (설치본 기준)
+- **최신 설치본 = `pimm-cowork-plugin` v0.8.1** (약 16시간 전 업로드) — **여기에 위 3종 통합**. (드라이브의 `..._v0.4.0.plugin`은 **스테일 산출물**이지 최신 아님.)
 - `pimm-plogic.plugin` — Plogic 계열
-- 구버전 다수 존재(pimm-cowork-plugin.plugin 등) → 통합/정리 대상
+- 구버전 다수 존재(pimm-cowork-plugin 구 zip 등) → 정리 대상
 
-### 해야 할 일 (플러그인 빌드 공정)
-1. 위 3종 스킬을 `pimm-cowork-plugin` 다음 빌드에 포함.
-2. **구버전 제거**: 플러그인 내 기존 "개인세션로그 스킬" / "포피스 스킬"(2스킬 모델)이 있으면 제거 — 신 3종으로 대체.
-3. 배포 후 이전 `.plugin` zip들은 제로필드 정리(개인세션로그 정리 지시 참조).
+### 정정 (잘못된 전제 바로잡기)
+- **별도의 "개인세션로그 스킬" + 별도 "포피스 스킬"을 삭제하는 상황은 원래 없었다.** 설치본(v0.8.1)에서 구형 포피스는 독립 스킬이 아니라 **`pimm-coworking` 스킬 안에 문서/폴더-하이어라키 프로토콜로 임베드**되어 있다(`references/poffice-hierarchy.md`: 리포트/워크오더 텍스트 모델).
+- 따라서 정리 대상은 **`pimm-coworking` 내부의 그 임베드 콘텐츠**이지, 독립 스킬이 아니다.
+
+### 해야 할 일 (v0.8.1 기준 · 플러그인 빌드 공정)
+1. **ADD**: 신 포피스 스킬 3종(`poffice-skill`·`poffice-motherlog`·`poffice-report-bot`)을 다음 빌드에 포함.
+2. **REPLACE/reconcile**: `pimm-coworking`의 임베드 `poffice-hierarchy`(구 리포트/워크오더 텍스트 모델)를 신 `poffice_board.json` 데이터 모델로 대체·정합.
+3. **대시보드/`poffice_board.json` 인지 추가**: 코워킹 스킬이 대시보드 config와 그린필드/포피스영역 저장 위치를 인지하도록.
+4. **테마에이전트 스킬은 HOLD 유지**(§3).
+> ⚠️ `.plugin` 재패키징은 이 레포 세션이 아니라 **드라이브 플러그인 빌드 공정**에서 이뤄진다.
 
 ## 3. 테마에이전트 스킬 — 보류 (대표 "그거 아닐거같다")
 - 레포 `.claude/skills/`엔 독립 "테마에이전트" 스킬 없음. 테마 제작 로직은 **Plogic**(테마비트→노트→렌더→워크 T2 제작가이드 + 범용 크래프트 이론)에, Unity 빌드는 `pimm-unitygamecreator` 스킬에 존재.

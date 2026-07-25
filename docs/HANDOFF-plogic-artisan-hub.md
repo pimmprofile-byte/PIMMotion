@@ -122,7 +122,7 @@ recall(기존내용) + create(심화·창작) 문항 → `exportAnswers()`가 `{
 세션로그 원본은 **불변**, 역방향으로 쓰는 건 **체크·메모뿐.**
 
 ### 2B-2. 대시보드 3판 + 부가 (v0.2 구현 완료)
-1. **미션보드** — 인별 마일스톤 카드. `progress`(0~1)로 **Day char 스프라이트가 경로 위 전진**(게임식), 상태 pill(예정/진행/달성/보류)·D-day·역산 로드맵. **심상윤 `master:true` 최상단 고정**. 미션마다 메모 슬롯.
+1. **미션보드** — 인별 마일스톤 카드. `progress`(0~1)로 **Day char 스프라이트가 경로 위 전진**(게임식), 상태 pill(예정/진행/달성/보류)·D-day·역산 로드맵. (심상윤 `master:true` 최상단 고정은 데이터 플래그만 존재, 대시보드 ver0.2 미구현·ver0.3 예정.) 미션마다 메모 슬롯.
 2. **게이트보드 = 권한 신호등(위험 아님)** — 🔴 레드(대표 검수·승인 후 진행) / 🟡 옐로(팀장 판단 진행, `yellow_policy:"report"`면 팀원 보고 필수·`"auto"`면 자율) / 🟢 그린(자율·기록만). 항목별 상태·타임스탬프·근거로그.
 3. **투두리스트** — 체크박스 3상태 순환(todo→doing→done), **WO(대표 지시) 태그·상단 강제 고정**, 미션 id·중요도(high/mid/low)·일자(YYMMDD) 태그, 중요도/일자 정렬.
 ＋ **WO 배너**(대표 지시 필수확인 최상단) · **게이미피케이션 스트립**(처리량·칭호 신입→숙련→베테랑→게이트마스터·진행률·뱃지, `todos` done 수에서 파생) · **세션로그 드롭다운**(최근=선명 → 오래될수록 opacity 흐림, "더 보기").
@@ -194,7 +194,7 @@ recall(기존내용) + create(심화·창작) 문항 → `exportAnswers()`가 `{
 ---
 
 ## 5. 앞선 세션 산출물(맥락, 이미 커밋됨)
-- **포피스 체계** → **상세는 §2-B 참조.** 파일: `tool/PIMM_Poffice.ver0.1/0.2.html`(대시보드), `docs/poffice-board-spec.md`(A~H), `docs/poffice-usage-by-member.md`(팀원별 시나리오), `schemas/poffice_board.sample.json`, 스킬 3종 `.claude/skills/poffice-skill|poffice-motherlog|poffice-report-bot/SKILL.md`.
+- **포피스 체계** → **상세는 §2-B 참조.** 파일: `tool/PIMM_Poffice.ver0.2.html`(현행 대시보드; ver0.1은 구버전), `docs/poffice-board-spec.md`(A~H), `docs/poffice-usage-by-member.md`(팀원별 시나리오), `schemas/poffice_board.sample.json`, 스킬 3종 `.claude/skills/poffice-skill|poffice-motherlog|poffice-report-bot/SKILL.md`.
 - **사이트**: `site/pimmartworks.html`(B2B, Random Studio식 히어로), `site/panorama.html`(B&W 라인 미니멀).
 - 문서: `docs/plogic-curriculum-design.md`, `docs/pimm-skill-plugin-integration.md`, `docs/poffice-usage-by-member.md`.
 
