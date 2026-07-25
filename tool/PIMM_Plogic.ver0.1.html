@@ -130,6 +130,25 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .axis .ac b{color:var(--ink)} .axis .ac .h{font-weight:800;color:var(--ink);font-size:13px;margin-bottom:3px}
 @media(max-width:560px){.axis .grid2{grid-template-columns:1fr}}
 
+/* 심화(딥다이브) */
+.mnav button.lock{opacity:.55}
+.mnav button.lock .n{border-style:dashed}
+.deep-sub{font-size:14px;color:var(--ink3);font-weight:600;margin-left:6px}
+.dwrap{overflow-x:auto;margin-top:12px}
+.dtable{width:100%;border-collapse:collapse;font-size:13px;min-width:440px}
+.dtable th,.dtable td{border:1px solid var(--line2);padding:8px 11px;text-align:left;vertical-align:top}
+.dtable th{background:var(--mint);color:var(--green-d);font-weight:800;font-size:12px;white-space:nowrap}
+.dtable td b{color:var(--ink)}
+.dtable tr .pk{color:var(--red);font-weight:800}
+.lesson h4{font-size:15px;font-weight:800;margin-top:2px}
+.chk-static{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.chk-static li{font-size:13.5px;color:var(--ink2);padding-left:26px;position:relative}
+.chk-static li::before{content:"✔";position:absolute;left:2px;top:0;color:var(--green);font-weight:800}
+.lock-card{text-align:center;padding:34px 20px}
+.lock-card .big{font-size:34px}
+.lock-card h3{font-size:18px;font-weight:800;margin-top:8px}
+.lock-card p{color:var(--ink2);font-size:14px;margin-top:8px;max-width:440px;margin-left:auto;margin-right:auto}
+
 /* 인라인 퀴즈(이해하기 자가확인) */
 .check{border:1px dashed var(--line2);border-radius:var(--r);padding:18px;margin-top:18px;background:var(--card)}
 .check .q{font-weight:700;font-size:14.5px;display:flex;gap:8px;align-items:flex-start}
@@ -182,6 +201,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink3);fo
     <div class="mode-pills" id="modePills" style="display:none">
       <button data-mode="learn" class="on">이해하기</button>
       <button data-mode="solve">풀어보기</button>
+      <button data-mode="deep">심화</button>
       <button data-mode="system">작업체계</button>
       <button data-mode="home" style="border:0;color:var(--ink3)">↺</button>
     </div>
@@ -190,7 +210,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink3);fo
 </header>
 
 <main id="app"></main>
-<footer>PIMM 플로직 교육 v0.1 — 이해하기(학습) · 풀어보기(연습→JSON 내보내기→코워크 채점) · 작업체계(플로직·포피스·피모션·파트웍) · 진도는 이 브라우저에 저장</footer>
+<footer>PIMM 플로직 교육 v0.1 — 이해하기(개괄) · 풀어보기(연습→JSON→코워크 채점) · 심화(크래프트 이론 딥다이브) · 작업체계(플로직·포피스·피모션·파트웍) · 진도는 이 브라우저에 저장</footer>
 
 <script>
 /* ===== Day 마스코트 (SVG 토큰, SPRITE_URL로 실제 day.png 교체 가능) ===== */
@@ -333,6 +353,7 @@ function render(){
   if(mode==="learn")return renderLearn();
   if(mode==="solve")return renderSolve();
   if(mode==="system")return renderSystem();
+  if(mode==="deep")return renderDeep();
 }
 
 function renderHome(){
@@ -343,7 +364,8 @@ function renderHome(){
     <div class="choose">
       <button data-mode="learn"><div class="ic">📖</div><h3>플로직 이해하기</h3><p>PPP·IMM 철학부터 아이디어 공정·크래프트 이론·판단로직까지. 어려운 개념을 쉽게, 퍼즐로 확인하며.</p><div class="go">학습 시작 →</div></button>
       <button data-mode="solve"><div class="ic">🧩</div><h3>플로직 풀어보기</h3><p>배운 내용을 질문·창작·퍼즐로 풀어봐요. 답안을 JSON으로 내보내면 코워크가 채점해줍니다.</p><div class="go">문제 풀기 →</div></button>
-      <button data-mode="system" style="grid-column:1/-1"><div class="ic">🧭</div><h3>핌 작업체계 알아보기</h3><p><b>플로직 · 포피스 · 피모션 · 파트웍</b> — 핌허브를 이루는 4개 작업 영역이 각각 무슨 일을 하는지 한눈에.</p><div class="go">둘러보기 →</div></button>
+      <button data-mode="deep"><div class="ic">🔬</div><h3>플로직 심화</h3><p>크래프트 이론(서사·공간·퍼즐·연출…)을 이론 하나하나 깊게. 개괄을 넘어 '만드는 손'까지.</p><div class="go">깊게 파기 →</div></button>
+      <button data-mode="system"><div class="ic">🧭</div><h3>핌 작업체계</h3><p><b>플로직·포피스·피모션·파트웍</b> — 핌허브 4개 작업 영역이 각각 무슨 일을 하는지.</p><div class="go">둘러보기 →</div></button>
     </div></div>`;
   $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 }
@@ -400,6 +422,67 @@ function renderSystem(){
     <div class="modfoot"><button class="btn ghost" data-mode="home" id="sysHome">← 처음으로</button><button class="btn" data-mode="learn" id="sysLearn">플로직 배우러 가기 →</button></div>
   </div>`;
   $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+}
+
+/* ===== 심화 (딥다이브) — 크래프트 이론을 이론별로 깊게 ===== */
+let curTheory=0;
+const DEEP_CRAFT=[
+ {id:"narrative",name:"서사구조",sub:"8-Cell · 4계층 · 피크엔드",ready:true,
+  body:`
+<div class="lesson"><h3>서사구조란 무엇인가 <span class="tag">개요</span></h3>
+<p>세트가 아무리 멋져도 방문객의 <b>감정이 어디서 오르고 내려갈지</b>를 정하지 않으면 그건 '전시'야. 서사구조는 <span class="k">감정을 운에 맡기지 않고 설계</span>하는 기술 묶음이야.</p>
+<p>핌은 이걸 세 겹으로 다뤄 — ① 감정의 뼈대 <b>8-Cell</b> · ② 공간이 스스로 이야기하게 하는 <b>환경적 스토리텔링 4계층</b> · ③ 사람의 기억을 지배하는 <b>피크-엔드 · 엔딩 3단계</b>.</p>
+<div class="plain"><span class="lb">쉽게 말하면</span>각본가가 '여기서 울리고 여기서 웃긴다'를 미리 짜듯, <b>방문객의 감정 곡선을 칸칸이 미리 설계</b>하는 거야. 이게 되면 '예뻤다'가 아니라 '겪었다'가 나와.</div></div>
+
+<div class="lesson"><h3>① 8-Cell 감정역학 <span class="tag">핵심 뼈대</span></h3>
+<p>3막 구조(도입·전개·결말)를 <b>8개의 감정 칸</b>으로 잘게 해체·재조합한 타임라인이야. 각 칸이 방문객에게 줄 감정을 못 박아둬.</p>
+<div class="dwrap"><table class="dtable">
+<tr><th>칸</th><th>국면</th><th>이 칸이 하는 일</th><th>핌의 실행</th></tr>
+<tr><td><b>1~2</b></td><td>도입·사건</td><td>첫인상 = 세계관 선언</td><td>환경적 스토리텔링으로 '여기가 어디인지'를 말 없이 각인</td></tr>
+<tr><td><b>3~4</b></td><td>전환·고조</td><td>긴장을 계단식으로 레벨링</td><td>난이도·정보를 조금씩 올려 몰입 유지</td></tr>
+<tr><td><b class="pk">5~6</b></td><td>충격·폭발 = <b class="pk">Peak</b></td><td>감정 최고조</td><td>하드웨어 총동원(조명·사운드·진동·특효) = Sensory Override</td></tr>
+<tr><td><b>7</b></td><td>쉼(Pause)</td><td>성찰·정보 비대칭</td><td>갑자기 조용히 — Peak와의 낙차를 벌림</td></tr>
+<tr><td><b>8</b></td><td>결말 = <b>End</b></td><td>변화된 '나'를 확인</td><td>피크-엔드의 마지막 실행점(아래 ③)</td></tr>
+</table></div>
+<ul><li><b>비균등 배분</b> — 칸마다 시간을 다르게. 5~6에 자원을 몰아준다</li><li><b>인과 체인</b> — 앞 칸이 뒤 칸의 원인이 되게 (우연 금지)</li><li><b>피드백 루프</b> — 방문객 행동에 즉각 반응이 돌아오게</li></ul>
+<div class="plain"><span class="lb">쉽게 말하면</span>'놀라게 할 곳(5~6)'과 '숨 돌릴 곳(7)'과 '끝맺을 곳(8)'을 <b>미리 칸에 배정</b>하는 표야. 감정을 즉흥에 맡기지 않는 게 핵심.</div></div>
+
+<div class="lesson"><h3>② 환경적 스토리텔링 4계층 <span class="tag">공간이 말하게</span></h3>
+<p>디즈니 이매지니어링식 4겹. 대사 한 줄 없이도 <b>공간 스스로 이야기를 하게</b> 쌓는 층이야.</p>
+<ul><li><b>L1 하드스케이프</b> — 골조·마감. 여기서 방문객을 압도</li><li><b>L2 테크·인프라</b> — 조명·음향·특수효과</li><li><b>L3 프롭</b> — 소품(기능용/데코용을 엄격히 분리). 여기서 만지는 쾌감</li><li><b>L4 오버레이</b> — 그래픽·텍스트·캐릭터. 최소로 쓰되 임팩트는 최대로</li></ul>
+<div class="ex"><span class="lb">실제 사례</span>같은 '버려진 연구소'라도 — 콘크리트 질감(L1)이 압도하고, 깜빡이는 경광등(L2)이 긴장을 주고, 실제로 열리는 서랍 속 문서(L3)에서 쾌감이 오고, 벽의 경고 스티커(L4)가 마지막 설정을 박아. <b>한 계층이라도 빠지면 '세트', 다 채우면 '세계'</b>가 돼.</div></div>
+
+<div class="lesson"><h3>③ 피크-엔드 법칙 &amp; 엔딩 3단계 <span class="tag">기억의 설계</span></h3>
+<p><b>피크-엔드 법칙</b>(카네먼) — 사람은 체험 전체를 기억하지 않고 <span class="k">'가장 짜릿했던 순간(Peak=5~6)'과 '마지막 순간(End=8)'</span> 두 컷으로 기억해. 그래서 이 둘에 자원을 몰아줘야 좋은 후기가 나와.</p>
+<p>그 마지막(End)을 어떻게 닫느냐가 <b>엔딩 3단계</b>야:</p>
+<div class="pipe"><span class="st">목적성 완결</span><span class="ar">→</span><span class="st">감각적 해방</span><span class="ar">→</span><span class="st">큐레이팅된 쿨다운</span></div>
+<ul><li><b>목적성 완결</b> — 미션을 풀어 '해냈다'를 확정</li><li><b>감각적 해방</b> — 전 하드웨어 동시 폭발로 카타르시스</li><li><b>큐레이팅된 쿨다운</b> — 잔잔한 전환 음악으로 현실 복귀시킴</li></ul>
+<div class="plain"><span class="lb">쉽게 말하면</span>다 풀고(완결) → 빵 터뜨리고(해방) → <b>천천히 식혀 내보낸다(쿨다운).</b> 식히는 단계를 빼먹고 문만 '탁' 열어 내보내면, 벅찬 감정이 갈 곳을 잃고 '어리둥절'로 변해.</div></div>
+
+<div class="lesson"><h3>스스로 점검 <span class="tag">체크리스트</span></h3>
+<ul class="chk-static"><li>내 테마의 Peak는 몇 번째 칸이고, 어떤 하드웨어를 몰아줬나?</li><li>Peak 직후에 '쉼(7칸)'을 넣어 낙차를 만들었나?</li><li>환경적 스토리텔링 4계층이 다 있나? (하나라도 빠지면 '세트')</li><li>엔딩에 '쿨다운'이 있나, 아니면 문만 열고 끝내나?</li></ul>
+<div class="note">이 이론으로 <b>직접 만들어보는 창작 문제</b>는 <b>「풀어보기」</b> 모드에 있어. 여기서 원리를 익히고, 거기서 손으로 써보면 돼!</div></div>
+`},
+ {id:"space",name:"공간구성",sub:"Z-Axis · 감각 레이어링 · 500-500-200",ready:false},
+ {id:"puzzle",name:"게임퍼즐 · 어포던스",sub:"MDA · Flow · Mechanical Instinct",ready:false},
+ {id:"scene",name:"장면연출",sub:"미장센 · Synchresis · Pacing",ready:false},
+ {id:"genre",name:"장르컨셉",sub:"컨셉충돌 · P-SF/Horror/Brand",ready:false},
+ {id:"ops",name:"운영설계",sub:"안전 · 회전율 · 유지보수",ready:false}
+];
+function renderDeep(){
+  const nav=DEEP_CRAFT.map((t,i)=>`<button data-t="${i}" class="${i===curTheory?'on':''} ${t.ready?'':'lock'}"><span class="n"><span>${t.ready?'✦':'🔒'}</span></span>${t.name}</button>`).join("");
+  const t=DEEP_CRAFT[curTheory];
+  const article=t.ready?t.body:`<div class="lesson lock-card"><div class="big">🔒</div><h3>${t.name} — 심화 준비 중</h3><p>이 이론의 심화 교재는 <b>플로직 원문(그린필드) 정독 후</b> 공개돼요. 핌 고유의 특화 파트가 섞여 있어, <b>무왜곡</b>을 위해 원문을 대조한 뒤 채웁니다. 지금은 서사구조부터 깊게 파보세요!</p><button class="btn" id="toNarr">서사구조부터 보기 →</button></div>`;
+  $("#app").innerHTML=`<div class="wrap learn">
+    <nav class="mnav">${nav}</nav>
+    <section class="mod">
+      <div class="eyebrow">DEEP DIVE · 크래프트 이론</div>
+      <h2>${t.name}${t.sub?`<span class="deep-sub">${t.sub}</span>`:''}</h2>
+      <div class="dayrow">${daySVG("sm")}<div class="bubble">${t.ready?"개괄에서 한 발 더! 이 이론이 '왜' 그렇게 작동하는지, 어떻게 손으로 쓰는지까지 파보자.":"이건 아직 원문 대조 전이라 잠가뒀어. 지어내지 않는 게 우리 원칙이니까!"}</div></div>
+      ${article}
+    </section></div>`;
+  $("#app").querySelectorAll(".mnav button").forEach(b=>b.onclick=()=>{curTheory=+b.dataset.t;render();window.scrollTo(0,0)});
+  const tn=$("#toNarr");if(tn)tn.onclick=()=>{curTheory=0;render();window.scrollTo(0,0)};
 }
 
 /* ===== 이해하기 ===== */
