@@ -26,7 +26,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
   font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Segoe UI','Malgun Gothic',sans-serif;
-  line-height:1.65;letter-spacing:-.01em;word-break:keep-all;-webkit-font-smoothing:antialiased}
+  line-height:1.65;letter-spacing:-.01em;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer} h1,h2,h3,h4,p{margin:0}
 .wrap{max-width:960px;margin:0 auto;padding:0 20px}
 .mono{font-family:var(--mono);letter-spacing:0}
@@ -191,7 +191,7 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 
 footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink3);font-size:12px;text-align:center}
 .hide{display:none!important}
-@media(max-width:720px){.learn{grid-template-columns:1fr}.mnav{position:static;grid-auto-flow:column;overflow-x:auto;padding-bottom:6px}.mnav button{white-space:nowrap}}
+@media(max-width:720px){.learn{grid-template-columns:1fr}.mnav{position:static;grid-auto-flow:column;overflow-x:auto;padding-bottom:6px;min-width:0;max-width:100%}.mnav button{white-space:nowrap}.mod{min-width:0}}
 </style>
 </head>
 <body>
