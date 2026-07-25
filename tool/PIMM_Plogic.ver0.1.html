@@ -450,7 +450,7 @@ const DOMAINS=[
  {n:2,name:"장치디바이스",desc:"장치의 개념을 이해하고 코딩과 회로작업을 하는 능력",type:"하드워크",color:"purple"},
  {n:3,name:"설계와 디자인",desc:"각종 툴을 활용해 설계도와 그래픽, 미디어를 만드는 능력",type:"소프트워크",color:"blue"},
  {n:4,name:"미학적 감각",desc:"개인의 취향을 상업적인 색감으로 바꿔서 상품화 시키는 능력",type:"미학·예술",color:"green"},
- {n:5,name:"비지니스",desc:"시장의 흐름을 파악해 트렌드를 발견하고 이를 적용하고 팀을 시장의 흐름에 올리는 능력",type:"사업",color:"amber"},
+ {n:5,name:"사업적 감각",desc:"시장의 흐름을 파악해 트렌드를 발견하고 이를 적용하고 팀을 시장의 흐름에 올리는 능력",type:"시장·사업성",color:"amber"},
  {n:6,name:"서사창작",desc:"세계관을 구축하고 이야기를 만들어나가며 이를 공간서사와 콘텐츠로 만드는 능력",type:"미학·예술",color:"green"}
 ];
 const LEVELS=[
@@ -465,7 +465,7 @@ function renderArtisan(){
     <div class="sys-hero">
       <div class="eyebrow">PIMM ARTISAN · 03_Artisan</div>
       <h2>핌 아티잔 — 6개 도메인으로 자라는 장인</h2>
-      <p class="lead">플로직이 '<b>회사의 논리</b>'라면, 아티잔은 '<b>나 개인의 숙련</b>'이야. 핌 아티잔은 아래 <b>6개 핵심 도메인</b> 위에서 <b>2개 이상을 전문가 수준으로</b> 키워가는 사람이야.</p>
+      <p class="lead">플로직이 '<b>회사의 논리</b>'라면, 아티잔은 '<b>나 개인의 숙련</b>'이야. 핌 아티잔은 아래 <b>6개 핵심 도메인</b> 위에서 <b>2개 이상을 전문가 수준으로</b> 키워가는 사람이야. 이 6개는 모두 '능력있다·똑똑하다·감각있다' 같은 <b>밸류</b>를 표방해 — 도메인이 견고하고 많아질수록 <b>개인 밸류</b>가, 나아가 <b>팀 밸류</b>가 오르는 <b>인재가치 지표</b>야.</p>
       <div class="dayrow">${daySVG("sm")}<div class="bubble">한 우물만 파는 시대는 끝! 성향을 알고 → 도메인을 정하고 → 단계를 밟아 마스터하고 → <b>두 개 이상 겹쳐 가진 전문가</b>가 되는 게 아티잔의 길이야.</div></div>
     </div>
 
@@ -482,7 +482,7 @@ function renderArtisan(){
       <p>같은 6개라도 익히는 성격이 서로 달라.</p>
       <div class="grid2">
         <div class="ac"><div class="h">🛠️ 기술·작업물 축 (1·2·3)</div>현장제작·장치디바이스·설계와 디자인. <b>작업물과 기술력</b>에 관한 것으로, 배우면 느는 <b>가장 익히기 쉬운 축</b>.</div>
-        <div class="ac"><div class="h">✨ 감각 축 (4·5·6)</div>미학적 감각·비지니스·서사창작. <b>감각</b>에 관한 것으로, 익히기보다 <b>깨닫고 타고나는 것에 가까운 축</b>.</div>
+        <div class="ac"><div class="h">✨ 감각 축 (4·5·6)</div>미학적 감각·사업적 감각·서사창작. <b>감각</b>에 관한 것으로, 익히기보다 <b>깨닫고 타고나는 것에 가까운 축</b>.</div>
       </div>
     </div>
 
@@ -500,12 +500,14 @@ function renderArtisan(){
       <div class="lvl m3"><div class="step">전 도메인 마스터</div><h4>사업 총괄 역량<small>Business Lead</small></h4><p><b>전 분야에서 마스터 레벨</b>이 되면, 사업을 총괄·진행할 역량(능력적인 부분)이 확보된다.</p></div>
     </div>
 
-    <div class="axis" style="margin-top:20px">
-      <h4>측정과 훈련은 이렇게</h4>
-      <p>내 도메인 역량을 재고(측정), 새 도메인을 내 것으로 만드는(훈련) 방법이야.</p>
+    <h2 class="sec-h">평가 · 훈련 · 보상</h2>
+    <p class="lead" style="margin-top:6px;font-size:14px">밸류(도메인)가 어떻게 측정되고, 훈련되고, 유형가치로 이어지는지.</p>
+    <div class="axis" style="margin-top:12px">
       <div class="grid2">
-        <div class="ac"><div class="h">🧪 STP — 측정</div>6개 도메인을 심층 분석하는 테스트. <b>질문에 의도가 드러나지 않으면서도 각 도메인이 서로 얽히도록</b> 설계돼, 이 조건만 지키면 <b>코워크(Claude)가 매번 새 질문을 갱신·생성</b>할 수 있다.</div>
-        <div class="ac"><div class="h">🔀 MPA — 도메인 마스터 훈련</div>새 도메인 진입 시 <b>M-T-B</b>(Middle→Top→Bottom Point)로 가치를 분해·내재화 — 직접 숙련할지 관리할지까지 정한다.</div>
+        <div class="ac"><div class="h">📊 평가 3요소</div>각자의 현 도메인은 <b>STP 테스트 + 작업물 + 시장반응</b>을 토대로 성과를 평가한다.</div>
+        <div class="ac"><div class="h">💰 유형가치 직결</div>이 성과 평가는 <b>월급 등 유형가치와 직결</b>되는 시스템. 도메인이 견고하고 많아질수록 개인·팀 밸류가 오른다.</div>
+        <div class="ac"><div class="h">🧪 STP — 진단</div>6개 도메인을 심층 분석하는 테스트. <b>질문에 의도가 드러나지 않으면서도 각 도메인이 서로 얽히도록</b> 설계돼, 이 조건만 지키면 <b>코워크(Claude)가 매번 새 질문을 갱신·생성</b>한다.</div>
+        <div class="ac"><div class="h">🔀 MPA — 마스터 훈련</div>새 도메인 진입 시 <b>M-T-B</b>(Middle→Top→Bottom Point)로 가치를 분해·내재화 — 직접 숙련할지 관리할지까지 정한다.</div>
       </div>
     </div>
 
