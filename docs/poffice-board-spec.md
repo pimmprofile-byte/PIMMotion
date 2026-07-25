@@ -124,3 +124,12 @@
 - 세션로그 타임스탬프는 `YYMMDD_HHMM`(시간 포함) 규칙 준수.
 
 > ※ A~F 대표 확정 완료(2026-07-25). 이 문서가 `Poffice-Skill`·대시보드 공용 정본.
+
+## G. v0.2 스키마 추가분 (`tool/PIMM_Poffice.ver0.2.html` 반영)
+- **`member.sessions`**: 세션로그 배열 — 대시보드의 시간순 opacity-fade 드롭다운 소스.
+  `[{ "ts":"YYMMDD_HHMM", "summary":"...", "detail":"..." }]` (최근순 정렬, 오래될수록 흐림).
+  `_board.json`은 최근 윈도우만 담고, 더 오래된 건 개인세션로그 파일로.
+- **export 확장**: `poffice_export_{이름}.json` = `{ member, check_overrides, memo_overrides }`.
+  - `memo_overrides` 키: `"mission|{미션ID}"` 또는 `"session|{ts}"` → 메모 텍스트.
+  - Poffice-Skill 이 이 export를 읽어 세션로그·미션 메모/체크에 반영(타임스탬프는 반영 시 부여).
+- **진입**: 인물 선택 → `localStorage.poffice_me` 저장, 본인 데이터만 표시.

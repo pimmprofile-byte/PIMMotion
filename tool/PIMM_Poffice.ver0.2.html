@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIMM POFFICE · 워크스페이스 v0.2</title>
+<style>
+/* ============================================================
+   PIMM POFFICE v0.2 — 개인 워크스페이스 (읽기 전용 + 체크/메모)
+   · 진입 시 인물 선택 → 본인 것만. (선택 이름 = 로컬 config)
+   · 기존 피모션(네온 터미널)과 다른 '차분한 다크 워크스페이스' 톤, 도식 우선.
+   · 미션 = 마일스톤 트랙(Day char 전진) / 게이트 = 권한 신호등 / 투두 = 체크리스트
+   · 세션로그 = 시간순, 오래될수록 흐림(opacity), 드롭다운.
+   · 로컬 인터랙션 = 체크 + 메모. export만(허브→코워크). 원본 불변.
+   ============================================================ */
+:root{
+  --bg:#0f1115; --bg2:#0c0e12; --panel:#161922; --panel2:#1b1f2a; --raise:#20252f;
+  --ink:#e9ebef; --ink2:#98a0ad; --ink3:#5c6472; --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.16);
+  --ac:#4fd1a1;            /* 차분한 민트 액센트 (절제) */
+  --red:#f2726b; --yellow:#e8b34a; --green:#4fd1a1; --blue:#6bb8ff;
+  --r:14px; --rs:10px; --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Segoe UI','Malgun Gothic',sans-serif;
+  line-height:1.55;letter-spacing:-.01em;word-break:keep-all;-webkit-font-smoothing:antialiased}
+a{color:inherit} h1,h2,h3,h4,p{margin:0}
+.mono{font-family:var(--mono);letter-spacing:0}
+button{font:inherit;cursor:pointer}
+
+/* ===== 진입: 인물 선택 ===== */
+#gate{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  background:radial-gradient(800px 500px at 50% 20%,rgba(79,209,161,.08),transparent 60%),var(--bg)}
+#gate .logo{font-weight:800;font-size:22px;letter-spacing:-.02em}#gate .logo b{color:var(--ac)}
+#gate .sub{color:var(--ink2);font-size:13px;margin-top:-14px}
+#gate .who{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:560px}
+#gate .who button{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 24px;color:var(--ink);
+  min-width:140px;text-align:left;transition:.2s}
+#gate .who button:hover{border-color:var(--ac);transform:translateY(-3px);background:var(--panel2)}
+#gate .who .nm{font-size:17px;font-weight:700}#gate .who .rl{font-size:12px;color:var(--ink3);margin-top:3px}
+#gate .load{font-size:12px;color:var(--ink3)}#gate .load button{color:var(--ac);background:none;border:0;text-decoration:underline}
+
+/* ===== 앱 셸 ===== */
+#app{display:none} #app.on{display:block}
+.top{position:sticky;top:0;z-index:40;background:rgba(15,17,21,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.02em}.brand b{color:var(--ac)}.brand .v{font-size:10.5px;color:var(--ink3);font-weight:600;margin-left:4px}
+.me{display:flex;align-items:center;gap:9px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px}
+.me .dot{width:7px;height:7px;border-radius:50%;background:var(--ac)}
+.me b{font-weight:700}.me .r{color:var(--ink3);font-size:11px}
+.sp{flex:1}
+.tbtn{font-size:12px;font-weight:600;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;transition:.2s}
+.tbtn:hover{color:var(--ink);border-color:var(--line2)}
+.tbtn.ac{color:#08130f;background:var(--ac);border-color:var(--ac);font-weight:700}
+.ro{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--ac);border:1px solid rgba(79,209,161,.3);border-radius:999px;padding:3px 8px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 22px 80px}
+.sec{margin:30px 0}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:16px}
+.sec-h h2{font-size:15px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.sec-h .d{font-size:12px;color:var(--ink3)}
+.sec-h .line{flex:1;height:1px;background:var(--line)}
+
+/* stat header */
+.hero-me{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:20px 22px}
+.hero-me .big{font-size:22px;font-weight:800}.hero-me .big .r{font-size:12px;color:var(--ink3);font-weight:500;margin-left:8px}
+.hero-me .rank{margin-top:8px;font-size:13px;color:var(--ac);font-weight:700}
+.hero-me .rank .e{margin-right:5px}
+.hero-me .stat{text-align:right}
+.hero-me .stat .n{font-family:var(--mono);font-size:30px;font-weight:700}
+.hero-me .stat .n small{font-size:13px;color:var(--ink3)}
+.hero-me .prog{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px;width:180px;margin-left:auto}
+.hero-me .prog i{display:block;height:100%;background:var(--ac)}
+.hero-me .next{font-size:11px;color:var(--ink3);margin-top:6px}
+
+/* WO */
+.wo{border:1px solid rgba(242,114,107,.4);background:linear-gradient(180deg,rgba(242,114,107,.08),transparent);border-radius:var(--r);padding:15px 17px;margin:18px 0}
+.wo .t{font-size:11.5px;font-weight:800;letter-spacing:.08em;color:var(--red);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.wo .t::before{content:"⚡"}
+.wo ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:7px}
+.wo li{display:flex;gap:10px;align-items:center;font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rs);padding:9px 12px}
+.wo li .m{margin-left:auto;font-size:11px;color:var(--ink3)}
+
+/* 미션 마일스톤 트랙 */
+.mission{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px}
+.mission .mh{display:flex;align-items:center;gap:10px}
+.mission .id{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.mission h3{font-size:16px;font-weight:700}
+.pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;margin-left:auto;white-space:nowrap}
+.pill.예정{color:var(--ink2);background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.pill.진행{color:var(--ac);background:rgba(79,209,161,.12);border:1px solid rgba(79,209,161,.3)}
+.pill.달성{color:#08130f;background:var(--ac)}
+.pill.보류{color:var(--yellow);background:rgba(232,179,74,.12);border:1px solid rgba(232,179,74,.3)}
+.mission .dday{font-size:12px;color:var(--ink2);margin-top:4px}.mission .dday b{color:var(--red)}
+/* 트랙 */
+.track{position:relative;margin:26px 6px 8px;height:56px}
+.track .rail{position:absolute;left:0;right:0;top:38px;height:2px;background:var(--line2)}
+.track .fill{position:absolute;left:0;top:38px;height:2px;background:var(--ac)}
+.track .node{position:absolute;top:32px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--ink3);transform:translateX(-50%)}
+.track .node.done{border-color:var(--ac);background:var(--ac)}
+.track .node .lbl{position:absolute;top:20px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10.5px;color:var(--ink3)}
+.track .node.done .lbl{color:var(--ink2)}
+.track .goal{position:absolute;right:-4px;top:22px;font-size:18px}
+.track .char{position:absolute;top:2px;transform:translateX(-50%);transition:left .6s cubic-bezier(.22,.61,.36,1);width:26px;height:30px}
+.track .pctlab{position:absolute;top:-16px;transform:translateX(-50%);font-size:10px;font-family:var(--mono);color:var(--ac)}
+/* 메모 */
+.memo{margin-top:14px}
+.memo label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700;display:flex;align-items:center;gap:6px}
+.memo label .req{color:var(--red)}
+.memo textarea{width:100%;margin-top:6px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--ink);
+  font:inherit;font-size:13px;padding:10px 12px;resize:vertical;min-height:52px;transition:border-color .2s}
+.memo textarea:focus{outline:none;border-color:rgba(79,209,161,.5)}
+.memo textarea.edited{border-color:rgba(79,209,161,.4)}
+
+/* 게이트 권한 신호등 */
+.gates{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.gcol .gt{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.gcol .gt .lamp{width:11px;height:11px;border-radius:50%}
+.gcol.red .lamp{background:var(--red);box-shadow:0 0 8px rgba(242,114,107,.6)} .gcol.red .gt{color:var(--red)}
+.gcol.yellow .lamp{background:var(--yellow);box-shadow:0 0 8px rgba(232,179,74,.5)} .gcol.yellow .gt{color:var(--yellow)}
+.gcol.green .lamp{background:var(--green);box-shadow:0 0 8px rgba(79,209,161,.5)} .gcol.green .gt{color:var(--green)}
+.gcol .gt .cnt{margin-left:auto;font-family:var(--mono);color:var(--ink3);font-size:12px}
+.gcol .rule{font-size:11px;color:var(--ink3);padding:6px 0 10px;border-bottom:1px dashed var(--line);margin-bottom:8px}
+.gitem{font-size:13px;padding:8px 0;border-bottom:1px dashed var(--line)}.gitem:last-child{border:0}
+.gitem .l1{display:flex;align-items:center;gap:7px}
+.gitem .st{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.gitem .st.완료{color:var(--green);border-color:rgba(79,209,161,.3)} .gitem .st.진행{color:var(--yellow);border-color:rgba(232,179,74,.3)}
+.gitem .ts{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.gitem .log{font-size:10.5px;color:var(--ink3);margin-top:3px}
+.gempty{color:var(--ink3);font-size:12px;padding:6px 0}
+
+/* 투두 */
+.todos{display:grid;gap:8px}
+.todo{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rs)}
+.todo.wo{border-color:rgba(242,114,107,.4)}
+.todo.done{opacity:.5}
+.cb{width:18px;height:18px;flex:none;margin-top:1px;border:1.5px solid var(--line2);border-radius:5px;background:transparent;position:relative}
+.cb:hover{border-color:var(--ac)} .cb.on{background:var(--ac);border-color:var(--ac)} .cb.on::after{content:"";position:absolute;left:5.5px;top:2px;width:4px;height:8px;border:solid #08130f;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.cb.doing{border-color:var(--yellow)} .cb.doing::after{content:"";position:absolute;left:3px;top:7px;width:10px;height:2px;background:var(--yellow)}
+.todo .tx{font-size:14px}.todo.done .tx{text-decoration:line-through;text-decoration-color:var(--ink3)}
+.todo .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.tg{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+.tg.wo{color:var(--red);background:rgba(242,114,107,.12);border:1px solid rgba(242,114,107,.3)}
+.tg.im{border:1px solid var(--line2);color:var(--ink2)}.tg.im.high{color:var(--red);border-color:rgba(242,114,107,.3)}
+.tg.mid{color:var(--blue);border:1px solid rgba(107,184,255,.3);font-family:var(--mono)}
+.tg.dt{font-family:var(--mono);color:var(--ink3);border:1px solid var(--line)}
+.sortbar{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--ink3);margin-bottom:10px}
+.sortbar button{font-size:11px;color:var(--ink2);background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.sortbar button.on{color:var(--ac);border-color:rgba(79,209,161,.4)}
+
+/* 세션로그 — opacity fade + 드롭다운 */
+.slog{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.slog details{border-bottom:1px solid var(--line)}
+.slog details:last-child{border-bottom:0}
+.slog summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 15px;background:var(--panel)}
+.slog summary::-webkit-details-marker{display:none}
+.slog summary .ts{font-family:var(--mono);font-size:11px;color:var(--ink3);min-width:88px}
+.slog summary .sm{font-size:13.5px;font-weight:600}
+.slog summary .age{margin-left:auto;font-size:10px;color:var(--ink3)}
+.slog summary .cv{margin-left:8px;color:var(--ink3);transition:transform .2s}
+.slog details[open] summary .cv{transform:rotate(90deg)}
+.slog .body{padding:0 15px 14px;background:var(--panel)}
+.slog .detail{font-size:13px;color:var(--ink2);white-space:pre-wrap;padding-top:4px}
+.slog .more{text-align:center;padding:12px;color:var(--ac);font-size:12px;background:var(--panel);cursor:pointer;font-weight:600}
+.slog .hidden{display:none}
+
+.hide{display:none!important}
+@media(max-width:720px){ .gates{grid-template-columns:1fr} .hero-me{grid-template-columns:1fr} .hero-me .stat{text-align:left}.hero-me .prog,.hero-me .next{margin-left:0} }
+
+/* drop */
+#drop{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(8,10,14,.82)}
+#drop.show{display:flex}#drop .b{border:2px dashed var(--ac);border-radius:18px;padding:50px 70px;color:var(--ac);font-weight:700}
+footer{max-width:1080px;margin:0 auto;padding:20px 22px 40px;color:var(--ink3);font-size:11.5px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ===== 진입: 인물 선택 ===== -->
+<div id="gate">
+  <div class="logo"><b>PIMM</b> POFFICE</div>
+  <div class="sub">워크스페이스 · 본인 이름을 선택하세요</div>
+  <div class="who" id="whoList"></div>
+  <div class="load">다른 board.json으로 열기 · <button id="gateLoad">파일 불러오기</button></div>
+  <input type="file" id="fileInput" accept="application/json,.json" hidden />
+</div>
+
+<!-- ===== 앱 ===== -->
+<div id="app">
+  <div class="top"><div class="top-in">
+    <div class="brand"><b>PIMM</b> POFFICE<span class="v">v0.2</span></div>
+    <div class="me" id="meChip"></div>
+    <span class="ro">READ ONLY · 체크·메모만</span>
+    <div class="sp"></div>
+    <button class="tbtn" id="switchBtn">인물 전환</button>
+    <button class="tbtn ac" id="exportBtn">체크·메모 내보내기</button>
+  </div></div>
+  <div class="wrap" id="work"></div>
+  <footer>PIMM POFFICE v0.2 — 세션로그 기반 개인 워크스페이스 · 데이터: poffice_board.json (Poffice-Skill 생성) · 로컬은 체크·메모만, 원본 불변</footer>
+</div>
+
+<div id="drop"><div class="b">poffice_board.json 을 놓으세요</div></div>
+
+<script>
+/* Day char 스프라이트 — 실제 파일 교체 지점 (Drive: RuleTheDay/day.png).
+   SPRITE_URL 에 경로를 넣으면 SVG 토큰 대신 실제 스프라이트가 트랙을 달립니다. */
+const SPRITE_URL = null; // 예: "assets/day.png"
+const DAY_SVG = `<svg viewBox="0 0 26 30" width="26" height="30" aria-hidden="true">
+  <rect x="8" y="2" width="10" height="8" rx="2" fill="#e9ebef"/>
+  <rect x="9" y="11" width="8" height="10" rx="2" fill="#4fd1a1"/>
+  <rect x="9" y="21" width="3" height="7" fill="#98a0ad"/><rect x="14" y="21" width="3" height="7" fill="#98a0ad"/>
+  <circle cx="11" cy="6" r="1.1" fill="#0f1115"/><circle cx="15" cy="6" r="1.1" fill="#0f1115"/></svg>`;
+
+/* ===== 샘플 (파일 없이도 시연) ===== */
+const SAMPLE={version:1,generated_at:"2026-07-25T15:40:00+09:00",members:[
+  {name:"심상윤",role:"Master PD",yellow_policy:"auto",master:true,
+   missions:[{id:"M0",title:"홈페이지 리뉴얼 런칭",status:"진행",due:"2026-08-15",progress:0.35,
+     roadmap:[{step:"파워링크",done:true},{step:"핌 사이트",done:false},{step:"파노라마",done:false},{step:"런칭",done:false}]},
+    {id:"M3",title:"브랜드 리포지셔닝",status:"진행",due:"2026-09-30",progress:0.2,
+     roadmap:[{step:"경쟁분석",done:true},{step:"포지셔닝",done:false},{step:"적용",done:false}]}],
+   gates:{red:[{ts:"260725_1530",item:"M3 텀블벅 포함 여부 결정",state:"대기",log:"260725_1530_log.md"}],yellow:[],
+     green:[{ts:"260725_1600",item:"포피스 대시보드 확정",state:"완료",log:"260725_1600_log.md"}]},
+   todos:[{text:"홈페이지 작업 시작",state:"doing",wo:false,mission:"M0",importance:"high",date:"260725"},
+     {text:"파노라마 B&W 방향 확정",state:"done",wo:false,mission:"M0",importance:"mid",date:"260725"},
+     {text:"포피스 스키마 확정",state:"done",wo:false,mission:"M0",importance:"mid",date:"260725"}],
+   sessions:[{ts:"260725_1540",summary:"포피스 v0.2 워크스페이스 설계 확정",detail:"인물선택·마일스톤·권한신호등·세션로그 opacity·메모 반영. Poffice-Skill 명칭 확정."},
+     {ts:"260725_1200",summary:"파노라마 B&W 라인 미니멀 재구성",detail:"레드 인더스트리얼 폐기, 무채색 라인+포스터 포워드."},
+     {ts:"260724_1730",summary:"핌 사이트 랜덤스튜디오식 히어로",detail:"풀블리드 필름 + CI를 빛으로."},
+     {ts:"260722_1010",summary:"키이스케이프 경쟁 분석",detail:"오체분시 — 권한/포지셔닝 각 도출."},
+     {ts:"260715_0930",summary:"브랜드 리포지셔닝 착수",detail:"집객밸류 중심 포지셔닝 초안."}]},
+  {name:"이정민",role:"Device",yellow_policy:"report",
+   missions:[{id:"D1",title:"디바이스 트래킹 정리",status:"진행",due:"2026-08-05",progress:0.5,
+     roadmap:[{step:"목록화",done:true},{step:"연동테스트",done:false}]}],
+   gates:{red:[],yellow:[{ts:"260724_1100",item:"센서 발주 승인 요청",state:"진행",log:"260724_1100_log.md"}],green:[]},
+   todos:[{text:"장치 트래킹 시트 업데이트",state:"done",wo:false,mission:"D1",importance:"mid",date:"260724"},
+     {text:"긴급: 현장 센서 점검",state:"doing",wo:true,mission:"D1",importance:"high",date:"260725"}],
+   sessions:[{ts:"260724_1100",summary:"센서 발주 검토",detail:"승인 대기."}]},
+  {name:"오세원",role:"Art",yellow_policy:"auto",
+   missions:[{id:"A1",title:"파노라마 테마 포스터",status:"진행",due:"2026-08-20",progress:0.6,
+     roadmap:[{step:"컨셉 3안",done:true},{step:"메인",done:true},{step:"서브컷",done:false}]}],
+   gates:{red:[],yellow:[],green:[]},
+   todos:[{text:"봉인된 저택 포스터",state:"done",wo:false,mission:"A1",importance:"high",date:"260725"},
+     {text:"마지막 실험실 포스터",state:"doing",wo:false,mission:"A1",importance:"high",date:"260725"}],
+   sessions:[{ts:"260725_1400",summary:"포스터 2종 진행",detail:""}]},
+  {name:"유지호",role:"Build",yellow_policy:"auto",
+   missions:[{id:"B1",title:"시공 자동화 파이프라인",status:"예정",due:"2026-09-10",progress:0,roadmap:[{step:"요구정리",done:false}]}],
+   gates:{red:[],yellow:[],green:[{ts:"260723_1400",item:"자재 리스트 정리",state:"완료",log:"260723_log.md"}]},
+   todos:[{text:"파이프라인 리서치",state:"todo",wo:false,mission:"B1",importance:"low",date:"260723"}],
+   sessions:[{ts:"260723_1400",summary:"자재 정리",detail:""}]},
+  {name:"신승희",role:"Content",yellow_policy:"report",
+   missions:[{id:"C1",title:"테마 시나리오 집필",status:"진행",due:"2026-08-25",progress:0.4,roadmap:[{step:"플롯",done:true},{step:"퍼즐",done:false}]}],
+   gates:{red:[],yellow:[{ts:"260725_0930",item:"시나리오 방향 보고",state:"대기",log:"260725_0930_log.md"}],green:[]},
+   todos:[{text:"봉인된 저택 퍼즐 5종",state:"doing",wo:true,mission:"C1",importance:"high",date:"260725"}],
+   sessions:[{ts:"260725_0930",summary:"시나리오 방향 보고 대기",detail:""}]}
+]};
+
+let DATA=null, ME=null, sortKey="importance", logLimit=3;
+const memoState={}, checkState={};   // key -> value
+const IMP={high:0,mid:1,low:2};
+const RANKS=[{n:"게이트마스터",e:"🏆",min:30},{n:"베테랑 요원",e:"🥇",min:15},{n:"숙련 요원",e:"🥈",min:5},{n:"신입 요원",e:"🎖️",min:0}];
+const $=s=>document.querySelector(s), esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function ck(i,f){return checkState[ME+"|"+i]!==undefined?checkState[ME+"|"+i]:f}
+function tsToDate(ts){const m=/^(\d\d)(\d\d)(\d\d)_?(\d\d)?(\d\d)?/.exec(ts||"");if(!m)return null;
+  return new Date(2000+ +m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0));}
+function ageDays(ts){const d=tsToDate(ts);if(!d)return 999;return Math.max(0,(Date.now()-d)/86400000);}
+function ageOpacity(a){return a<2?1:a<7?.72:a<30?.46:.26}
+function ageLabel(a){a=Math.floor(a);return a<=0?"오늘":a<7?a+"일 전":a<30?Math.floor(a/7)+"주 전":Math.floor(a/30)+"개월 전";}
+function dday(due){if(!due)return"";const d=new Date(due+"T00:00:00"),diff=Math.ceil((d-Date.now())/86400000);return diff===0?"D-DAY":diff>0?"D-"+diff:"D+"+(-diff);}
+function me(){return DATA.members.find(m=>m.name===ME);}
+function doneCount(m){return m.todos.reduce((a,t,i)=>a+(ck(i,t.state)==="done"?1:0),0);}
+
+/* ===== 진입 렌더 ===== */
+function renderGate(){
+  $("#whoList").innerHTML=DATA.members.map(m=>`<button data-n="${esc(m.name)}"><div class="nm">${esc(m.name)}</div><div class="rl">${esc(m.role||"")}</div></button>`).join("");
+}
+function enter(name){ ME=name; try{localStorage.setItem("poffice_me",name)}catch(e){}
+  $("#gate").classList.add("hide"); $("#app").classList.add("on"); render(); }
+
+/* ===== 워크스페이스 렌더 ===== */
+function render(){
+  const m=me(); if(!m)return;
+  $("#meChip").innerHTML=`<span class="dot"></span><b>${esc(m.name)}</b><span class="r">${esc(m.role||"")}</span>`;
+  const done=doneCount(m),total=m.todos.length,pct=total?Math.round(done/total*100):0;
+  const rank=RANKS.find(r=>done>=r.min),nextR=RANKS.slice().reverse().find(r=>r.min>done);
+  let h=`<div class="hero-me">
+    <div><div class="big">${esc(m.name)}<span class="r">${esc(m.role||"")}</span></div>
+      <div class="rank"><span class="e">${rank.e}</span>${rank.n}</div></div>
+    <div class="stat"><div class="n">${done}<small> / ${total} 처리</small></div>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <div class="next">${nextR?`다음 칭호까지 ${nextR.min-done}건`:"최고 등급"}</div></div></div>`;
+  h+=woBlock(m);
+  h+=`<div class="sec"><div class="sec-h"><h2>미션 마일스톤</h2><span class="d">골인까지</span><span class="line"></span></div>${missionBlock(m)}</div>`;
+  h+=`<div class="sec"><div class="sec-h"><h2>게이트 · 권한</h2><span class="d">🔴 대표검수 · 🟡 팀장판단·보고 · 🟢 자율</span><span class="line"></span></div>${gateBlock(m)}</div>`;
+  h+=`<div class="sec"><div class="sec-h"><h2>체크리스트</h2><span class="line"></span></div>${todoBlock(m)}</div>`;
+  h+=`<div class="sec"><div class="sec-h"><h2>세션로그</h2><span class="d">최근순 · 오래될수록 흐림</span><span class="line"></span></div>${logBlock(m)}</div>`;
+  $("#work").innerHTML=h;
+  bind();
+}
+function woBlock(m){
+  const items=m.todos.map((t,i)=>({t,i})).filter(x=>x.t.wo&&ck(x.i,x.t.state)!=="done");
+  if(!items.length)return"";
+  return `<div class="wo"><div class="t">Work Order · 대표 지시</div><ul>${items.map(x=>`<li>${esc(x.t.text)}${x.t.mission?`<span class="m mono">${esc(x.t.mission)}</span>`:""}</li>`).join("")}</ul></div>`;
+}
+function missionBlock(m){
+  if(!m.missions||!m.missions.length)return`<div class="gempty">등록된 미션 없음</div>`;
+  return m.missions.map(x=>{
+    const rm=x.roadmap||[],n=rm.length;
+    const pct=Math.round((x.progress!=null?x.progress:(n?rm.filter(s=>s.done).length/n:0))*100);
+    const nodes=rm.map((s,i)=>{const left=n>1?(i/(n-1))*100:0;return `<div class="node ${s.done?'done':''}" style="left:${left}%"><span class="lbl">${esc(s.step)}</span></div>`;}).join("");
+    const charInner=SPRITE_URL?`<img src="${SPRITE_URL}" width="26" height="30" alt="Day">`:DAY_SVG;
+    const memoKey="mission|"+x.id, mv=memoState[memoKey]!==undefined?memoState[memoKey]:"";
+    return `<div class="mission">
+      <div class="mh"><div><span class="id">${esc(x.id)}</span><h3>${esc(x.title)}</h3></div><span class="pill ${x.status}">${x.status}</span></div>
+      ${x.due?`<div class="dday">${x.status!=="달성"?`<b>${dday(x.due)}</b> · `:""}${esc(x.due)}</div>`:""}
+      <div class="track">
+        <div class="rail"></div><div class="fill" style="width:${pct}%"></div>${nodes}
+        <div class="goal">🚩</div>
+        <div class="pctlab" style="left:${pct}%">${pct}%</div>
+        <div class="char" style="left:${pct}%">${charInner}</div>
+      </div>
+      <div class="memo"><label>미션 메모 <span class="req">*</span></label>
+        <textarea data-memo="${esc(memoKey)}" placeholder="이 미션 관련 메모 (업로드 시 코워크가 확인)">${esc(mv)}</textarea></div>
+    </div>`;
+  }).join("");
+}
+function gateBlock(m){
+  const rule={red:"대표(심상윤) 검수·승인 후 진행",yellow:(m.yellow_policy==="report"?"팀장 판단 진행 · 팀원 보고 필수":"팀장 판단 진행"),green:"자율 진행 (기록만)"};
+  const col=(k,label,items)=>`<div class="gcol ${k}"><div class="gt"><span class="lamp"></span>${label}<span class="cnt">${items?items.length:0}</span></div>
+    <div class="rule">${rule[k]}</div>
+    ${items&&items.length?items.map(g=>`<div class="gitem"><div class="l1"><span class="st ${g.state}">${esc(g.state)}</span><span>${esc(g.item)}</span><span class="ts">${esc(g.ts||"")}</span></div>${g.log?`<div class="log">근거 ${esc(g.log)}</div>`:""}</div>`).join(""):`<div class="gempty">—</div>`}</div>`;
+  return `<div class="gates">${col("red","보고처리",m.gates.red)}${col("yellow","자체결재",m.gates.yellow)}${col("green","기록만",m.gates.green)}</div>`;
+}
+function todoBlock(m){
+  if(!m.todos.length)return`<div class="gempty">투두 없음</div>`;
+  const idx=m.todos.map((t,i)=>i).sort((a,b)=>{
+    const ta=m.todos[a],tb=m.todos[b]; if((tb.wo?1:0)-(ta.wo?1:0))return (tb.wo?1:0)-(ta.wo?1:0);
+    if(sortKey==="date")return String(tb.date||"").localeCompare(String(ta.date||""));
+    return (IMP[ta.importance]??1)-(IMP[tb.importance]??1);});
+  const bar=`<div class="sortbar">정렬 <button data-sort="importance" class="${sortKey==="importance"?"on":""}">중요도</button><button data-sort="date" class="${sortKey==="date"?"on":""}">일자</button></div>`;
+  return bar+`<div class="todos">`+idx.map(i=>{const t=m.todos[i],st=ck(i,t.state);
+    return `<div class="todo ${t.wo?"wo":""} ${st==="done"?"done":""}">
+      <button class="cb ${st==="done"?"on":st==="doing"?"doing":""}" data-i="${i}"></button>
+      <div><div class="tx">${esc(t.text)}</div><div class="tags">
+        ${t.wo?'<span class="tg wo">WO</span>':""}
+        ${t.importance?`<span class="tg im ${t.importance}">${t.importance==="high"?"중요":t.importance==="mid"?"보통":"낮음"}</span>`:""}
+        ${t.mission?`<span class="tg mid">${esc(t.mission)}</span>`:""}
+        ${t.date?`<span class="tg dt">${esc(t.date)}</span>`:""}
+      </div></div></div>`;}).join("")+`</div>`;
+}
+function logBlock(m){
+  const logs=(m.sessions||[]).slice().sort((a,b)=>String(b.ts).localeCompare(String(a.ts)));
+  if(!logs.length)return`<div class="gempty">세션로그 없음</div>`;
+  const rows=logs.map((s,i)=>{const a=ageDays(s.ts),op=ageOpacity(a);
+    const memoKey="session|"+s.ts, mv=memoState[memoKey]!==undefined?memoState[memoKey]:"";
+    return `<details class="${i>=logLimit?"hidden":""}" style="opacity:${op}">
+      <summary><span class="ts">${esc(s.ts)}</span><span class="sm">${esc(s.summary)}</span><span class="age">${ageLabel(a)}</span><span class="cv">▸</span></summary>
+      <div class="body">${s.detail?`<div class="detail">${esc(s.detail)}</div>`:""}
+        <div class="memo"><label>세션 메모</label><textarea data-memo="${esc(memoKey)}" placeholder="이 세션 관련 메모">${esc(mv)}</textarea></div></div>
+    </details>`;}).join("");
+  const more=logs.length>logLimit?`<div class="more" id="logMore">오래된 세션로그 ${logs.length-logLimit}개 더 보기 ▾</div>`:"";
+  return `<div class="slog">${rows}${more}</div>`;
+}
+
+/* ===== 바인딩 ===== */
+function bind(){
+  document.querySelectorAll(".cb").forEach(b=>b.onclick=()=>{const i=+b.dataset.i,k=ME+"|"+i,cur=ck(i,me().todos[i].state);
+    checkState[k]=cur==="done"?"todo":cur==="doing"?"done":"doing"; render();});
+  document.querySelectorAll("[data-sort]").forEach(b=>b.onclick=()=>{sortKey=b.dataset.sort;render();});
+  document.querySelectorAll("textarea[data-memo]").forEach(t=>{
+    t.oninput=()=>{memoState[t.dataset.memo]=t.value; t.classList.add("edited");};});
+  const more=$("#logMore"); if(more)more.onclick=()=>{logLimit=999;render();};
+}
+
+/* ===== export (체크+메모) ===== */
+function exportData(){
+  const checks={},memos={};
+  Object.keys(checkState).forEach(k=>{const[n,i]=k.split("|");if(n===ME)(checks[i]=checkState[k]);});
+  Object.keys(memoState).forEach(k=>{if(memoState[k]!=="")memos[k]=memoState[k];});
+  const out={member:ME,generated_from:DATA.generated_at||null,check_overrides:checks,memo_overrides:memos,
+    note:"Poffice-Skill 이 세션로그·미션 메모/체크에 반영 (타임스탬프는 반영 시 부여)"};
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"}));
+  a.download=`poffice_export_${ME}.json`;a.click();
+}
+
+/* ===== 로드 ===== */
+function load(o){DATA=o; renderGate();
+  let saved=null;try{saved=localStorage.getItem("poffice_me")}catch(e){}
+  if(saved&&DATA.members.some(m=>m.name===saved))enter(saved);}
+function readFile(f){const r=new FileReader();r.onload=()=>{try{load(JSON.parse(r.result))}catch(e){alert("파싱 실패: "+e.message)}};r.readAsText(f);}
+
+$("#whoList").addEventListener("click",e=>{const b=e.target.closest("button[data-n]");if(b)enter(b.dataset.n);});
+$("#switchBtn").onclick=()=>{try{localStorage.removeItem("poffice_me")}catch(e){};ME=null;$("#app").classList.remove("on");$("#gate").classList.remove("hide");};
+$("#exportBtn").onclick=exportData;
+$("#gateLoad").onclick=()=>$("#fileInput").click();
+$("#fileInput").addEventListener("change",e=>{if(e.target.files[0])readFile(e.target.files[0]);});
+const drop=$("#drop");
+["dragenter","dragover"].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("show");}));
+window.addEventListener("dragleave",e=>{if(e.clientX===0&&e.clientY===0)drop.classList.remove("show");});
+window.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("show");const f=e.dataTransfer.files[0];if(f)readFile(f);});
+
+load(SAMPLE);
+</script>
+</body>
+</html>
