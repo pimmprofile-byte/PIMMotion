@@ -5,9 +5,9 @@ description: 포피스 개인별 페르소나 브리핑/알림 봇. 신원확인
 
 # Poffice-Report-Bot — 개인별 페르소나 브리핑/알림
 
-> 역할: **알림·브리핑만.** 데이터 생성·분류는 `Poffice-Skill`, 시각화는 포피스 대시보드가 한다.
-> 이 봇은 그 결과(마더 세션로그 = 포피스 업데이트 세션로그)를 **이전 버전과 비교**해 사람에게 말로 전한다.
-> 정본 스키마·데이터 계층: `docs/poffice-board-spec.md` (A~G).
+> 역할: **알림·브리핑만.** 기록·분류는 `Poffice-Skill`, 집계(마더 config 생성)는 `Poffice-MotherLog`, 시각화는 포피스 대시보드가 한다.
+> 이 봇은 그 결과(마더 config = 마더 세션로그)를 **이전 버전과 비교**해 사람에게 말로 전한다.
+> 정본 스키마·데이터 계층: `docs/poffice-board-spec.md` (A~H).
 
 ## 1. 언제 도는가 (강제 아님 · 명령 활성화 · 주기 질문)
 - 기본은 **꺼져 있음.**
@@ -17,7 +17,7 @@ description: 포피스 개인별 페르소나 브리핑/알림 봇. 신원확인
 - 끄기: `"{이름} 포피스알림꺼줘"` → 예약 해제.
 
 ## 2. 입력
-1. **포피스 업데이트 세션로그(마더 세션로그)** — `Poffice-Skill`이 개인DB·세션로그를 취합해 `_board.json`을 던지며 남기는 상위 로그. **이 봇의 비교 기준.**
+1. **마더 config (`poffice_board.json` = 마더 세션로그)** — `Poffice-MotherLog`가 개인세션로그를 취합·요약해 생성하는 상위 산출물. **이 봇의 비교 기준.**
 2. **직전 버전의 마더 세션로그** — diff 대상.
 3. **해당 인물의 개인세션로그** (`logs/YYYY/MM/…_log.md`) — 꼼꼼히 읽어 맥락 브리핑.
 4. **사내공지 / 특정 이슈** — 있으면 알림에 포함.
@@ -60,4 +60,4 @@ description: 포피스 개인별 페르소나 브리핑/알림 봇. 신원확인
 ## 7. 참고
 - 데이터/스키마 정본: `docs/poffice-board-spec.md`
 - 시각화: `tool/PIMM_Poffice.ver0.2.html` (인물선택 워크스페이스)
-- 데이터 생성: `Poffice-Skill` (개인세션로그+개인DB → `_board.json` 자동생성, 자동예약)
+- 기록: `Poffice-Skill` (대화 → 개인세션로그) · 집계 생성: `Poffice-MotherLog` (개인세션로그 → `poffice_board.json` 마더 config, 자동예약)

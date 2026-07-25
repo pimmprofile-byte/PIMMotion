@@ -1,17 +1,15 @@
 {
   "version": 1,
-  "generated_at": "2026-07-25T16:00:00+09:00",
+  "generated_at": "2026-07-25T17:00:00+09:00",
+  "generator": "Poffice-MotherLog (sample)",
   "members": [
     {
-      "name": "심상윤",
-      "role": "Master PD",
-      "yellow_policy": "auto",
-      "master": true,
+      "name": "심상윤", "role": "Master PD", "yellow_policy": "auto", "master": true,
       "missions": [
         { "id": "M0", "title": "홈페이지 리뉴얼 런칭", "status": "진행", "due": "2026-08-15", "progress": 0.35,
-          "roadmap": [ { "step": "파워링크 소재", "done": true }, { "step": "핌 사이트 리뉴얼", "done": false }, { "step": "파노라마 사이트", "done": false } ] },
+          "roadmap": [ { "step": "파워링크", "done": true }, { "step": "핌 사이트", "done": false }, { "step": "파노라마", "done": false }, { "step": "런칭", "done": false } ] },
         { "id": "M3", "title": "브랜드 리포지셔닝", "status": "진행", "due": "2026-09-30", "progress": 0.2,
-          "roadmap": [ { "step": "경쟁사 분석", "done": true }, { "step": "포지셔닝 문장", "done": false } ] }
+          "roadmap": [ { "step": "경쟁분석", "done": true }, { "step": "포지셔닝", "done": false }, { "step": "적용", "done": false } ] }
       ],
       "gates": {
         "red": [ { "ts": "260725_1530", "item": "M3 텀블벅 포함 여부 결정", "state": "대기", "log": "260725_1530_log.md" } ],
@@ -21,50 +19,55 @@
       "todos": [
         { "text": "홈페이지 작업 시작", "state": "doing", "wo": false, "mission": "M0", "importance": "high", "date": "260725" },
         { "text": "파노라마 B&W 방향 확정", "state": "done", "wo": false, "mission": "M0", "importance": "mid", "date": "260725" },
-        { "text": "포피스 스키마 확정 회신", "state": "todo", "wo": false, "mission": "M0", "importance": "mid", "date": "260725" }
+        { "text": "포피스 스키마 확정", "state": "done", "wo": false, "mission": "M0", "importance": "mid", "date": "260725" }
       ],
-      "last_session": { "file": "260725_1600_포피스대시보드확정_log.md", "summary": "포피스 대시보드 읽기전용 확정" }
+      "sessions": [
+        { "ts": "260725_1700", "summary": "Poffice-MotherLog·3스킬 체계 정립", "detail": "마더 config 그린필드/포피스 저장, 텍스트 무결성·원문 무왜곡 원칙." },
+        { "ts": "260725_1540", "summary": "포피스 v0.2 워크스페이스 설계", "detail": "인물선택·마일스톤·권한신호등·세션로그 opacity·메모." },
+        { "ts": "260725_1200", "summary": "파노라마 B&W 라인 미니멀 재구성", "detail": "무채색 라인+포스터 포워드." },
+        { "ts": "260724_1730", "summary": "핌 사이트 랜덤스튜디오식 히어로", "detail": "풀블리드 필름 + CI를 빛으로." },
+        { "ts": "260715_0930", "summary": "브랜드 리포지셔닝 착수", "detail": "집객밸류 중심 포지셔닝 초안." }
+      ],
+      "last_session": { "file": "260725_1700_log.md", "summary": "Poffice-MotherLog·3스킬 체계 정립" }
     },
     {
       "name": "이정민", "role": "Device", "yellow_policy": "report",
       "missions": [ { "id": "D1", "title": "디바이스 트래킹 정리", "status": "진행", "due": "2026-08-05", "progress": 0.5,
-        "roadmap": [ { "step": "장치 목록화", "done": true }, { "step": "연동 테스트", "done": false } ] } ],
+        "roadmap": [ { "step": "목록화", "done": true }, { "step": "연동테스트", "done": false } ] } ],
       "gates": { "red": [], "yellow": [ { "ts": "260724_1100", "item": "센서 발주 승인 요청", "state": "진행", "log": "260724_1100_log.md" } ], "green": [] },
       "todos": [
         { "text": "장치 트래킹 시트 업데이트", "state": "done", "wo": false, "mission": "D1", "importance": "mid", "date": "260724" },
         { "text": "긴급: 현장 센서 점검", "state": "doing", "wo": true, "mission": "D1", "importance": "high", "date": "260725" }
       ],
+      "sessions": [ { "ts": "260724_1100", "summary": "센서 발주 검토", "detail": "승인 대기." } ],
       "last_session": { "file": "260724_1100_디바이스_log.md", "summary": "센서 발주 검토" }
     },
     {
       "name": "유지호", "role": "Build", "yellow_policy": "auto",
-      "missions": [ { "id": "B1", "title": "시공 자동화 파이프라인", "status": "예정", "due": "2026-09-10", "progress": 0,
-        "roadmap": [ { "step": "요구 정리", "done": false } ] } ],
+      "missions": [ { "id": "B1", "title": "시공 자동화 파이프라인", "status": "예정", "due": "2026-09-10", "progress": 0, "roadmap": [ { "step": "요구정리", "done": false } ] } ],
       "gates": { "red": [], "yellow": [], "green": [ { "ts": "260723_1400", "item": "자재 리스트 정리", "state": "완료", "log": "260723_log.md" } ] },
       "todos": [ { "text": "파이프라인 리서치", "state": "todo", "wo": false, "mission": "B1", "importance": "low", "date": "260723" } ],
+      "sessions": [ { "ts": "260723_1400", "summary": "자재 정리", "detail": "" } ],
       "last_session": { "file": "260723_1400_build_log.md", "summary": "자재 정리" }
     },
     {
       "name": "오세원", "role": "Art", "yellow_policy": "auto",
       "missions": [ { "id": "A1", "title": "파노라마 테마 포스터", "status": "진행", "due": "2026-08-20", "progress": 0.6,
-        "roadmap": [ { "step": "컨셉 3안", "done": true }, { "step": "메인 포스터", "done": true }, { "step": "서브컷", "done": false } ] } ],
+        "roadmap": [ { "step": "컨셉 3안", "done": true }, { "step": "메인", "done": true }, { "step": "서브컷", "done": false } ] } ],
       "gates": { "red": [], "yellow": [], "green": [] },
       "todos": [
-        { "text": "봉인된 저택 포스터 완성", "state": "done", "wo": false, "mission": "A1", "importance": "high", "date": "260725" },
-        { "text": "마지막 실험실 포스터", "state": "doing", "wo": false, "mission": "A1", "importance": "high", "date": "260725" },
-        { "text": "잊혀진 극장 스케치", "state": "done", "wo": false, "mission": "A1", "importance": "mid", "date": "260724" }
+        { "text": "봉인된 저택 포스터", "state": "done", "wo": false, "mission": "A1", "importance": "high", "date": "260725" },
+        { "text": "마지막 실험실 포스터", "state": "doing", "wo": false, "mission": "A1", "importance": "high", "date": "260725" }
       ],
+      "sessions": [ { "ts": "260725_1400", "summary": "포스터 2종 진행", "detail": "" } ],
       "last_session": { "file": "260725_art_log.md", "summary": "포스터 2종 진행" }
     },
     {
       "name": "신승희", "role": "Content", "yellow_policy": "report",
-      "missions": [ { "id": "C1", "title": "테마 시나리오 집필", "status": "진행", "due": "2026-08-25", "progress": 0.4,
-        "roadmap": [ { "step": "플롯", "done": true }, { "step": "퍼즐 설계", "done": false } ] } ],
+      "missions": [ { "id": "C1", "title": "테마 시나리오 집필", "status": "진행", "due": "2026-08-25", "progress": 0.4, "roadmap": [ { "step": "플롯", "done": true }, { "step": "퍼즐", "done": false } ] } ],
       "gates": { "red": [], "yellow": [ { "ts": "260725_0930", "item": "시나리오 방향 보고", "state": "대기", "log": "260725_0930_log.md" } ], "green": [] },
-      "todos": [
-        { "text": "봉인된 저택 퍼즐 5종", "state": "doing", "wo": true, "mission": "C1", "importance": "high", "date": "260725" },
-        { "text": "엔딩 분기 정리", "state": "todo", "wo": false, "mission": "C1", "importance": "mid", "date": "260725" }
-      ],
+      "todos": [ { "text": "봉인된 저택 퍼즐 5종", "state": "doing", "wo": true, "mission": "C1", "importance": "high", "date": "260725" } ],
+      "sessions": [ { "ts": "260725_0930", "summary": "시나리오 방향 보고 대기", "detail": "" } ],
       "last_session": { "file": "260725_0930_content_log.md", "summary": "시나리오 방향 보고 대기" }
     }
   ],
