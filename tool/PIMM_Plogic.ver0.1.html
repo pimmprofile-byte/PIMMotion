@@ -215,10 +215,10 @@ const MODULES=[
   lessons:[
    {h:"이머시브(Immersive)란?",tag:"개념",p:"관람이 아니라 <span class='k'>참여</span>. 벽 너머 구경꾼이 아니라 이야기 <span class='k'>한가운데의 주인공</span>이 되는 경험. 방탈출·팝업·전시·공포체험이 모두 이 '몰입'으로 가는 서로 다른 문이야."},
    {h:"PIMM이 만드는 것",tag:"범위",list:["<b>방탈출</b> — 단서를 풀며 이야기를 통과 (PIMMscape)","<b>브랜드 팝업스토어</b> — 브랜드를 공간으로 체험 (PIMM-UP)","<b>체험형 전시 · 플레이부스</b> — 직접 만지고 움직이는 콘텐츠","<b>이머시브 공포체험관</b> — 겪어내는 공포 (PIMMex)"]},
-   {h:"PPP → IMM 철학",tag:"핵심",p:"<span class='k'>PIMM = Place + Play + Persona → Immersive.</span> '몰입이 체험을 경험으로 만든다'가 코어 룰. 플로직 전체의 뿌리야.",
-    list:["<b>Place(공간)</b> — 서사를 전달하는 물리적 무대. 시공 기반 현실주의로 '여기는 진짜다'라는 무의식적 확신을 줌","<b>Play(놀이)</b> — 관찰자를 주인공으로. 즉각적 Action-Reaction 피드백, 센서·아두이노가 마법을 기술로 증명","<b>Persona(페르소나)</b> — 공간·놀이에 영혼. 일관된 내러티브와 '나는 누구인가'의 명확한 역할","<b>Immersive(몰입)</b> — 위 셋이 합쳐져 끝내 다다르는 목적지"],
-    plain:"어렵게 말했지만, 결국 <b>진짜 같은 공간(Place)</b>에서 <b>내가 직접 뭔가 하고(Play)</b> <b>내가 누군지 이야기가 생기면(Persona)</b> → 저절로 <b>빠져든다(Immersive)</b>는 거야. 이 셋이 다 있어야 '전시'가 아니라 '경험'이 돼.",
-    ex:"팝업 하나로 보면 — 우주선처럼 꾸민 방(Place), 콘솔 버튼을 눌러 문을 여는 나(Play), '나는 이 배의 승무원'이라는 설정(Persona). 셋이 붙는 순간 관람객이 주인공이 됨."},
+   {h:"PPP → IMM 철학",tag:"핵심",p:"<span class='k'>PPP = Plot · Place · Persona → Immersive(IMM).</span> '몰입이 체험을 경험으로 만든다'가 코어 룰. 플로직 전체의 뿌리야.",
+    list:["<b>Plot(플롯·서사)</b> — 공간에서 펼쳐지는 이야기·줄거리. 방문객이 통과하는 사건의 흐름","<b>Place(공간)</b> — 서사를 담는 물리적 무대. 시공 기반 현실주의로 '여기는 진짜다'라는 무의식적 확신을 줌","<b>Persona(페르소나)</b> — 이야기·공간 속 '나는 누구인가'의 명확한 역할과 인격","<b>Immersive(몰입)</b> — 위 셋이 합쳐져 끝내 다다르는 목적지"],
+    plain:"어렵게 말했지만, 결국 <b>이야기(Plot)</b>가 있는 <b>진짜 같은 공간(Place)</b>에서 <b>내가 누군지 역할이 생기면(Persona)</b> → 저절로 <b>빠져든다(Immersive)</b>는 거야. 이 셋이 다 있어야 '전시'가 아니라 '경험'이 돼.",
+    ex:"팝업 하나로 보면 — '침몰하는 우주선에서 탈출하라'는 이야기(Plot), 우주선처럼 꾸민 방(Place), '나는 이 배의 승무원'이라는 역할(Persona). 셋이 붙는 순간 관람객이 주인공이 됨."},
    {h:"재미 vs 실현가능성",tag:"핵심",p:"플로직이 늘 저울질하는 두 축이야.",
     list:["<b>재미 = '의도된 인과관계의 보상'</b> — Input에 대해 예상 못 한, 그러나 개연성 있는 즉각적 Output이 돌아올 때 생김","<b>실현가능성</b> — 기술·예산·공간 안에서 물리적으로 구현되는가","<b>치환</b> — 구현 어려운 아이디어는 기술적 대안으로 바꾼다"],
     plain:"'의도된 인과관계의 보상'? → <b>내가 뭘 하면(Input), '어? 이게 되네!' 싶은 결과가 즉시 돌아오는 것(Output).</b> 너무 뻔하면 시시하고, 아무 이유 없이 일어나면 황당해. <b>'예상 밖인데 말은 되는'</b> 그 순간이 재미의 정체야.",
@@ -302,7 +302,7 @@ const MODULES=[
 
 /* 풀어보기 — 기존내용 질문(recall) + 심화 창작·퍼즐(create). create는 코워크 채점용. */
 const CHALLENGES=[
- {mod:0,type:"recall",q:"PPP→IMM 4요소를 쓰고, '재미'를 플로직이 어떻게 정의하는지 한 줄로 적어라.",hint:"Place / Play / Persona / Immersive · 재미=의도된 인과관계의 보상"},
+ {mod:0,type:"recall",q:"PPP→IMM 4요소를 쓰고, '재미'를 플로직이 어떻게 정의하는지 한 줄로 적어라.",hint:"Plot / Place / Persona / Immersive · 재미=의도된 인과관계의 보상"},
  {mod:1,type:"recall",q:"'프로젝트 티어'와 '서류 티어'의 차이를 설명하고, 5개 트랙(PIMMscape·PIMMex·PIMM-UP·PIMMercial·PIMMvention)이 각각 무엇인지 쓰라.",hint:"규모 등급 vs 서식 등급 / 방탈출·공포·팝업·B2C·B2G"},
  {mod:2,type:"recall",q:"아이디어 공정 5단계를 순서대로 쓰고, 특히 Render·Work·Max가 각각 무엇인지(산출물 포함) 정확히 적어라.",hint:"Beat→Note→Render(SW설계)→Work(현장시공)→Max(사후·자산화)"},
  {mod:3,type:"recall",q:"Flow 공식과 어포던스(Mechanical Instinct) 공식을 쓰고, 방탈출 퍼즐 예시로 각각 설명하라.",hint:"Flow=Density×(1/Friction) / 어포던스=Physical Volume×Auditory Feedback"},
