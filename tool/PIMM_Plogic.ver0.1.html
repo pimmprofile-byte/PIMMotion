@@ -468,14 +468,14 @@ const DOMAINS=[
   sum:"상상을 예측 가능한 도면·비주얼로 확정하는 힘.",
   detail:"CAD·스케치업·그래픽·영상 툴을 활용해 설계도·컨셉 비주얼·미디어를 만들어낸다. 아이디어를 '100% 예측 가능한 결과값'으로 문서화해, 현장과 클라이언트가 같은 그림을 보게 만드는 소프트워크의 중심 능력이다."},
  {n:4,name:"미학적 감각",type:"미학·예술",color:"green",
-  sum:"취향을 '팔리는 완성도'로 끌어올리는 눈.",
-  detail:"개인의 취향과 감각을 상업적으로 통하는 색감·톤·완성도로 번역해 상품이 되는 결과물로 만든다. 무엇이 세련되고 무엇이 아쉬운지를 판별하고, 그 기준을 공간·비주얼 전반에 일관되게 적용하는 심미안이다."},
- {n:5,name:"사업적 감각",type:"시장·사업성",color:"amber",
-  sum:"시장을 읽어 팀을 흐름 위에 올리는 판단력.",
-  detail:"시장의 흐름과 트렌드를 먼저 감지해 어떤 콘텐츠·방향이 통할지 판단하고, 이를 실제 기획과 수주로 연결한다. 개인의 작업을 넘어 팀 전체를 시장의 흐름에 태우는, 사업성과 직결되는 감각이다."},
- {n:6,name:"서사창작",type:"미학·예술",color:"green",
+  sum:"취향을 상업적 완성도로, 미술·특수제작물로 증명하는 감각.",
+  detail:"개인의 취향을 상업적으로 통하는 색감·톤·완성도로 번역해 상품이 되는 결과물로 만든다. 심미안 자체는 평가하기 어렵기에, 핌에서는 미술작업과 특수제작물(인터랙션 장치·조형 제작물)이라는 실제 산출을 통해 미감을 확인하고 발현한다. 무엇이 세련되고 무엇이 아쉬운지 판별해 공간·비주얼·제작물 전반에 일관되게 적용하는 능력이다."},
+ {n:5,name:"서사창작",type:"미학·예술",color:"green",
   sum:"세계관과 이야기를 공간의 경험으로 짓는 힘.",
-  detail:"세계관을 구축하고 이야기를 전개하며, 이를 공간서사(PlaceNarrative)와 콘텐츠로 옮겨 방문객이 '겪는' 서사로 만든다. 단순한 설정을 넘어 동선·장면·연출과 맞물리는 이야기를 설계하는 능력이다."}
+  detail:"세계관을 구축하고 이야기를 전개하며, 이를 공간서사(PlaceNarrative)와 콘텐츠로 옮겨 방문객이 '겪는' 서사로 만든다. 단순한 설정을 넘어 동선·장면·연출과 맞물리는 이야기를 설계하는 능력이다."},
+ {n:6,name:"사업적 감각",type:"시장·사업성",color:"amber",
+  sum:"시장을 읽어 팀을 흐름 위에 올리는 판단력.",
+  detail:"시장의 흐름과 트렌드를 먼저 감지해 어떤 콘텐츠·방향이 통할지 판단하고, 이를 실제 기획과 수주로 연결한다. 개인의 작업을 넘어 팀 전체를 시장의 흐름에 태우는, 사업성과 직결되는 감각이다."}
 ];
 const LEVELS=[
  {n:1,k:"주니어",en:"Junior",grade:"입문자",expert:false,d:"해당 도메인을 아직 모르는 입문자. 배움이 시작되는 출발점이다."},
@@ -500,7 +500,7 @@ function renderArtisan(){
       <div class="plain"><span class="lb">쉽게 말하면</span>내 도메인을 진단해 단계를 밟아 키우고, 전문가 수준을 <b>2개 이상</b> 갖추면 '아티잔'이야. 서로 도메인이 겹치는 동료가 반드시 있어서 팀이 유기적으로 연결되고, 한 사람이 빠져도 무너지지 않아(단일 실패점 방지).</div></div>
 
     <h2 class="sec-h">6개 핵심 도메인</h2>
-    <div class="legend"><span><i style="background:var(--purple)"></i>하드워크 (1·2)</span><span><i style="background:var(--blue)"></i>소프트워크 (3)</span><span><i style="background:var(--green)"></i>미학·예술 감각 (4·6)</span><span><i style="background:var(--amber)"></i>사업적 감각 (5)</span></div>
+    <div class="legend"><span><i style="background:var(--purple)"></i>하드워크 (1·2)</span><span><i style="background:var(--blue)"></i>소프트워크 (3)</span><span><i style="background:var(--green)"></i>미학·예술 감각 (4·5)</span><span><i style="background:var(--amber)"></i>사업적 감각 (6)</span></div>
     <div class="forge-grid" style="margin-top:14px">${domCards}</div>
 
     <div class="axis" style="margin-top:16px">
@@ -508,7 +508,7 @@ function renderArtisan(){
       <p>같은 6개라도 익히는 성격이 서로 달라.</p>
       <div class="grid2">
         <div class="ac"><div class="h">🛠️ 기술·작업물 축 (1·2·3)</div>현장제작·장치디바이스·설계와 디자인. <b>작업물과 기술력</b>에 관한 것으로, 배우면 느는 <b>가장 익히기 쉬운 축</b>.</div>
-        <div class="ac"><div class="h">✨ 감각 축 (4·5·6)</div>미학적 감각·사업적 감각·서사창작. <b>감각</b>에 관한 것으로, 익히기보다 <b>깨닫고 타고나는 것에 가까운 축</b>.</div>
+        <div class="ac"><div class="h">✨ 감각 축 (4·5·6)</div>미학적 감각·서사창작·사업적 감각. <b>감각</b>에 관한 것으로, 익히기보다 <b>깨닫고 타고나는 것에 가까운 축</b>.</div>
       </div>
     </div>
 
