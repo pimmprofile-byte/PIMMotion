@@ -1,6 +1,6 @@
 ---
 name: poffice-motherlog
-description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽어 요약·분석하여 '포피스 대시보드가 그대로 읽는 config(마더 세션로그)'를 만들어 드라이브 그린필드 내 포피스영역에 뿌린다. 구형의 리포트/브리프/워크오더 텍스트 형식이 아니라, 현재 포피스 대시보드(tool/PIMM_Poffice.ver0.2.html)에 노출되는 데이터 형식(poffice_board.json)으로 출력한다. 빌드된 HTML이 이 config를 로드한다. 트리거: 마더세션로그, 마더로그, 포피스 config 생성, 포피스 대시보드 갱신, 세션로그 집계, poffice_board.json 생성. 데이터 생성 담당(개인 기록은 Poffice-Skill, 브리핑은 Poffice-Report-Bot).
+description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽어 분석하여 '포피스 대시보드가 그대로 읽는 config(마더 세션로그)'를 만들어 드라이브 그린필드 내 포피스영역에 뿌린다. ★원문 보존 우선(요약 금지) — sessions[]에 원문 전문 raw + 1줄 summary, 분단위 타임스탬프. 구형의 리포트/브리프/워크오더 텍스트 형식이 아니라, 현재 포피스 대시보드(tool/PIMM_Poffice.ver0.2.html)에 노출되는 데이터 형식(poffice_board.json)으로 출력한다. 빌드된 HTML이 이 config를 로드한다. 트리거: 마더세션로그, 마더로그, 포피스 config 생성, 포피스 대시보드 갱신, 세션로그 집계, poffice_board.json 생성. 데이터 생성 담당(개인 기록은 Poffice-Skill, 브리핑은 Poffice-Report-Bot).
 ---
 
 # Poffice-MotherLog — 개인세션로그 → 대시보드 config(마더 세션로그)
@@ -9,14 +9,18 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 > 저장: 드라이브 **그린필드 내 포피스영역**. 빌드된 대시보드 HTML이 이 config를 로드한다.
 > 개인 기록은 `Poffice-Skill`, 브리핑은 `Poffice-Report-Bot`. 스키마 정본: `docs/poffice-board-spec.md`(A~H).
 
-## ★ 최상위 원칙 2개 (무엇보다 우선)
+## ★ 최상위 원칙 3개 (무엇보다 우선)
 1. **텍스트가 절대 깨지면 안 된다.**
    - UTF-8 보존 · 한글/특수문자 mojibake 금지 · 줄바꿈/따옴표 등 **JSON 이스케이프 정확**.
    - 누락·잘림(truncation) 금지. 생성 후 **JSON 파싱 검증**(깨지면 폐기·재생성, 손상본을 덮어쓰지 않음).
 2. **원문을 참조·아카이빙하여 왜곡이 없게 한다.**
-   - 모든 요약·분석 항목은 **출처 개인세션로그**(파일명/경로/ts)를 근거로 단다(게이트의 `log`, 세션의 `ts` 등).
-   - **원문 아카이빙**: 개인세션로그 원본은 불변 보존(요약이 원본을 대체하지 않음).
-   - 요약 시 **사실 왜곡·과장·축소·창작 금지.** 불확실하면 추정하지 말고 원문 참조로 넘긴다.
+   - 모든 분석 항목은 **출처 개인세션로그**(파일명/경로/ts)를 근거로 단다(게이트의 `log`, 세션의 `ts`, `meta.source_files`).
+   - **원문 아카이빙**: 개인세션로그 원본은 불변 보존.
+   - **사실 왜곡·과장·축소·창작 금지.** 불확실하면 추정하지 말고 원문 참조로 넘긴다.
+3. **★원문 보존 우선 (2026-07-26 확정 — 요약 중심 폐기).**
+   - **세션로그 본문을 요약하지 않는다.** `sessions[]` 각 항목에 **원문 전문을 `raw`로 그대로** 담고, `summary`는 **1줄 헤드라인**만.
+   - 파일이 커지면 **윈도우 폭(담는 세션 수)을 줄이지, 원문을 자르지 않는다.** (과잉 요약 = 실제 업무 파악 불가 → 실사용 피드백 반영.)
+   - **분단위 타임스탬프 필수**: `sessions[].ts`·게이트 `ts` = `YYMMDD_HHMM`, `meta.generated_at` = ISO 분단위. **날짜만 찍는 것 금지.**
 
 ## 1. 저장 위치 & 폴더 구조 (그린필드 / 포피스영역)
 - 그린필드: `[1.그린필드:프레임워크].PIMM_framework` (id `1HB1X19PN6DQDXpEFpheE-BFLC2eBc3CG`)
@@ -33,14 +37,17 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 - 대표 주간보고 판단(있으면) — 게이트(🔴/🟡/🟢)·WO 반영에 사용.
 > 개인세션로그 폴더 경로·Drive ID는 **artisan-session 정본을 따른다**(중첩 구조·평행 폴더 신설 금지). 이 스킬의 하드코딩 ID는 **출력처(그린필드 Poffice)** 에 한정.
 
-## 3. 처리 (요약·분석 → 결정론 변환)
-- 세션로그를 읽어 **현재 상태**로 요약: 미션(마일스톤 progress·roadmap), 게이트(권한 신호등), 투두(체크·중요도·일자·WO), 최근 세션 `sessions[]`.
-- **최근 윈도우 + 롤업만** 담는다(전체 히스토리 X — 오래된 건 원본 파일로).
-- 심상윤 `master:true`(마스터보드 최상단).
-- 게이트 권한: 🔴 대표검수 / 🟡 팀장판단·보고(`yellow_policy`) / 🟢 자율.
+## 3. 처리 (원문 보존 + 상태 파생 → 결정론 변환)
+- **세션 원문 보존(§원칙 3)**: `sessions[]` 각 항목 = `ts`(분단위) + `file` + `summary`(1줄) + **`raw`(세션로그 원문 전문, 요약·축약 없음)**. raw를 자르거나 재요약하지 않는다.
+- 파생 상태(요약 아님, 롤업/원문에서 도출): 미션(progress·roadmap), 게이트(권한 신호등), 투두(체크·중요도·일자·WO).
+- **윈도우**: 최근 세션 N개(원문 포함)만 담고, 커지면 **N을 줄인다**(원문은 안 자름). 더 오래된 건 원본 파일·아카이브로.
+- **신선도 파생**: 인별 `freshness{last_log_ts, status}` — `green`(24h 이내)/`yellow`(24~72h)/`red`(72h+ stale). **숨기지 않는다**(기록 공백 가시화).
+- **메타**: `meta{generated_at(ISO 분단위), generator, source_files[{member,file,drive_id,modified}], warnings[]}`. 롤업 동일파일명 다중 존재 시 **modifiedTime 최신본만 채택** + 채택 근거를 `source_files`에.
+- **사용 지침**: `guide{title, items[]}`(대시보드 상단 렌더 — 하드코딩 금지, config가 정본).
+- 심상윤 `master:true`. 게이트 권한: 🔴 대표검수 / 🟡 팀장판단·보고(`yellow_policy`) / 🟢 자율.
 
 ## 4. 출력 = 대시보드 config (구형 폐기)
-- 형식은 **포피스 대시보드에 노출되는 데이터**(spec 스키마 + G의 `sessions[]`) = `poffice_board.json`.
+- 형식 = **포피스 대시보드가 읽는 데이터** = `poffice_board.json`. 스키마 정본 `docs/poffice-board-spec.md`(A~H + 확장: meta·guide·freshness·sessions[].raw). 스키마 변경 시 **확정본을 코워크에 회신**.
 - ~~구형: 리포트/브리프/워크오더 텍스트 문서~~ → **더 이상 정본 아님.** 대시보드 config로 일원화.
 - 빌드된 `tool/PIMM_Poffice.ver0.2.html`이 이 config를 로드(같은 폴더 fetch 또는 드래그앤드롭).
 
