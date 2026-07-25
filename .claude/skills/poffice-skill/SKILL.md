@@ -1,6 +1,6 @@
 ---
 name: poffice-skill
-description: 포피스 업무보고 코어 스킬. 기존 개인세션로그 스킬 + 포피스 스킬을 통합한 것. 코워크/코드 대화를 개인세션로그로 자동기록(게이트·체크·미션 분류)하고, 개인세션로그·개인DB를 취합해 포피스 대시보드가 읽는 _board.json(= 포피스 업데이트 '마더 세션로그')을 자동생성·자동예약 갱신한다. 대시보드에서 나온 역방향 export(체크·메모)를 세션로그에 반영한다. 데이터 생성/기록 담당(브리핑은 Poffice-Report-Bot). 트리거: 세션로그, 세션, 스케줄, 작업보고, 업무지시, 업무보고, 미션보드, 포피스, 포피스 업로드, 포피스 수정, _board.json 생성.
+description: 포피스 업무기록 코어 스킬. 기존 개인세션로그 스킬 + 포피스 스킬을 통합한 것. 코워크/코드 대화를 개인세션로그로 자동기록(게이트·체크·미션 분류)한다. 대시보드가 읽는 마더 config(_board.json) 집계·생성은 Poffice-MotherLog가 담당하며, 이 스킬은 그 입력인 개인세션로그를 정확히·불변으로 기록한다. 대시보드에서 나온 역방향 export(체크·메모)를 세션로그에 반영한다. 브리핑은 Poffice-Report-Bot. 트리거: 세션로그, 세션, 스케줄, 작업보고, 업무지시, 업무보고, 미션보드, 포피스, 포피스 업로드, 포피스 수정.
 ---
 
 # Poffice-Skill — 세션로그 기록 + 포피스 데이터 생성 (코어)
@@ -31,12 +31,10 @@ description: 포피스 업무보고 코어 스킬. 기존 개인세션로그 스
 - 🟡 **옐로**: 팀장 판단 진행. `yellow_policy:"report"`(이정민·신승희)는 **팀원 보고 필수**, `"auto"`(오세원·유지호)는 자율.
 - 🟢 **그린**: 자율 진행(기록만).
 
-## 4. _board.json 생성 (마더 세션로그 · spec 스키마 + G)
-개인세션로그·개인DB를 취합해 대시보드 스키마로 **결정론 변환**. **최근 윈도우 + 롤업만**(전체 히스토리 X):
-- `members[]`: `name/role/yellow_policy/master`, `missions[]`(status·due·progress·roadmap = 마일스톤), `gates{red,yellow,green}`, `todos[]`(state·wo·mission·importance·date), **`sessions[]`**(최근 세션로그 `{ts,summary,detail}` — 오래된 건 파일로), `last_session`.
-- 심상윤 = `master:true`(마스터보드 최상단).
-- 대표 주간보고 판단을 반영해 게이트(🔴/🟡/🟢)·WO 세팅.
-- 갱신 시마다 **동일 파일명 `_board.json`** 덮어쓰기(modifiedTime 최신본 = 정본).
+## 4. 집계 → 대시보드 config (= `Poffice-MotherLog` 담당)
+개인세션로그·개인DB를 취합해 대시보드 config(`_board.json`, 마더 세션로그)로 변환·저장하는 일은 **`Poffice-MotherLog`** 스킬이 한다(요약·분석, 저장 위치 = 그린필드 `[2.포피스_섹터].Poffice`).
+- 이 스킬(Poffice-Skill)은 그 **입력이 되는 개인세션로그를 정확히·불변으로 기록**하는 데 집중.
+- 두 스킬은 그 결과물(개인세션로그)로만 연결 — 관심사·토큰 분리.
 
 ## 5. 역방향 반영 (export → 세션로그) · spec §C
 - 대시보드가 내보낸 `poffice_export_{이름}.json`(`check_overrides` + `memo_overrides`)을 읽어
