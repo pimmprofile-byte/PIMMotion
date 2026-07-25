@@ -21,10 +21,10 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 ## 1. 저장 위치 & 폴더 구조 (그린필드 / 포피스영역)
 - 그린필드: `[1.그린필드:프레임워크].PIMM_framework` (id `1HB1X19PN6DQDXpEFpheE-BFLC2eBc3CG`)
 - 포피스영역: `[2.포피스_섹터].Poffice` (id `1dbUhEa2ByRtLhKryM4YpYHC4bNLzBdFm`)
-- **라이브**: `pofficepoffice_board.json`(대시보드 로드 정본). 동일 파일명 덮어쓰기 → 최신본이 정본.
+- **라이브**: `poffice_board.json`(대시보드 로드 정본). 동일 파일명 덮어쓰기 → 최신본이 정본.
 - **카테고리 폴더(넘버링+영문, 대시보드 카테고리와 동일)** — 구버전·이전 자료 확인용 아카이브 축:
   `01_Mission_미션보드/` · `02_Gate_게이트보드/` · `03_Checklist_체크리스트/` · `04_LogArchive_로그집계/`(구 '세션로그') · `05_WorkOrder_워크오더/` · `06_Notice_사내공지/`
-- **아카이빙**: `pofficepoffice_board.json` 갱신 시 **직전 버전/변경분을 해당 카테고리 폴더에** `{YYMMDD_HHMM}_{요약}` 로 남긴다(원문 무왜곡·불변, 원칙 2). 세션로그 원본은 블루필드/개인DB에 있고 여기 `04_LogArchive_로그집계/`는 집계 스냅샷·참조용.
+- **아카이빙**: `poffice_board.json` 갱신 시 **직전 버전/변경분을 해당 카테고리 폴더에** `{YYMMDD_HHMM}_{요약}` 로 남긴다(원문 무왜곡·불변, 원칙 2). 세션로그 원본은 블루필드/개인DB에 있고 여기 `04_LogArchive_로그집계/`는 집계 스냅샷·참조용.
 - 구조 정본: 포피스영역 `README_포피스섹터구조.md`.
 
 ## 2. 입력
@@ -38,7 +38,7 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 - 게이트 권한: 🔴 대표검수 / 🟡 팀장판단·보고(`yellow_policy`) / 🟢 자율.
 
 ## 4. 출력 = 대시보드 config (구형 폐기)
-- 형식은 **포피스 대시보드에 노출되는 데이터**(spec 스키마 + G의 `sessions[]`) = `pofficepoffice_board.json`.
+- 형식은 **포피스 대시보드에 노출되는 데이터**(spec 스키마 + G의 `sessions[]`) = `poffice_board.json`.
 - ~~구형: 리포트/브리프/워크오더 텍스트 문서~~ → **더 이상 정본 아님.** 대시보드 config로 일원화.
 - 빌드된 `tool/PIMM_Poffice.ver0.2.html`이 이 config를 로드(같은 폴더 fetch 또는 드래그앤드롭).
 
