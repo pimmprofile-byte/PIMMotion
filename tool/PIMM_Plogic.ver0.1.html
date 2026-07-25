@@ -156,7 +156,7 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .legend span{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
 .legend i{font-style:normal;width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
-.lvls{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+.lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 .lvl{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-top:3px solid var(--green)}
 .lvl.l1{border-top-color:var(--line2)}.lvl.l2{border-top-color:var(--green)}.lvl.l3{border-top-color:var(--green-d)}
 .lvl.m1{border-top-color:var(--green)}.lvl.m2{border-top-color:var(--blue)}.lvl.m3{border-top-color:var(--purple)}.lvl.m4{border-top-color:var(--amber)}
@@ -175,7 +175,8 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .rung .rt small{font-size:12px;color:var(--ink3);font-weight:600}
 .rung .gr{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
 .rung .gr.xp{color:var(--green-d);border-color:var(--mintline);background:var(--mint)}
-.rung .rd{color:var(--ink2);font-size:13px;margin-top:5px;line-height:1.6}
+.rung .rrole{font-size:12px;font-weight:800;color:var(--green-d);margin-top:5px}
+.rung .rd{color:var(--ink2);font-size:13px;margin-top:4px;line-height:1.6}
 @media(max-width:640px){.lvls{grid-template-columns:1fr}}
 
 /* 인라인 퀴즈(이해하기 자가확인) */
@@ -480,13 +481,13 @@ const DOMAINS=[
 const LEVELS=[
  {n:1,k:"주니어",en:"Junior",grade:"입문자",expert:false,d:"해당 도메인을 아직 모르는 입문자. 배움이 시작되는 출발점이다."},
  {n:2,k:"플로어",en:"Floor",grade:"초급자",expert:false,d:"작업 지시를 받으면 실무를 수행할 수 있는 초급자."},
- {n:3,k:"리더",en:"Leader",grade:"중급자",expert:true,mark:"전문가 시작",d:"입문자·초급자를 리딩하며 작업을 알려주고 진행하는 중급자. 전문가 영역은 여기서부터다."},
- {n:4,k:"시니어",en:"Senior",grade:"상급자",expert:true,d:"입문자·초급자·리더를 관리·감독하며 리스크를 짚고 핸들링하는 상급자."},
- {n:5,k:"마스터",en:"Master",grade:"",expert:true,d:"기존 체계를 의심하고 디벨롭하며 발전시키는 사람. 도메인 자체를 진화시킨다."}
+ {n:3,k:"리더",en:"Leader",grade:"중급자",expert:true,mark:"전문가 시작",role:"교육 + 수행",d:"입문자·초급자를 리딩하며 <b>직접 만들면서 가르치는</b> 중급자 — 코칭이 아니라 교육과 수행이 중심이다. 프로젝트 '안'의 실무를 이끈다. 전문가 영역은 여기서부터다."},
+ {n:4,k:"시니어",en:"Senior",grade:"상급자",expert:true,role:"코칭 + 핸들링",d:"리더를 <b>코칭하고 리스크를 핸들링</b>하는 상급자 — 직접 교육·수행이 아니라, 프로젝트 '위'에서 여러 리더·프로젝트를 가로질러 리스크·표준·자원을 관리한다."},
+ {n:5,k:"마스터",en:"Master",grade:"정점",expert:true,role:"체계 진화 · 밸류체크 · 실무X",d:"기존 체계를 의심해 <b>디벨롭·진화시키고 가치를 검증(밸류체크)</b>하는 정점 — <b>직접 실무에는 들어가지 않고 오로지 시스템과 밸류</b>만 다룬다."}
 ];
 function renderArtisan(){
   const domCards=DOMAINS.map(d=>`<div class="forge f-${d.color}"><div class="fh"><span class="fi">${d.n}</span><div><div class="fk">${d.name}<span class="fen">${d.type}</span></div></div></div><p class="fone">${d.sum}</p><p class="fdesc">${d.detail}</p></div>`).join("");
-  const ladder=LEVELS.map(l=>`<div class="rung${l.expert?' expert':''}"><div class="rn">${l.n}</div><div class="rc"><div class="rt">${l.k}<small>${l.en}</small>${l.grade?`<span class="gr">${l.grade}</span>`:''}${l.mark?`<span class="gr xp">${l.mark}</span>`:''}</div><div class="rd">${l.d}</div></div></div>`).join("");
+  const ladder=LEVELS.map(l=>`<div class="rung${l.expert?' expert':''}"><div class="rn">${l.n}</div><div class="rc"><div class="rt">${l.k}<small>${l.en}</small>${l.grade?`<span class="gr">${l.grade}</span>`:''}${l.mark?`<span class="gr xp">${l.mark}</span>`:''}</div>${l.role?`<div class="rrole">역할 · ${l.role}</div>`:''}<div class="rd">${l.d}</div></div></div>`).join("");
   $("#app").innerHTML=`<div class="wrap sys">
     <div class="sys-hero">
       <div class="eyebrow">PIMM ARTISAN · 03_Artisan</div>
@@ -496,7 +497,7 @@ function renderArtisan(){
     </div>
 
     <div class="lesson"><h3>성장 모델 한눈에 <span class="tag">개요</span></h3>
-      <div class="pipe"><span class="st">STP로 6도메인 진단</span><span class="ar">→</span><span class="st">5계층 성장(주니어→마스터)</span><span class="ar">→</span><span class="st">2개+ = 아티잔</span><span class="ar">→</span><span class="st">전 도메인 리더 = 제너럴리스트PD</span><span class="ar">→</span><span class="st">+1마스터·결과물 = 마스터PD</span></div>
+      <div class="pipe"><span class="st">STP로 6도메인 진단</span><span class="ar">→</span><span class="st">5계층 성장(주니어→마스터)</span><span class="ar">→</span><span class="st">2개+ = 아티잔</span><span class="ar">→</span><span class="st">전 도메인 리더 = 제너럴리스트PD</span><span class="ar">→</span><span class="st">+1마스터·결과물 = 마스터PD (EP)</span></div>
       <div class="plain"><span class="lb">쉽게 말하면</span>내 도메인을 진단해 단계를 밟아 키우고, 전문가 수준을 <b>2개 이상</b> 갖추면 '아티잔'이야. 서로 도메인이 겹치는 동료가 반드시 있어서 팀이 유기적으로 연결되고, 한 사람이 빠져도 무너지지 않아(단일 실패점 방지).</div></div>
 
     <h2 class="sec-h">6개 핵심 도메인</h2>
@@ -523,15 +524,14 @@ function renderArtisan(){
     <div class="lvls">
       <div class="lvl m1"><div class="step">2개 이상 도메인</div><h4>아티잔<small>Artisan · 대외 직함 PD</small></h4><p>6개 핵심 도메인 중 <b>2개 이상에서 전문가(리더 레벨 이상)</b>가 된 사람. 서로 다른 강점이 겹치며 팀의 유기적 연결과 안정성을 만든다.</p></div>
       <div class="lvl m2"><div class="step">전 도메인 리더 (6개)</div><h4>제너럴리스트 PD<small>Generalist PD</small></h4><p>6개 도메인 <b>전부에서 리더 레벨</b>에 오른 사람 — 넓이(6각형)를 꽉 채운 상태. <b>밸류 지표가 정점으로 확장</b>돼 유형가치(월급) 도약으로 보상받고, <b>마스터 PD 트랙의 자격</b>이 열린다.</p></div>
-      <div class="lvl m3"><div class="step">+ 1 마스터 · 결과물</div><h4>마스터 PD<small>Master PD</small></h4><p>제너럴리스트 PD(전 도메인 리더)에 더해, <b>하나 이상은 마스터 레벨</b>이고 이를 <b>결과물로 입증</b>한 사람 — PD로서 실제 프로젝트를 완성·성공시킨 성과가 요건이다. 넓이에 <b>자기만의 최정점 무기</b>를 갖춰 팀 전체를 판단·조율하는 총괄 프로듀서가 된다.</p></div>
-      <div class="lvl m4"><div class="step">전 도메인 마스터 · 졸업</div><h4>이그제큐티브 PD<small>Executive Producer · EP</small></h4><p><b>전 분야 마스터를 '졸업'한 정점.</b> 사실상 독립 사업자를 차려도 될 역량으로, <b>사업 총괄 역량</b>을 보유한다. <b>철칙 — 반복 실무·현장 제작엔 직접 들어가지 않는다</b>(마스터만 가능한 신기술·신도메인 개척은 예외). 이미 리더·시니어를 거쳐 밑에 리딩 가능한 팀원이 있으니, 손을 뗄수록 관리감독·사업 총괄로서 입지가 강해지는 자리다.</p></div>
+      <div class="lvl m3"><div class="step">+ 1 마스터 · 결과물</div><h4>마스터 PD<small>Master PD · 대외 직함 EP</small></h4><p>제너럴리스트 PD(전 도메인 리더)에 더해, <b>하나 이상은 마스터 레벨</b>이고 이를 <b>결과물로 입증</b>한 사람 — PD로서 실제 프로젝트를 완성·성공시킨 성과가 요건이다. 팀 전체를 판단·조율하는 총괄 프로듀서로, <b>대외 직함은 EP(이그제큐티브 프로듀서)</b>. 사실상 독립 사업자를 차려도 될 역량으로, <b>반복 실무·현장 제작보다 사업 총괄·관리감독에 무게</b>를 둔다(마스터만 가능한 신기술·신도메인 개척은 예외).</p></div>
     </div>
 
     <div class="axis" style="margin-top:14px">
       <h4>PD와 PM — 두 역할</h4>
       <p>아티잔의 대외 직함은 <b>PD</b>다. 하나의 프로젝트에는 이 두 역할이 함께 맞물려 돌아간다.</p>
       <div class="grid2">
-        <div class="ac"><div class="h">🎬 PD — 프로듀서</div>작업물을 만들어 내는 역할. 아티잔의 대외 직함이며, 자신이 맡은 프로젝트 안에서는 <b>실무 판단의 최고 권한</b>을 가진다. 전 도메인 리더에 이르면 <b>제너럴리스트 PD</b>, 여기에 <b>하나 이상의 마스터 도메인 + 결과물</b>까지 입증하면 최상위 <b>마스터 PD</b>가 된다.</div>
+        <div class="ac"><div class="h">🎬 PD — 프로듀서</div>작업물을 만들어 내는 역할. 아티잔의 대외 직함이며, 자신이 맡은 프로젝트 안에서는 <b>실무 판단의 최고 권한</b>을 가진다. 전 도메인 리더에 이르면 <b>제너럴리스트 PD</b>, 여기에 <b>하나 이상의 마스터 도메인 + 결과물</b>까지 입증하면 최상위 <b>마스터 PD(대외 직함 EP)</b>가 된다.</div>
         <div class="ac"><div class="h">📋 PM — 프로젝트 매니저</div>프로젝트를 운영·관리하는 역할. 제작(작업물) 압박이 상대적으로 적어, 원칙적으로 <b>사업적 감각(도메인 6) 리더급</b>이 맡는 자리다. <span style="color:var(--ink3)">사업적 감각 리더 = 팀원 매니지먼트·일정 관리·시스템 체계를 합리적으로 디벨롭해 실제로 돌아가게 만드는 수준.</span></div>
       </div>
     </div>
