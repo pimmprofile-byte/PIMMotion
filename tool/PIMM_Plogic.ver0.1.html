@@ -151,6 +151,19 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .lock-card p{color:var(--ink2);font-size:14px;margin-top:8px;max-width:440px;margin-left:auto;margin-right:auto}
 @media(max-width:560px){.dtable{min-width:0;font-size:11.5px}.dtable th,.dtable td{padding:6px 7px}.deep-sub{display:block;margin-left:0;margin-top:2px}}
 
+/* 아티잔 6도메인 · 3단계 */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.legend span{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.legend i{font-style:normal;width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+.lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.lvl{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-top:3px solid var(--green)}
+.lvl.l1{border-top-color:var(--line2)}.lvl.l2{border-top-color:var(--green)}.lvl.l3{border-top-color:var(--green-d)}
+.lvl .step{font-size:11px;font-weight:800;color:var(--green);letter-spacing:.06em}
+.lvl h4{font-size:16px;font-weight:800;margin-top:4px}.lvl h4 small{font-size:12px;color:var(--ink3);font-weight:600;margin-left:5px}
+.lvl p{color:var(--ink2);font-size:13px;margin-top:8px;line-height:1.6}
+.sec-h{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:28px}
+@media(max-width:640px){.lvls{grid-template-columns:1fr}}
+
 /* 인라인 퀴즈(이해하기 자가확인) */
 .check{border:1px dashed var(--line2);border-radius:var(--r);padding:18px;margin-top:18px;background:var(--card)}
 .check .q{font-weight:700;font-size:14.5px;display:flex;gap:8px;align-items:flex-start}
@@ -429,50 +442,64 @@ function renderSystem(){
   $("#app").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 }
 
-/* ===== 핌 아티잔 — 개인 숙련·학습법 ===== */
+/* ===== 핌 아티잔 — 6개 도메인 · 3단계 성숙도 (회사 인재가치) ===== */
+const DOMAINS=[
+ {n:1,name:"현장제작과 시공",desc:"각종 공구와 공정을 이해하고 오프라인 공간에 테마를 짓는 능력",type:"하드워크",color:"purple"},
+ {n:2,name:"장치디바이스",desc:"장치의 개념을 이해하고 코딩과 회로작업을 하는 능력",type:"하드워크",color:"purple"},
+ {n:3,name:"설계와 디자인",desc:"각종 툴을 활용해 설계도와 그래픽, 미디어를 만드는 능력",type:"소프트워크",color:"blue"},
+ {n:4,name:"미학적 감각",desc:"개인의 취향을 상업적인 색감으로 바꿔서 상품화 시키는 능력",type:"미학·예술",color:"green"},
+ {n:5,name:"비지니스",desc:"시장의 흐름을 파악해 트렌드를 발견하고 이를 적용하고 팀을 시장의 흐름에 올리는 능력",type:"사업",color:"amber"},
+ {n:6,name:"서사창작",desc:"세계관을 구축하고 이야기를 만들어나가며 이를 공간서사와 콘텐츠로 만드는 능력",type:"미학·예술",color:"green"}
+];
+const LEVELS=[
+ {k:"플로어",en:"Floor",cls:"l1",d:"이제 막 이해가 된 상태 + 주니어로서, 리더가 있으면 해당 업무를 수행 가능한 단계."},
+ {k:"리더",en:"Leader",cls:"l2",d:"주니어와 함께 실무 업무를 수행할 수 있으며, 실질 작업물을 남길 수 있는 단계."},
+ {k:"마스터",en:"Master",cls:"l3",d:"유의미한 지표와 평가가 가능하여 리더를 평가할 수 있으며, 스스로는 도메인을 심화시키거나 다른 영역으로 넘어갈 수 있는 단계."}
+];
 function renderArtisan(){
+  const domCards=DOMAINS.map(d=>`<div class="forge f-${d.color}"><div class="fh"><span class="fi">${d.n}</span><div><div class="fk">${d.name}<span class="fen">${d.type}</span></div></div></div><p class="fone" style="font-weight:500">${d.desc}</p></div>`).join("");
+  const lvlCards=LEVELS.map((l,i)=>`<div class="lvl ${l.cls}"><div class="step">STEP ${i+1}</div><h4>${l.k}<small>${l.en}</small></h4><p>${l.d}</p></div>`).join("");
   $("#app").innerHTML=`<div class="wrap sys">
     <div class="sys-hero">
       <div class="eyebrow">PIMM ARTISAN · 03_Artisan</div>
-      <h2>핌 아티잔 — 배우는 사람에서 장인으로</h2>
-      <p class="lead">플로직이 '<b>회사의 논리</b>'라면, 아티잔은 '<b>나 개인의 숙련</b>'이야. 핌은 개인의 성장을 회사의 자산으로 봐. 이 페이지는 <b>네가 어떻게 아티잔으로 자라는지</b>에 대한 안내야.</p>
-      <div class="dayrow">${daySVG("sm")}<div class="bubble">여기까지 왔다면 넌 이미 아티잔의 길 위에 있어. '잘 만드는 사람'을 넘어 '<b>옳게 판단하는 사람</b>'이 되는 게 목표야!</div></div>
+      <h2>핌 아티잔 — 6개 도메인으로 자라는 장인</h2>
+      <p class="lead">플로직이 '<b>회사의 논리</b>'라면, 아티잔은 '<b>나 개인의 숙련</b>'이야. 핌 아티잔은 아래 <b>6개 핵심 도메인</b> 위에서 <b>2개 이상을 전문가 수준으로</b> 키워가는 사람이야.</p>
+      <div class="dayrow">${daySVG("sm")}<div class="bubble">한 우물만 파는 시대는 끝! 성향을 알고 → 도메인을 정하고 → 단계를 밟아 마스터하고 → <b>두 개 이상 겹쳐 가진 전문가</b>가 되는 게 아티잔의 길이야.</div></div>
     </div>
 
-    <div class="forge-grid">
-      <div class="forge f-green"><div class="fh"><span class="fi">🎖️</span><div><div class="fk">아티잔이란</div><div class="ftag">개인 숙련 체계</div></div></div>
-        <p class="fone">장인(Artisan) — '잘 만드는 사람'을 넘어 '옳게 판단하는 사람'.</p>
-        <ul class="flist"><li>03_Artisan = 개인의 숙련·성장을 다루는 계층</li><li>플로직(회사 논리)을 <b>내 몸에 붙이는</b> 과정</li><li>개인의 판단력이 곧 회사의 위임 가능성</li></ul>
-        <div class="frole">머리+손 · 숙련</div></div>
+    <div class="lesson"><h3>성장 모델 한눈에 <span class="tag">개요</span></h3>
+      <div class="pipe"><span class="st">STP 성향 파악</span><span class="ar">→</span><span class="st">6도메인 중 설정</span><span class="ar">→</span><span class="st">플로어→리더→마스터</span><span class="ar">→</span><span class="st">2개+ 멀티도메인 = 아티잔</span></div>
+      <div class="plain"><span class="lb">쉽게 말하면</span>내 성향에 맞는 도메인을 골라 단계를 밟아 마스터하고, 그걸 <b>2개 이상</b> 갖추면 '아티잔'이야. 서로 도메인이 겹치는 동료가 반드시 있어서 팀이 유기적으로 연결되고, 한 사람이 빠져도 무너지지 않아(단일 실패점 방지).</div></div>
 
-      <div class="forge f-amber"><div class="fh"><span class="fi">🔑</span><div><div class="fk">왜 아티잔인가</div><div class="ftag">위임의 조건</div></div></div>
-        <p class="fone">회사가 일을 맡기려면, 개인이 스스로 완결·판단할 수 있어야 해.</p>
-        <ul class="flist"><li><b>위임 가능성 = 산출물·검수기준의 독립성</b></li><li>검수에 대표의 전체 이해가 필요하면 → 일이 대표에게 회귀</li><li>아티잔이 자랄수록 회사가 더 많이 맡긴다</li></ul>
-        <div class="frole">판단 · 독립성</div></div>
-    </div>
+    <h2 class="sec-h">6개 핵심 도메인</h2>
+    <div class="legend"><span><i style="background:var(--purple)"></i>하드워크 (1·2)</span><span><i style="background:var(--blue)"></i>소프트워크 (3)</span><span><i style="background:var(--green)"></i>미학·예술 감각 (4·6)</span><span><i style="background:var(--amber)"></i>사업적 감각 (5)</span></div>
+    <div class="forge-grid" style="margin-top:14px">${domCards}</div>
 
-    <div class="axis">
-      <h4>아티잔의 기둥 (03_Artisan)</h4>
-      <p>개인 숙련은 이렇게 관리돼. (MPA 훈련·테스트의 세부 커리큘럼은 대표 확정 후 계속 보강)</p>
+    <div class="note" style="margin-top:16px"><b>목표이자 원칙</b> — 이 6개 핵심 도메인 중 <b>2개 이상의 영역</b>에서 '전문가'라 불릴 만한 능력·경험·경력을 갖추는 것. <span style="color:var(--ink3)">(핌 팀스피릿 원칙 — "각 멤버는 최소 2개의 전문 도메인을 확보하고, 두 영역 모두에서 깊이를 추구한다.")</span></div>
+
+    <h2 class="sec-h">도메인 성숙도 3단계</h2>
+    <p class="lead" style="margin-top:6px;font-size:14px">각 도메인은 이 세 단계로 깊어져. 도메인마다 내 단계는 다를 수 있어(예: 설계는 리더, 시공은 플로어).</p>
+    <div class="lvls">${lvlCards}</div>
+
+    <div class="axis" style="margin-top:20px">
+      <h4>측정과 훈련은 이렇게</h4>
+      <p>내 도메인 역량을 재고(측정), 새 도메인을 내 것으로 만드는(훈련) 방법이야.</p>
       <div class="grid2">
-        <div class="ac"><div class="h">📇 프로파일</div>나의 강점·주력 트랙·이력을 기록. 포피스와 연동해 '내가 뭘 할 수 있는지'를 쌓아둠.</div>
-        <div class="ac"><div class="h">🔀 MPA 훈련</div>한 파트에 갇히지 않고 <b>인접 공정까지 경계를 넘나드는 숙련</b>. 넘나들수록 판단이 넓어짐.</div>
-        <div class="ac"><div class="h">🎖️ 테스트 · 칭호</div>숙련도를 검증하고 단계별 칭호를 얻음: <b>신입 → 숙련 아티잔 → 플로직 마스터</b>.</div>
-        <div class="ac"><div class="h">👥 5인 페르소나 역할</div>Master PD · Main Producer · Utility · Construction Lead · Asst. 각자 주특기 + MPA로 경계를 겹친다.</div>
+        <div class="ac"><div class="h">🧪 STP · AST — 측정</div>상황 시나리오 기반 <b>아티잔 시뮬레이션 테스트</b>로 도메인별 역량을 진단(S/A/B/C).</div>
+        <div class="ac"><div class="h">🔀 MPA — 도메인 마스터 훈련</div>새 도메인 진입 시 <b>M-T-B</b>(Middle→Top→Bottom Point)로 가치를 분해·내재화 — 직접 숙련할지 관리할지까지 정한다.</div>
       </div>
     </div>
 
     <div class="lesson" style="margin-top:16px"><h3>어떻게 배우나 — 플로직 학습 사이클 <span class="tag">학습법</span></h3>
-      <p>이 도구를 이 순서로 돌리면 아티잔으로 자라. <b>배우고 → 써보고 → 깊이 파고 → 실전·기록</b>, 그리고 반복.</p>
+      <p>이 도구를 이 순서로 돌리면 도메인이 깊어져. <b>배우고 → 써보고 → 깊이 파고 → 실전·기록</b>, 그리고 반복.</p>
       <div class="pipe"><span class="st">이해하기</span><span class="ar">→</span><span class="st">풀어보기</span><span class="ar">→</span><span class="st">심화과정</span><span class="ar">→</span><span class="st">실전·기록</span><span class="ar">↻</span></div>
       <ul>
-        <li><b>① 이해하기</b> — 전체 지도를 먼저. 철학·공정·트랙·용어를 개괄로 (한 입 크기)</li>
-        <li><b>② 풀어보기</b> — 손으로 써보고 코워크에게 채점받아 <b>내 약점</b>을 찾는다</li>
-        <li><b>③ 심화과정</b> — 크래프트 이론을 하나씩 깊게 파 <b>판별력(좋은 걸 알아보는 눈)</b>을 기른다</li>
-        <li><b>④ 실전 · 기록</b> — 피모션·파트웍으로 실제로 만들고, 포피스로 기록·피드백. OJT로 손에 붙인다</li>
+        <li><b>① 이해하기</b> — 전체 지도를 먼저 (철학·공정·트랙·용어)</li>
+        <li><b>② 풀어보기</b> — 손으로 써보고 코워크에게 채점받아 <b>약점</b>을 찾는다</li>
+        <li><b>③ 심화과정</b> — 크래프트 이론을 깊게 파 <b>판별력</b>을 기른다</li>
+        <li><b>④ 실전 · 기록</b> — 피모션·파트웍으로 만들고 포피스로 기록·피드백. OJT로 손에 붙인다</li>
       </ul>
-      <div class="plain"><span class="lb">쉽게 말하면</span>이론만 알면 '눈'만 높아지고, 만들기만 하면 '손'만 바빠져. <b>배움(이해·심화) ↔ 실전(풀어보기·현장) ↔ 기록(포피스)</b>을 계속 돌려야 진짜 아티잔이 돼.</div>
-      <div class="note">MPA 훈련·테스트의 <b>세부 커리큘럼·평가 기준</b>은 대표 확정 후 이 페이지에 이어붙일 예정이야. (무왜곡 — 확정 전엔 개괄만)</div>
+      <div class="plain"><span class="lb">쉽게 말하면</span>이론만 알면 '눈'만 높아지고, 만들기만 하면 '손'만 바빠져. <b>배움(이해·심화) ↔ 실전(풀어보기·현장) ↔ 기록(포피스)</b>을 계속 돌려야 도메인이 진짜 마스터로 자라.</div>
     </div>
 
     <div class="modfoot"><button class="btn ghost" data-mode="home">← 처음으로</button><button class="btn" data-mode="learn">이해하기부터 시작 →</button></div>
