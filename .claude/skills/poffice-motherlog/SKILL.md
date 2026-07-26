@@ -31,7 +31,9 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
   > ※ create만 지원하고 update가 없는 커넥터라면, **중복을 만드는 create를 반복하지 말고** 정본 파일을 update할 수 있는 경로(Drive `files.update` media)를 쓴다. 정본은 언제나 **접미사 없는 단일 `poffice_board.json`**.
 - **★ 배포 미러 (런처 폴더 자동 복제 · 매 run 필수)**: 포피스영역 정본을 만든 **직후**, 대시보드·허브가 있는 **런처 폴더 `PIMM_Launcher`(id `1pC9V2ZKO5rWrIDXc0mRAsHRgDEL9iqkX`)에도 동일 내용의 `poffice_board.json`을 복제**한다. 목적: 대시보드/허브가 **같은 폴더에서 상대경로 fetch(`fetch("poffice_board.json")`)로 즉시 로드** — 별도 링크·ID 불필요.
   > ⚠️ **이 복제본도 반드시 update-by-fileId(찾아서 덮어쓰기).** 런처 폴더에서 `poffice_board.json` 검색 → 있으면 그 fileId 내용만 update, 없을 때만 1회 create. `copy_file`/create 반복 금지(런처 폴더에도 `(1)(2)(3)` 누적됨). 두 위치(포피스영역·런처 폴더)는 **항상 접미사 없는 단일 파일 1개씩**, 내용 동일.
-  > ※ 최종적으로 정본은 포피스영역, **런처 폴더 것은 대시보드 로드용 미러**다. 매 run 두 곳 다 최신으로 덮어쓴다.
+  > **★ `.js` 미러도 함께 (더블클릭 자동 로드용):** 런처 폴더에 `poffice_board.json`과 **동시에 `poffice_board.js`** 도 쓴다. 내용 = **`window.POFFICE_BOARD = <그 JSON 그대로>;`** (한 줄 전역 대입, JSON 내용 100% 동일). 이유: 브라우저는 `file://`에서 `fetch(.json)`를 막지만 **`<script src>` 태그 로딩은 허용** → 팀원이 대시보드를 **더블클릭만 해도** `.js`가 로드돼 실데이터가 뜬다(대시보드 v0.7이 `.js` 우선 로드). `.js`도 **update-by-fileId 단일 파일**, `contentMimeType`=`application/javascript`(또는 text/javascript), `disableConversionToGoogleType=true`(구글독 변환 금지). 즉 런처 폴더엔 **`poffice_board.json` 1개 + `poffice_board.js` 1개**, 둘 다 매 run 덮어쓰기, 내용 동일.
+  > ※ 최종적으로 정본은 포피스영역(.json), **런처 폴더의 .json/.js는 대시보드 로드용 미러**다. 매 run 두 위치·세 파일 모두 최신으로 덮어쓴다.
+  > ※★ **원문 축약 금지 재확인**: `.js`/`.json` 어느 쪽이든 `sessions[].raw`는 **원본 세션로그 전문 그대로**(요약·축약·재작성 금지, `summary`만 1줄). 미러는 **내용 변형 없이** 같은 JSON을 그대로 옮긴다.
 - **카테고리 폴더(넘버링+영문, 대시보드 카테고리와 동일)** — 구버전·이전 자료 확인용 아카이브 축:
   `01_Mission_미션보드/` · `02_Gate_게이트보드/` · `03_Checklist_체크리스트/` · `04_LogArchive_로그집계/`(구 '세션로그') · `05_WorkOrder_워크오더/` · `06_Notice_사내공지/`
 - **아카이빙**: `poffice_board.json` 갱신 시 **직전 버전/변경분을 해당 카테고리 폴더에** `{YYMMDD_HHMM}_{요약}` 로 남긴다(원문 무왜곡·불변, 원칙 2). 세션로그 원본은 블루필드/개인DB에 있고 여기 `04_LogArchive_로그집계/`는 집계 스냅샷·참조용.

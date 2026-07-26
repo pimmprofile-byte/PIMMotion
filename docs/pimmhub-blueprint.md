@@ -73,6 +73,7 @@
 
 ## 5. 배포
 - **현재**: Drive `PIMM_Launcher` 폴더에 허브 + 5개 툴 HTML **co-location**(상대경로 `./` 링크 → 카드 클릭 실행). 더블클릭 실행.
+- **포피스 데이터 로드**: 마더로그가 런처 폴더에 `poffice_board.json` + `poffice_board.js`(=`window.POFFICE_BOARD=…`) 미러. 대시보드 v0.7이 `.js`(script 태그)를 우선 로드 → **더블클릭(file://)에서도 자동**. (fetch(.json)은 file://서 차단되므로 .js가 핵심.) 코워크 핸드오프 = `docs/handoff-poffice-js-mirror.md`.
 - **후속**: **Electron 데스크톱앱**(repo `desktop/`) — 허브 진입, NSIS/.dmg 듀얼빌드. 2.0 마스터링 때 로고·아이콘 확정.
 - ⚠️ 큰 HTML(허브 339KB·게임 611KB)은 코워크가 Drive에 직접 업로드 불가(도구 한계) → 사용자가 GitHub raw 다운로드 후 폴더에 배치.
 
@@ -87,7 +88,7 @@
 | 게임 에디터 | ver1.14 |
 | 디바이스 어시스턴트 | ver0.3 (와이어링뷰 전기정밀) |
 | 플로직 | ver0.2 (Day 스프라이트·걷기·비주얼시나리오) |
-| 포피스 대시보드 | ver0.6 (가이드·연동상태 + Day charC 스프라이트 + 세션 원문(raw) 표시) |
+| 포피스 대시보드 | ver0.7 (poffice_board.js script 로드 → file:// 더블클릭 자동 로드; .json fetch·드래그·샘플 폴백) |
 | 코워크 플러그인(포피스 3종) | v0.9.2 |
 
 ## 8. 로드맵 / 남은 것
