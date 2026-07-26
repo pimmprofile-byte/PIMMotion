@@ -29,6 +29,9 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
   > ⚠️ **동일 파일명 중복 금지 (반드시 준수).** 드라이브는 파일을 **이름이 아니라 fileId**로 구분해서, 매 run **새로 생성(create)** 하면 같은 이름 파일이 계속 쌓이고 동기화 시 `poffice_board (1).json`·`(2)`·`(3)`… 로 복제된다. 이때 **정작 `poffice_board.json`(접미사 없는 정본 이름)은 대개 맨 처음(가장 오래된) 파일**이라, 대시보드의 고정 fetch가 **최신본이 아니라 옛 데이터를 읽는 심각한 오류**가 난다.
   > ✅ **쓰기 규칙 = "찾아서 덮어쓰기(update-by-fileId)".** ① 포피스영역에서 이름 `poffice_board.json`을 **검색** → ② 있으면 **그 fileId의 내용을 update(미디어 덮어쓰기)** — 새 파일 생성 금지. ③ 없을 때만 **최초 1회 create**. ④ 이후 실행은 **그 canonical fileId를 기억해 항상 그 ID를 update**(검색이 중복본을 집지 않도록). ⑤ `(1)(2)(3)` 중복본이 이미 있으면 **최신 내용만 정본 파일에 반영 후 나머지는 휴지통 처리**(불가 시 사용자에게 수동 정리 안내).
   > ※ create만 지원하고 update가 없는 커넥터라면, **중복을 만드는 create를 반복하지 말고** 정본 파일을 update할 수 있는 경로(Drive `files.update` media)를 쓴다. 정본은 언제나 **접미사 없는 단일 `poffice_board.json`**.
+- **★ 배포 미러 (런처 폴더 자동 복제 · 매 run 필수)**: 포피스영역 정본을 만든 **직후**, 대시보드·허브가 있는 **런처 폴더 `PIMM_Launcher`(id `1pC9V2ZKO5rWrIDXc0mRAsHRgDEL9iqkX`)에도 동일 내용의 `poffice_board.json`을 복제**한다. 목적: 대시보드/허브가 **같은 폴더에서 상대경로 fetch(`fetch("poffice_board.json")`)로 즉시 로드** — 별도 링크·ID 불필요.
+  > ⚠️ **이 복제본도 반드시 update-by-fileId(찾아서 덮어쓰기).** 런처 폴더에서 `poffice_board.json` 검색 → 있으면 그 fileId 내용만 update, 없을 때만 1회 create. `copy_file`/create 반복 금지(런처 폴더에도 `(1)(2)(3)` 누적됨). 두 위치(포피스영역·런처 폴더)는 **항상 접미사 없는 단일 파일 1개씩**, 내용 동일.
+  > ※ 최종적으로 정본은 포피스영역, **런처 폴더 것은 대시보드 로드용 미러**다. 매 run 두 곳 다 최신으로 덮어쓴다.
 - **카테고리 폴더(넘버링+영문, 대시보드 카테고리와 동일)** — 구버전·이전 자료 확인용 아카이브 축:
   `01_Mission_미션보드/` · `02_Gate_게이트보드/` · `03_Checklist_체크리스트/` · `04_LogArchive_로그집계/`(구 '세션로그') · `05_WorkOrder_워크오더/` · `06_Notice_사내공지/`
 - **아카이빙**: `poffice_board.json` 갱신 시 **직전 버전/변경분을 해당 카테고리 폴더에** `{YYMMDD_HHMM}_{요약}` 로 남긴다(원문 무왜곡·불변, 원칙 2). 세션로그 원본은 블루필드/개인DB에 있고 여기 `04_LogArchive_로그집계/`는 집계 스냅샷·참조용.
@@ -61,7 +64,8 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 
 ## 5. 자동예약 / 흐름
 - CronCreate 등으로 **주기적 생성·갱신**(예: 주 1회·세션로그 갱신 시).
-- `Poffice-Skill`(개인 기록) → **`Poffice-MotherLog`(집계→config)** → 대시보드(시각화) → export(체크·메모) → Poffice-Skill 반영 → `Poffice-Report-Bot`(직전 config와 diff 브리핑).
+- `Poffice-Skill`(개인 기록) → **`Poffice-MotherLog`(집계→config → 포피스영역 정본 + 런처 폴더 미러, 둘 다 update-by-fileId)** → 대시보드(같은 폴더 fetch로 로드) → export(체크·메모) → Poffice-Skill 반영 → `Poffice-Report-Bot`(직전 config와 diff 브리핑).
+- **하루 2회 예약**: 매 run = 집계 → 포피스영역 덮어쓰기 → **런처 폴더 미러 덮어쓰기**까지 한 세트. (미러 누락 시 대시보드가 옛 데이터를 봄.)
 
 ## 6. 경계
 - **원본 세션로그 수정 금지**(불변·아카이빙). config만 생성.
