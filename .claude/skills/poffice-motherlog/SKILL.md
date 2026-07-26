@@ -25,15 +25,15 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 ## 1. 저장 위치 & 폴더 구조 (그린필드 / 포피스영역)
 - 그린필드: `[1.그린필드:프레임워크].PIMM_framework` (id `1HB1X19PN6DQDXpEFpheE-BFLC2eBc3CG`)
 - 포피스영역: `[2.포피스_섹터].Poffice` (id `1dbUhEa2ByRtLhKryM4YpYHC4bNLzBdFm`)
-- **라이브**: `poffice_board.json`(대시보드 로드 정본) — 포피스영역에 **딱 1개**만 존재해야 한다.
-  > ⚠️ **동일 파일명 중복 금지 (반드시 준수).** 드라이브는 파일을 **이름이 아니라 fileId**로 구분해서, 매 run **새로 생성(create)** 하면 같은 이름 파일이 계속 쌓이고 동기화 시 `poffice_board (1).json`·`(2)`·`(3)`… 로 복제된다. 이때 **정작 `poffice_board.json`(접미사 없는 정본 이름)은 대개 맨 처음(가장 오래된) 파일**이라, 대시보드의 고정 fetch가 **최신본이 아니라 옛 데이터를 읽는 심각한 오류**가 난다.
-  > ✅ **쓰기 규칙 = "찾아서 덮어쓰기(update-by-fileId)".** ① 포피스영역에서 이름 `poffice_board.json`을 **검색** → ② 있으면 **그 fileId의 내용을 update(미디어 덮어쓰기)** — 새 파일 생성 금지. ③ 없을 때만 **최초 1회 create**. ④ 이후 실행은 **그 canonical fileId를 기억해 항상 그 ID를 update**(검색이 중복본을 집지 않도록). ⑤ `(1)(2)(3)` 중복본이 이미 있으면 **최신 내용만 정본 파일에 반영 후 나머지는 휴지통 처리**(불가 시 사용자에게 수동 정리 안내).
-  > ※ create만 지원하고 update가 없는 커넥터라면, **중복을 만드는 create를 반복하지 말고** 정본 파일을 update할 수 있는 경로(Drive `files.update` media)를 쓴다. 정본은 언제나 **접미사 없는 단일 `poffice_board.json`**.
-- **★ 배포 미러 (런처 폴더 자동 복제 · 매 run 필수)**: 포피스영역 정본을 만든 **직후**, 대시보드·허브가 있는 **런처 폴더 `PIMM_Launcher`(id `1pC9V2ZKO5rWrIDXc0mRAsHRgDEL9iqkX`)에도 동일 내용의 `poffice_board.json`을 복제**한다. 목적: 대시보드/허브가 **같은 폴더에서 상대경로 fetch(`fetch("poffice_board.json")`)로 즉시 로드** — 별도 링크·ID 불필요.
-  > ⚠️ **이 복제본도 반드시 update-by-fileId(찾아서 덮어쓰기).** 런처 폴더에서 `poffice_board.json` 검색 → 있으면 그 fileId 내용만 update, 없을 때만 1회 create. `copy_file`/create 반복 금지(런처 폴더에도 `(1)(2)(3)` 누적됨). 두 위치(포피스영역·런처 폴더)는 **항상 접미사 없는 단일 파일 1개씩**, 내용 동일.
-  > **★ `.js` 미러도 함께 (더블클릭 자동 로드용):** 런처 폴더에 `poffice_board.json`과 **동시에 `poffice_board.js`** 도 쓴다. 내용 = **`window.POFFICE_BOARD = <그 JSON 그대로>;`** (한 줄 전역 대입, JSON 내용 100% 동일). 이유: 브라우저는 `file://`에서 `fetch(.json)`를 막지만 **`<script src>` 태그 로딩은 허용** → 팀원이 대시보드를 **더블클릭만 해도** `.js`가 로드돼 실데이터가 뜬다(대시보드 v0.7이 `.js` 우선 로드). `.js`도 **update-by-fileId 단일 파일**, `contentMimeType`=`application/javascript`(또는 text/javascript), `disableConversionToGoogleType=true`(구글독 변환 금지). 즉 런처 폴더엔 **`poffice_board.json` 1개 + `poffice_board.js` 1개**, 둘 다 매 run 덮어쓰기, 내용 동일.
-  > ※ 최종적으로 정본은 포피스영역(.json), **런처 폴더의 .json/.js는 대시보드 로드용 미러**다. 매 run 두 위치·세 파일 모두 최신으로 덮어쓴다.
-  > ※★ **원문 축약 금지 재확인**: `.js`/`.json` 어느 쪽이든 `sessions[].raw`는 **원본 세션로그 전문 그대로**(요약·축약·재작성 금지, `summary`만 1줄). 미러는 **내용 변형 없이** 같은 JSON을 그대로 옮긴다.
+- **라이브**: `poffice_board.json`(대시보드 로드 정본) — 포피스영역에 **딱 1개**만.
+  > ⚠️ **동일 파일명 중복 금지.** 커넥터에 **update 도구가 없다**(create 계열뿐, 2026-07-27 실측). 같은 이름으로 create를 반복하면 Drive가 fileId로 구분해 `poffice_board (1).json`·`(2)`… 로 복제되고, 접미사 없는 정본이 옛 파일이 되어 대시보드가 **옛 데이터를 읽는 버그**가 난다.
+  > ✅ **쓰기 규칙 = 제자리 수정(in-place overwrite)** — *구 "update-by-fileId"는 커넥터에 update가 없어 구현 불가, 폐기.* 라이브·미러는 **같은 경로를 `open(path,"w")`로 덮어써 inode를 유지**한다. Drive 데스크톱 마운트가 이를 새 파일이 아니라 **같은 파일의 새 리비전**으로 처리 → fileId 보존, `(1)(2)` 복제 없음. (실측: 마운트에서 `rm`은 "Operation not permitted"로 막히고, in-place 덮어쓰기·`rename`은 정상. truncate가 `Errno 35 Resource deadlock`로 거부되면 **rename-swap 폴백**.)
+  > **하드삭제 금지**: 폐기물은 지우지 말고 제로필드로 이동.
+  > **파이프라인 3단**: **scan**(변경 감지·수집) → **assemble**(아카이브 `04_LogArchive_로그집계/`에 `{YYMMDD_HHMM}_poffice_board.json` **타임스탬프 신규 생성**) → **promote**(라이브 + 런처 미러에 **제자리 덮어쓰기**). 아카이브만 파일이 쌓임(의도됨·별도 정리). 예약세션(`pimm-log-bot`)은 **scan+assemble까지만**(라이브 미접촉), **promote(승격)는 코워크세션**이 한다. 정본은 언제나 **접미사 없는 단일 `poffice_board.json`**.
+- **★ 배포 미러 (런처 폴더 · 매 run promote 단계)**: 런처 폴더 `PIMM_Launcher`(id `1pC9V2ZKO5rWrIDXc0mRAsHRgDEL9iqkX`)의 `poffice_board.json`을 **제자리 덮어쓰기**(+ 개인DB 동일본 미러도 함께 유지). 대시보드/허브가 같은 폴더 상대 fetch로 로드 — 별도 링크·ID 불필요.
+  > **★ `.js` 미러도 함께 (더블클릭 자동 로드용):** 런처 폴더에 `poffice_board.js`(=**`window.POFFICE_BOARD = <그 JSON 그대로>;`**, 한 줄 전역 대입, 내용 100% 동일)도 **제자리 덮어쓰기**로 둔다. `file://`에서 `fetch(.json)`는 막히지만 `<script src>`는 허용 → 팀원이 대시보드를 **더블클릭만 해도** 실데이터 로드(대시보드 v0.7+가 `.js` 우선 로드). `contentMimeType=application/javascript`. **주의: 현재(2026-07-27) 코워크 파이프라인은 `.json`만 promote한다 — `.js` promote 추가 필요**(그래야 더블클릭 자동 로드 성립; 안 그러면 v0.7도 SAMPLE로 폴백).
+  > ※ 정본은 포피스영역(.json), 런처의 .json/.js는 대시보드 로드용 미러. 세 파일 모두 제자리 덮어쓰기, 내용 동일.
+  > ※★ **원문 축약 금지**: `.js`/`.json` 어느 쪽이든 `sessions[].raw`는 스크립트가 **원본 바이트를 그대로 주입**(요약·재작성 금지). 예산(멤버당 최근 14일/최소 5건/200KB) 초과 시만 **통째 생략** + `raw:null`·`raw_omitted:true`·`raw_source`(경로) — 절대 절단하지 않음.
 - **카테고리 폴더(넘버링+영문, 대시보드 카테고리와 동일)** — 구버전·이전 자료 확인용 아카이브 축:
   `01_Mission_미션보드/` · `02_Gate_게이트보드/` · `03_Checklist_체크리스트/` · `04_LogArchive_로그집계/`(구 '세션로그') · `05_WorkOrder_워크오더/` · `06_Notice_사내공지/`
 - **아카이빙**: `poffice_board.json` 갱신 시 **직전 버전/변경분을 해당 카테고리 폴더에** `{YYMMDD_HHMM}_{요약}` 로 남긴다(원문 무왜곡·불변, 원칙 2). 세션로그 원본은 블루필드/개인DB에 있고 여기 `04_LogArchive_로그집계/`는 집계 스냅샷·참조용.
@@ -46,7 +46,9 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 > 개인세션로그 폴더 경로·Drive ID는 **artisan-session 정본을 따른다**(중첩 구조·평행 폴더 신설 금지). 이 스킬의 하드코딩 ID는 **출력처(그린필드 Poffice)** 에 한정.
 
 ## 3. 처리 (원문 보존 + 상태 파생 → 결정론 변환)
-- **세션 원문 보존(§원칙 3)**: `sessions[]` 각 항목 = `ts`(분단위) + `file` + `summary`(1줄) + **`raw`(세션로그 원문 전문, 요약·축약 없음)**. raw를 자르거나 재요약하지 않는다.
+- **세션 원문 보존(§원칙 3)**: `sessions[]` 각 항목 = `ts`(분단위) + `file` + `summary`(1줄) + **`raw`(세션로그 원문 전문)**. raw는 **스크립트가 원본 바이트를 그대로 주입**(모델이 타이핑하지 않음 — 손상·경량화). 자르거나 재요약하지 않는다.
+  - **예산 초과 시 통째 생략**(절단 금지): `raw:null` + `raw_omitted:true` + `raw_source`(원본 경로). 예산 = 멤버당 최근 14일 / 최소 5건 / 200KB.
+  - MotherLog 내부용 필드: 멤버별 `_fingerprint`(sha1, 증분 갱신)·`_carried_forward`(직전 board에서 그대로 가져온 인물). **HTML·타 소비자는 무시.**
 - 파생 상태(요약 아님, 롤업/원문에서 도출): 미션(progress·roadmap), 게이트(권한 신호등), 투두(체크·중요도·일자·WO).
 - **윈도우 = 시간 기준(2026-07-26 확정, 하루 2회 예약 기준)**: **최근 13시간 이내**에 기록된 세션·작업물만 원문 포함(예약 주기 12h + **1h 겹침**으로 경계 세션 누락 방지). 기준 시각 = **파일명 ts(`YYMMDD_HHMM` = 실제 작업시각), KST**(업로드 createdTime 아님). 원문은 안 자르고 **윈도우(담는 범위)만** 시간으로 제한한다.
   - **인별 floor**: 13h 안에 세션이 없어도 그 사람의 **가장 최근 세션 1개는 항상 유지**(오전만 일한 사람이 오후 보드에서 텅 비어 보이지 않게).
@@ -66,10 +68,10 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 
 ## 5. 자동예약 / 흐름
 - CronCreate 등으로 **주기적 생성·갱신**(예: 주 1회·세션로그 갱신 시).
-- `Poffice-Skill`(개인 기록) → **`Poffice-MotherLog`(집계→config → 포피스영역 정본 + 런처 폴더 미러, 둘 다 update-by-fileId)** → 대시보드(같은 폴더 fetch로 로드) → export(체크·메모) → Poffice-Skill 반영 → `Poffice-Report-Bot`(직전 config와 diff 브리핑).
-- **하루 2회 예약**: 매 run = 집계 → 포피스영역 덮어쓰기 → **런처 폴더 미러 덮어쓰기**까지 한 세트. (미러 누락 시 대시보드가 옛 데이터를 봄.)
+- `Poffice-Skill`(개인 기록) → **`Poffice-MotherLog`(scan→assemble(아카이브)→promote(라이브+런처 미러 제자리 덮어쓰기))** → 대시보드(같은 폴더 로드) → export(체크·메모) → Poffice-Skill 반영 → `Poffice-Report-Bot`(직전 config와 diff 브리핑 + 인물별 디스코드 푸시, 웹훅 URL 정본은 `pimm-notice` 스킬 한 곳).
+- **하루 2회 예약**: 예약세션(`pimm-log-bot`)은 scan+assemble까지(아카이브 타임스탬프 생성), **promote(라이브·미러 승격)는 코워크세션**. 미러 누락 시 대시보드가 옛 데이터를 봄.
 
 ## 6. 경계
 - **원본 세션로그 수정 금지**(불변·아카이빙). config만 생성.
 - 개인 데이터 격리(타인 혼입 금지). 손상 JSON 덮어쓰기 금지(원칙 1).
-- **`poffice_board.json` 은 포피스영역에 단 1개 · update-by-fileId (create 반복 금지).** 중복본(`(1)(2)(3)…`)을 만들지 않는다. 매 run 새 파일 생성은 대시보드가 옛 데이터를 읽게 만드는 버그다(§1 쓰기 규칙 준수). 아카이빙(스냅샷)은 `04_LogArchive_로그집계/`에 **다른 이름(ts 접두)** 으로만 남기고, 라이브 정본 이름은 건드리지 않는다.
+- **`poffice_board.json` 은 단 1개 · 제자리 수정(in-place overwrite, create 반복 금지).** 중복본(`(1)(2)(3)…`)을 만들지 않는다. 라이브·미러는 같은 경로 덮어쓰기(inode 유지)로만 갱신, 아카이브(`04_LogArchive_로그집계/`)에만 `{ts}_poffice_board.json` 타임스탬프로 쌓는다. **하드삭제 금지**(폐기물=제로필드 이동).

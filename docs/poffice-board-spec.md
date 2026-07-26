@@ -6,8 +6,8 @@
 
 ## 데이터 흐름 (단방향 + 체크·메모 예외)
 ```
-코워크: 세션로그 집계 → poffice_board.json 생성/갱신(**단일 파일 · update-by-fileId 덮어쓰기**, create 반복 금지)
-  ⚠️ 매 run 새로 create하면 드라이브가 `poffice_board (1)(2)(3).json` 로 복제하고, 접미사 없는 정본 이름은 대개 최초(옛) 파일이라 대시보드가 옛 데이터를 읽는다. 반드시 기존 fileId를 찾아 내용만 update. (상세: poffice-motherlog SKILL §1)
+코워크: 세션로그 집계 → poffice_board.json 생성/갱신(**단일 파일 · 제자리 수정(in-place overwrite)**, create 반복 금지)
+  ⚠️ 커넥터에 update 도구가 없어 매 run 새로 create하면 드라이브가 `poffice_board (1)(2)(3).json` 로 복제되고, 접미사 없는 정본이 옛 파일이 되어 대시보드가 옛 데이터를 읽는다. → **같은 경로 `open(path,"w")` 제자리 덮어쓰기**(inode/fileId 보존, Drive 데스크톱 마운트가 새 리비전으로 처리). 하드삭제 금지(제로필드 이동). 파이프라인 scan→assemble(아카이브 타임스탬프)→promote(라이브·미러 제자리 덮어쓰기). (상세: poffice-motherlog SKILL §1)
    → 대시보드가 파일선택/드래그앤드롭으로 로드 (서버 불필요)
 대시보드: 투두 '체크' + '메모'만 로컬 변경 → [내보내기] → poffice_export_{이름}.json
    → 코워크가 읽어 세션로그에 반영 (데이터 꼬임 방지: 포피스는 '체크·메모'만 다룸)
