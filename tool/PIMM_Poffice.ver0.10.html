@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIMM POFFICE · 워크스페이스 v0.10</title>
+<style>
+/* ============================================================
+   PIMM POFFICE v0.9 — 개인 워크스페이스 (읽기 전용 + 체크/메모)
+   · 진입 시 인물 선택 → 본인 것만. (선택 이름 = 로컬 config)
+   · 기존 피모션(네온 터미널)과 다른 '차분한 다크 워크스페이스' 톤, 도식 우선.
+   · 미션 = 마일스톤 트랙(Day char 전진) / 게이트 = 권한 신호등 / 투두 = 체크리스트
+   · 세션로그 = 시간순, 오래될수록 흐림(opacity), 드롭다운.
+   · 로컬 인터랙션 = 체크 + 메모. export만(허브→코워크). 원본 불변.
+   · v0.3: '코워크 소통 가이드' 패널 신설 (핵심 3문장 + [더보기]).
+   · v0.4: 가이드를 최상단으로 이동 + 패널 전체 접기/펴기(접혀도 핵심 3마디 teaser 노출) + 더보기 문구를 쉬운 말로 재작성.
+   · v0.5: 상단 연동상태(최신 세션로그 ts + 신선도 + 새로고침).
+   · v0.6: 미션 트랙 Day 스프라이트를 정본 charC로 교체 + 세션로그 원문(raw) 표시 + 가이드 문구 정정(연동상태는 상단).
+   · v0.7: 데이터 로드에 poffice_board.js(script 태그) 우선 추가 → file:// 더블클릭에서도 자동 로드(.json fetch·드래그·샘플 폴백 유지).
+   · v0.8: 샘플 폴백 경고 배너 + raw_omitted(원문 생략) 표시 + 스키마 version 가드. (코워크 마더로그 인계 반영)
+   · v0.9: 사내공지 notices[] 최상단 렌더(②) + 연동상태 칩을 generated_at(보드 생성시각·KST) 기준으로(신호등도)·latestLogTs는 툴팁·구board 폴백(⑤).
+   · v0.9 핫픽스(2026-07-27): 동적 주입 script에 charset="utf-8" 지정 — file:// 더블클릭 시 .js 이모지(🔴🟡🟢) latin-1 폴백으로 깨지던 것 수정. + notices level 색/by.
+   · v0.10: 미션 트랙 Day 캐릭터를 정면 정지(charC)에서 달리기 애니메이션으로 교체 — charL↔charR 2프레임 스왑으로 목표(🚩)를 향해 오른쪽으로 달려감. 걸음마다 바운스(bob)를 넣어 툭툭 끊기지 않고 자연스럽게. 캐릭터를 레일 위에 착지시키고(top 정렬) 골(🚩) 좌표를 레일 오른쪽 끝에 정확히 정렬. reduced-motion 시 charC 고정.
+   ============================================================ */
+:root{
+  --bg:#0f1115; --bg2:#0c0e12; --panel:#161922; --panel2:#1b1f2a; --raise:#20252f;
+  --ink:#e9ebef; --ink2:#98a0ad; --ink3:#5c6472; --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.16);
+  --ac:#4fd1a1;            /* 차분한 민트 액센트 (절제) */
+  --red:#f2726b; --yellow:#e8b34a; --green:#4fd1a1; --blue:#6bb8ff;
+  --r:14px; --rs:10px; --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Segoe UI','Malgun Gothic',sans-serif;
+  line-height:1.55;letter-spacing:-.01em;word-break:keep-all;-webkit-font-smoothing:antialiased}
+a{color:inherit} h1,h2,h3,h4,p{margin:0}
+.mono{font-family:var(--mono);letter-spacing:0}
+button{font:inherit;cursor:pointer}
+
+/* ===== 진입: 인물 선택 ===== */
+#gate{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  background:radial-gradient(800px 500px at 50% 20%,rgba(79,209,161,.08),transparent 60%),var(--bg)}
+#gate .logo{font-weight:800;font-size:22px;letter-spacing:-.02em}#gate .logo b{color:var(--ac)}
+#gate .sub{color:var(--ink2);font-size:13px;margin-top:-14px}
+#gate .who{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:560px}
+#gate .who button{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 24px;color:var(--ink);
+  min-width:140px;text-align:left;transition:.2s}
+#gate .who button:hover{border-color:var(--ac);transform:translateY(-3px);background:var(--panel2)}
+#gate .who .nm{font-size:17px;font-weight:700}#gate .who .rl{font-size:12px;color:var(--ink3);margin-top:3px}
+#gate .load{font-size:12px;color:var(--ink3)}#gate .load button{color:var(--ac);background:none;border:0;text-decoration:underline}
+
+/* ===== 앱 셸 ===== */
+#app{display:none} #app.on{display:block}
+.top{position:sticky;top:0;z-index:40;background:rgba(15,17,21,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.02em}.brand b{color:var(--ac)}.brand .v{font-size:10.5px;color:var(--ink3);font-weight:600;margin-left:4px}
+.me{display:flex;align-items:center;gap:9px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px}
+.me .dot{width:7px;height:7px;border-radius:50%;background:var(--ac)}
+.me b{font-weight:700}.me .r{color:var(--ink3);font-size:11px}
+.sp{flex:1}
+.tbtn{font-size:12px;font-weight:600;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;transition:.2s}
+.tbtn:hover{color:var(--ink);border-color:var(--line2)}
+.tbtn.ac{color:#08130f;background:var(--ac);border-color:var(--ac);font-weight:700}
+.ro{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--ac);border:1px solid rgba(79,209,161,.3);border-radius:999px;padding:3px 8px}
+/* ===== 연동상태 (v0.5) — 최신 세션로그 타임스탬프 + 새로고침 ===== */
+.conn{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;transition:.2s;font-family:inherit;white-space:nowrap}
+.conn:hover{border-color:var(--line2);color:var(--ink)}
+.conn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.conn .cdot{width:7px;height:7px;border-radius:50%;background:var(--ink3);flex:none}
+.conn.g .cdot{background:var(--green);box-shadow:0 0 6px rgba(79,209,161,.55)}
+.conn.y .cdot{background:var(--yellow)}
+.conn.r .cdot{background:var(--red)}
+.conn .ct{color:var(--ink);font-family:var(--mono);font-size:11px}
+.conn .crel{color:var(--ink3)}
+.conn.y .crel{color:var(--yellow)} .conn.r .crel{color:var(--red);font-weight:700}
+.conn .crf{color:var(--ac);font-weight:700;margin-left:1px}
+.conn .cest{color:var(--ink3);font-weight:500;font-size:10px}
+.conn.loading{opacity:.55;pointer-events:none}
+/* ===== 상단 배너 (v0.8): 샘플 경고 / 스키마 버전 경고 ===== */
+.appbanner{max-width:1080px;margin:14px auto -6px;padding:11px 16px;border-radius:var(--rs);font-size:12.5px;font-weight:600;line-height:1.5}
+.appbanner[hidden]{display:none}
+.appbanner.warn{color:var(--yellow);background:rgba(232,179,74,.1);border:1px solid rgba(232,179,74,.4)}
+.appbanner.info{color:var(--blue);background:rgba(107,184,255,.08);border:1px solid rgba(107,184,255,.32)}
+.appbanner b{color:var(--ink)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 22px 80px}
+.sec{margin:30px 0}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:16px}
+.sec-h h2{font-size:15px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.sec-h .d{font-size:12px;color:var(--ink3)}
+.sec-h .line{flex:1;height:1px;background:var(--line)}
+
+/* stat header */
+.hero-me{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:20px 22px}
+.hero-me .big{font-size:22px;font-weight:800}.hero-me .big .r{font-size:12px;color:var(--ink3);font-weight:500;margin-left:8px}
+.hero-me .rank{margin-top:8px;font-size:13px;color:var(--ac);font-weight:700}
+.hero-me .rank .e{margin-right:5px}
+.hero-me .stat{text-align:right}
+.hero-me .stat .n{font-family:var(--mono);font-size:30px;font-weight:700}
+.hero-me .stat .n small{font-size:13px;color:var(--ink3)}
+.hero-me .prog{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px;width:180px;margin-left:auto}
+.hero-me .prog i{display:block;height:100%;background:var(--ac)}
+.hero-me .next{font-size:11px;color:var(--ink3);margin-top:6px}
+
+/* WO */
+.wo{border:1px solid rgba(242,114,107,.4);background:linear-gradient(180deg,rgba(242,114,107,.08),transparent);border-radius:var(--r);padding:15px 17px;margin:18px 0}
+.wo .t{font-size:11.5px;font-weight:800;letter-spacing:.08em;color:var(--red);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.wo .t::before{content:"⚡"}
+.wo ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:7px}
+.wo li{display:flex;gap:10px;align-items:center;font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rs);padding:9px 12px}
+.wo li .m{margin-left:auto;font-size:11px;color:var(--ink3)}
+
+/* 미션 마일스톤 트랙 */
+.mission{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px}
+.mission .mh{display:flex;align-items:center;gap:10px}
+.mission .id{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.mission h3{font-size:16px;font-weight:700}
+.pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;margin-left:auto;white-space:nowrap}
+.pill.예정{color:var(--ink2);background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.pill.진행{color:var(--ac);background:rgba(79,209,161,.12);border:1px solid rgba(79,209,161,.3)}
+.pill.달성{color:#08130f;background:var(--ac)}
+.pill.보류{color:var(--yellow);background:rgba(232,179,74,.12);border:1px solid rgba(232,179,74,.3)}
+.mission .dday{font-size:12px;color:var(--ink2);margin-top:4px}.mission .dday b{color:var(--red)}
+/* 트랙 */
+.track{position:relative;margin:26px 6px 8px;height:56px}
+.track .rail{position:absolute;left:0;right:0;top:38px;height:2px;background:var(--line2)}
+.track .fill{position:absolute;left:0;top:38px;height:2px;background:var(--ac)}
+.track .node{position:absolute;top:32px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--ink3);transform:translateX(-50%)}
+.track .node.done{border-color:var(--ac);background:var(--ac)}
+.track .node .lbl{position:absolute;top:20px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10.5px;color:var(--ink3)}
+.track .node.done .lbl{color:var(--ink2)}
+.track .goal{position:absolute;left:100%;top:39px;transform:translate(-2px,-100%);font-size:19px;line-height:1}
+.track .char{position:absolute;top:9px;transform:translateX(-50%);transition:left .6s cubic-bezier(.22,.61,.36,1);width:26px;height:30px;z-index:2}
+/* Day 달리기(오른쪽으로) — charL↔charR 2프레임 스왑 + 부드러운 바운스(bob)로 러닝감. 프레임당 바운스 1회 → 툭툭 끊김 없이 자연스럽게. */
+.track .char .daywalk{position:relative;display:block;width:26px;height:30px;transform-origin:50% 100%;animation:dayrun .48s ease-in-out infinite}
+.track .char .dayframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.track .char .dayframeC{opacity:0}
+.track .char .dayframeL{opacity:1;animation:daystepL .48s steps(1,end) infinite}
+.track .char .dayframeR{opacity:0;animation:daystepR .48s steps(1,end) infinite}
+@keyframes daystepL{0%,49.9%{opacity:1}50%,100%{opacity:0}}
+@keyframes daystepR{0%,49.9%{opacity:0}50%,100%{opacity:1}}
+/* 바운스: 프레임 교체(0%·50%)마다 착지, 그 사이(25%·75%)에 정점 → 걸음마다 통통 튀는 러닝 */
+@keyframes dayrun{0%,50%,100%{transform:translateY(0) scaleY(1)}25%,75%{transform:translateY(-2.5px) scaleY(1.03)}}
+@media (prefers-reduced-motion:reduce){.track .char .dayframeL,.track .char .dayframeR{animation:none;opacity:0}.track .char .dayframeC{opacity:1}.track .char .daywalk{animation:none}}
+.track .pctlab{position:absolute;top:-16px;transform:translateX(-50%);font-size:10px;font-family:var(--mono);color:var(--ac)}
+/* 메모 */
+.memo{margin-top:14px}
+.memo label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700;display:flex;align-items:center;gap:6px}
+.memo label .req{color:var(--red)}
+.memo textarea{width:100%;margin-top:6px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--ink);
+  font:inherit;font-size:13px;padding:10px 12px;resize:vertical;min-height:52px;transition:border-color .2s}
+.memo textarea:focus{outline:none;border-color:rgba(79,209,161,.5)}
+.memo textarea.edited{border-color:rgba(79,209,161,.4)}
+
+/* 게이트 권한 신호등 */
+.gates{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.gcol .gt{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.gcol .gt .lamp{width:11px;height:11px;border-radius:50%}
+.gcol.red .lamp{background:var(--red);box-shadow:0 0 8px rgba(242,114,107,.6)} .gcol.red .gt{color:var(--red)}
+.gcol.yellow .lamp{background:var(--yellow);box-shadow:0 0 8px rgba(232,179,74,.5)} .gcol.yellow .gt{color:var(--yellow)}
+.gcol.green .lamp{background:var(--green);box-shadow:0 0 8px rgba(79,209,161,.5)} .gcol.green .gt{color:var(--green)}
+.gcol .gt .cnt{margin-left:auto;font-family:var(--mono);color:var(--ink3);font-size:12px}
+.gcol .rule{font-size:11px;color:var(--ink3);padding:6px 0 10px;border-bottom:1px dashed var(--line);margin-bottom:8px}
+.gitem{font-size:13px;padding:8px 0;border-bottom:1px dashed var(--line)}.gitem:last-child{border:0}
+.gitem .l1{display:flex;align-items:center;gap:7px}
+.gitem .st{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.gitem .st.완료{color:var(--green);border-color:rgba(79,209,161,.3)} .gitem .st.진행{color:var(--yellow);border-color:rgba(232,179,74,.3)}
+.gitem .ts{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.gitem .log{font-size:10.5px;color:var(--ink3);margin-top:3px}
+.gempty{color:var(--ink3);font-size:12px;padding:6px 0}
+
+/* 투두 */
+.todos{display:grid;gap:8px}
+.todo{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rs)}
+.todo.wo{border-color:rgba(242,114,107,.4)}
+.todo.done{opacity:.5}
+.cb{width:18px;height:18px;flex:none;margin-top:1px;border:1.5px solid var(--line2);border-radius:5px;background:transparent;position:relative}
+.cb:hover{border-color:var(--ac)} .cb.on{background:var(--ac);border-color:var(--ac)} .cb.on::after{content:"";position:absolute;left:5.5px;top:2px;width:4px;height:8px;border:solid #08130f;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.cb.doing{border-color:var(--yellow)} .cb.doing::after{content:"";position:absolute;left:3px;top:7px;width:10px;height:2px;background:var(--yellow)}
+.todo .tx{font-size:14px}.todo.done .tx{text-decoration:line-through;text-decoration-color:var(--ink3)}
+.todo .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.tg{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+.tg.wo{color:var(--red);background:rgba(242,114,107,.12);border:1px solid rgba(242,114,107,.3)}
+.tg.im{border:1px solid var(--line2);color:var(--ink2)}.tg.im.high{color:var(--red);border-color:rgba(242,114,107,.3)}
+.tg.mid{color:var(--blue);border:1px solid rgba(107,184,255,.3);font-family:var(--mono)}
+.tg.dt{font-family:var(--mono);color:var(--ink3);border:1px solid var(--line)}
+.sortbar{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--ink3);margin-bottom:10px}
+.sortbar button{font-size:11px;color:var(--ink2);background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.sortbar button.on{color:var(--ac);border-color:rgba(79,209,161,.4)}
+
+/* 세션로그 — opacity fade + 드롭다운 */
+.slog{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.slog details{border-bottom:1px solid var(--line)}
+.slog details:last-child{border-bottom:0}
+.slog summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 15px;background:var(--panel)}
+.slog summary::-webkit-details-marker{display:none}
+.slog summary .ts{font-family:var(--mono);font-size:11px;color:var(--ink3);min-width:88px}
+.slog summary .sm{font-size:13.5px;font-weight:600}
+.slog summary .age{margin-left:auto;font-size:10px;color:var(--ink3)}
+.slog summary .cv{margin-left:8px;color:var(--ink3);transition:transform .2s}
+.slog details[open] summary .cv{transform:rotate(90deg)}
+.slog .body{padding:0 15px 14px;background:var(--panel)}
+.slog .detail{font-size:13px;color:var(--ink2);white-space:pre-wrap;padding-top:4px}
+.slog .detail.omitted{color:var(--ink3);font-style:italic;white-space:normal}
+.slog .more{text-align:center;padding:12px;color:var(--ac);font-size:12px;background:var(--panel);cursor:pointer;font-weight:600}
+.slog .hidden{display:none}
+
+/* ===== 코워크 소통 가이드 (v0.4) — 상단 패널 · 전체 접기/펴기 · 쉬운 말 ===== */
+/* ===== 사내공지 (v0.9 ②) — 워크스페이스 최상단 강조 카드 ===== */
+.noticesec{margin:0 0 22px;display:grid;gap:10px}
+.notice{background:linear-gradient(180deg,rgba(79,209,161,.09),rgba(79,209,161,.02));border:1px solid rgba(79,209,161,.4);border-radius:var(--r);padding:15px 18px}
+.notice .nti{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--ac);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.notice .ntt{font-size:15px;font-weight:800;color:var(--ink);margin-top:6px}
+.notice .ntb{font-size:13px;color:var(--ink2);margin-top:5px;white-space:pre-wrap;line-height:1.55}
+.notice .ntd{font-size:11px;color:var(--ink3);margin-top:8px;font-family:var(--mono)}
+.notice.warn{background:linear-gradient(180deg,rgba(232,179,74,.1),transparent);border-color:rgba(232,179,74,.45)}
+.notice.warn .nti{color:var(--yellow)}
+.notice.urgent{background:linear-gradient(180deg,rgba(242,114,107,.11),transparent);border-color:rgba(242,114,107,.5)}
+.notice.urgent .nti{color:var(--red)}
+.guide-sec{margin:0 0 26px}
+.guide{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+/* 접이식 헤더 (접혀도 항상 보임) */
+.ghead{width:100%;display:flex;align-items:center;gap:12px;padding:15px 20px;background:transparent;border:0;cursor:pointer;text-align:left;color:var(--ink);font-family:inherit}
+.ghead:hover{background:rgba(255,255,255,.02)}
+.ghead:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.ghead .gh-ic{font-size:16px;flex:none;line-height:1}
+.ghead .gh-tt{font-size:13.5px;font-weight:800;flex:none}
+.ghead .gh-teaser{font-size:12px;color:var(--ink3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghead .gh-teaser b{color:var(--ac);font-weight:700}
+.ghead .gh-cv{flex:none;color:var(--ink3);font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.ghead .gh-cv .ar{transition:transform .2s;display:inline-block}
+.ghead[aria-expanded="true"] .gh-cv .ar{transform:rotate(180deg)}
+/* 펼쳐지는 본문 */
+.gpanel{padding:2px 22px 22px;border-top:1px solid var(--line)}
+.gpanel[hidden]{display:none}
+.guide .gnote{font-size:12px;color:var(--ink3);margin:14px 0 16px;padding-left:12px;border-left:2px solid rgba(79,209,161,.35)}
+.guide .btitle{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--ink2);text-transform:uppercase;margin:0 0 10px}
+/* 핵심 3마디 표 */
+.gtable{width:100%;border-collapse:collapse;font-size:13px}
+.gtable th{font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--ink3);text-transform:uppercase;text-align:left;padding:6px 10px;border-bottom:1px solid var(--line)}
+.gtable td{padding:9px 10px;border-bottom:1px dashed var(--line);vertical-align:top;color:var(--ink2)}
+.gtable tr:last-child td{border-bottom:0}
+.gtable .say{color:var(--ink);font-weight:600}
+.gtable .say b{color:var(--ac);font-weight:700}
+.gtip{font-size:12px;color:var(--ink2);margin-top:12px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);padding:10px 13px}
+.gtip .stale{color:var(--red);font-weight:700}
+/* 자세히(카드) — 패널 안에서 항상 표시 */
+.gdetail{margin-top:18px;display:grid;gap:14px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--rs);padding:15px 17px}
+.gcard h4{font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.gcard .lead{font-size:12px;color:var(--ink3);margin:0 0 11px}
+.gcard.warn{border-color:rgba(232,179,74,.3);background:linear-gradient(180deg,rgba(232,179,74,.05),transparent)}
+.gcard.warn h4{color:var(--yellow)}
+.gcard ol,.gcard ul{margin:0;padding-left:18px;display:grid;gap:8px}
+.gcard li{font-size:12.5px;color:var(--ink2);line-height:1.55}
+.gcard li b{color:var(--ink);font-weight:600}
+.gcard .say{color:var(--ac);font-weight:600;font-family:inherit}
+.gcard code,.gcard .code{font-family:var(--mono);font-size:12px;color:var(--ac);background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+/* 대표 전용 최소 힌트 */
+.gmaster{margin-top:16px;font-size:12px;color:var(--ink3);background:var(--bg2);border:1px dashed var(--line2);border-radius:var(--rs);padding:9px 13px}
+.gmaster b{color:var(--ink2);font-weight:700}
+
+.hide{display:none!important}
+@media(max-width:720px){ .gates{grid-template-columns:1fr} .hero-me{grid-template-columns:1fr} .hero-me .stat{text-align:left}.hero-me .prog,.hero-me .next{margin-left:0} .gtable{font-size:12px} }
+
+/* drop */
+#drop{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(8,10,14,.82)}
+#drop.show{display:flex}#drop .b{border:2px dashed var(--ac);border-radius:18px;padding:50px 70px;color:var(--ac);font-weight:700}
+footer{max-width:1080px;margin:0 auto;padding:20px 22px 40px;color:var(--ink3);font-size:11.5px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ===== 진입: 인물 선택 ===== -->
+<div id="gate">
+  <div class="logo"><b>PIMM</b> POFFICE</div>
+  <div class="sub">워크스페이스 · 본인 이름을 선택하세요</div>
+  <div class="who" id="whoList"></div>
+  <div class="load">다른 board.json으로 열기 · <button id="gateLoad">파일 불러오기</button></div>
+  <input type="file" id="fileInput" accept="application/json,.json" hidden />
+</div>
+
+<!-- ===== 앱 ===== -->
+<div id="app">
+  <div class="top"><div class="top-in">
+    <div class="brand"><b>PIMM</b> POFFICE<span class="v">v0.10</span></div>
+    <div class="me" id="meChip"></div>
+    <span class="ro">READ ONLY · 체크·메모만</span>
+    <div class="sp"></div>
+    <button class="conn" id="connState" type="button" title="클릭하면 새로고침">연동상태</button>
+    <button class="tbtn" id="switchBtn">인물 전환</button>
+    <button class="tbtn ac" id="exportBtn">체크·메모 내보내기</button>
+  </div></div>
+  <div class="appbanner" id="appBanner" hidden></div>
+  <div class="wrap" id="work"></div>
+  <footer>PIMM POFFICE v0.10 — 세션로그 기반 개인 워크스페이스 · 데이터: poffice_board.json (Poffice-Skill 생성) · 로컬은 체크·메모만, 원본 불변</footer>
+</div>
+
+<div id="drop"><div class="b">poffice_board.json 을 놓으세요</div></div>
+
+<script>
+/* Day char 스프라이트 — 실제 파일 교체 지점 (Drive: RuleTheDay/day.png).
+   SPRITE_URL 에 경로를 넣으면 SVG 토큰 대신 실제 스프라이트가 트랙을 달립니다. */
+/* Day 정본 스프라이트(charC) — 플로직과 동일 소스(Drive [4.아카이브].Arc/데이터캐릭터). */
+const DAY_C="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8xIiBkYXRhLW5hbWU9IuugiOydtOyWtCAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDEyMDAiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICMwZjk7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxwYXRoIGQ9Ik0zODguMywxMTM2LjQ0Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0xMzAuMjhjMC0xNi41NywxMy40My0zMCwzMC0zMGgyLjU3di0yLjU3YzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoMi41N3YtNS4xNGgtNjcuNzFjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTIuNTdoLTM1LjE0Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi00MjMuNGMwLTE2LjU3LDEzLjQzLTMwLDMwLTMwaDM1LjE0di0zNS4xNGMwLTE2LjU3LDEzLjQzLTMwLDMwLTMwaDY3Ljcxdi0xMzIuODVjMC0xNi41NywxMy40My0zMCwzMC0zMGgxMDAuMjh2LTY3LjcxYzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoMTk1LjQxYzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2MTYyLjg1YzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTEwMC4yOHYzNy43MWgxMDAuMjhjMTYuNTcsMCwzMCwxMy40MywzMCwzMHY2Ny43MWg2Ny43MWMxNi41NywwLDMwLDEzLjQzLDMwLDMwdjEwMC4yOGgyLjU3YzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2MzkwLjgzYzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTIuNTd2Mi41N2MwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0xMzAuMjhjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTIuNTdoLTIuNTdjLTYsMC0xMS41OS0xLjc2LTE2LjI5LTQuOC00LjY5LDMuMDQtMTAuMjgsNC44LTE2LjI5LDQuOGgtMi41N3YxMDAuMjhjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMjYwLjU1Wk00ODguNTgsNzE4LjE4di0xMzUuNDFoLTM3LjcxdjEzNS40MWgzNy43MVoiLz4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yOTAuNTksNDIyLjQ5djMyLjU3czAsMzIuNTcsMCwzMi41N3YzMi41N3MwLDMyLjU3LDAsMzIuNTd2MzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3czAsMzIuNTcsMCwzMi41N3YzMi41N3MwLDMyLjU3LDAsMzIuNTd2MzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3czMyLjU3LDAsMzIuNTcsMGgzMi41N3YzMi41N3MzMi41NywwLDMyLjU3LDBoMzIuNTdzMzIuNTcsMCwzMi41NywwdjMyLjU3czAsMzIuNTcsMCwzMi41N2gtMzIuNTdzMCwzMi41NywwLDMyLjU3aC0zMi41N3MwLDMyLjU3LDAsMzIuNTd2MzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3czMyLjU3LDAsMzIuNTcsMGgzMi41N3MzMi41NywwLDMyLjU3LDBoMzIuNTdzMzIuNTcsMCwzMi41NywwaDMyLjU3czMyLjU3LDAsMzIuNTcsMGgzMi41N3MwLTMyLjU3LDAtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N3YtMzIuNTdoMzIuNTdzMC0zMi41NywwLTMyLjU3di0zMi41N3MwLTMyLjU3LDAtMzIuNTdoMzIuNTd2MzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3czMyLjU3LDAsMzIuNTcsMHYzMi41N3MzMi41NywwLDMyLjU3LDBoMzIuNTdzMzIuNTcsMCwzMi41NywwaDMyLjU3czAtMzIuNTcsMC0zMi41N2gzMi41N3MwLTMyLjU3LDAtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N3YtMzIuNTdzMC0zMi41NywwLTMyLjU3di0zMi41N3MwLTMyLjU3LDAtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N3YtMzIuNTdzMC0zMi41NywwLTMyLjU3di0zMi41N3MtMzIuNTcsMC0zMi41Nywwdi0zMi41N3MwLTMyLjU3LDAtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N2gtMzIuNTdzLTMyLjU3LDAtMzIuNTcsMGgtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N3YtMzIuNTdzLTMyLjU3LDAtMzIuNTcsMGgtMzIuNTdzLTMyLjU3LDAtMzIuNTcsMGgtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N3YtMzIuNTdoMzIuNTdzMzIuNTcsMCwzMi41NywwaDMyLjU3czMyLjU3LDAsMzIuNTcsMHYtMzIuNTdzMC0zMi41NywwLTMyLjU3di0zMi41N3MwLTMyLjU3LDAtMzIuNTd2LTMyLjU3cy0zMi41NywwLTMyLjU3LDBoLTMyLjU3cy0zMi41NywwLTMyLjU3LDBoLTMyLjU3cy0zMi41NywwLTMyLjU3LDBoLTMyLjU3czAsMzIuNTcsMCwzMi41N3YzMi41N3MwLDMyLjU3LDAsMzIuNTdoLTMyLjU3cy0zMi41NywwLTMyLjU3LDBoLTMyLjU3cy0zMi41NywwLTMyLjU3LDB2MzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3czAsMzIuNTcsMCwzMi41N3YzMi41N2gtMzIuNTdzLTMyLjU3LDAtMzIuNTcsMGgtMzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3aC0zMi41N3MtMzIuNTcsMC0zMi41NywwWk00MjAuODcsNzQ4LjE4di0zMi41N3MwLTMyLjU3LDAtMzIuNTd2LTMyLjU3czAtMzIuNTcsMC0zMi41N3YtMzIuNTdzMC0zMi41NywwLTMyLjU3aDMyLjU3czMyLjU3LDAsMzIuNTcsMGgzMi41N3YzMi41N3MwLDMyLjU3LDAsMzIuNTd2MzIuNTdzMCwzMi41NywwLDMyLjU3djMyLjU3czAsMzIuNTcsMCwzMi41N2gtMzIuNTdzLTMyLjU3LDAtMzIuNTcsMGgtMzIuNTdaIi8+Cjwvc3ZnPg==";
+/* Day 걷기 프레임(charL·charR) — 플로직 v0.2와 동일 소스. 미션 트랙에서 오른쪽으로 달려가는 2프레임 하드스왑 걷기. */
+const DAY_L="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8xIiBkYXRhLW5hbWU9IuugiOydtOyWtCAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDEyMDAiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICMwZjk7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxwYXRoIGQ9Ik0zMjMuMTYsMTEzNi40NGMtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMi41N2MtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMi41N2MtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMi41N2MtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtNjUuMTRjMC0xNi41NywxMy40My0zMCwzMC0zMGg2Ny43MXYtMi41N2MwLTE2LjU3LDEzLjQzLTMwLDMwLTMwaDk3LjcxYzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2Mi41N2gyLjU3YzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2Mi41N2gyLjU3YzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2Mi41N2gyLjU3YzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2MzIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMi41N3YyLjU3YzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTIuNTd2Mi41N2MwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0xMzAuMjhaIi8+CiAgPHBhdGggZD0iTTc0Ni41NiwxMTM2LjQ0Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC0yLjU3Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC0yLjU3Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC02Ny43MWMtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMzUuMTRjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTIuNTdoLTIuNTdjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTIuNTdoLTIuNTdjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTIuNTdoLTEzMi44NWMtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMzUuMTRjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTQyMy40YzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoMzUuMTR2LTM1LjE0YzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoNjcuNzF2LTEzMi44NWMwLTE2LjU3LDEzLjQzLTMwLDMwLTMwaDEwMC4yOHYtNjcuNzFjMC0xNi41NywxMy40My0zMCwzMC0zMGgxOTUuNDFjMTYuNTcsMCwzMCwxMy40MywzMCwzMHYxNjIuODVjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMTAwLjI4djM3LjcxaDEwMC4yOGMxNi41NywwLDMwLDEzLjQzLDMwLDMwdjY3LjcxaDY3LjcxYzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2MTAwLjI4aDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHYzNS4xNGgyLjU3YzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2Mi41N2gzNS4xNGMxNi41NywwLDMwLDEzLjQzLDMwLDMwdjY3LjcxaDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHY2NS4xNGMwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0yLjU3djIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMi41N3YyLjU3YzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTY3LjgxYy4wNy44NS4xMSwxLjcuMTEsMi41N3YyLjU3aDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHY5Ny43MWMwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0yLjU3djIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtNjUuMTRaTTc0OS4yNCw4ODEuMDNjLS4wNy0uODUtLjExLTEuNy0uMTEtMi41N3YtMi42OGMtLjg1LjA3LTEuNy4xMS0yLjU3LjExaC0yLjU3djIuNTdjMCwuODctLjA0LDEuNzItLjExLDIuNTdoNS4zNlpNNDIzLjQ0LDcxOC4xOHYtMTM1LjQxaC0zNy43MXYxMzUuNDFoMzcuNzFaIi8+CiAgPHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9IjQ4Ni4wMSA5NzYuMTcgNDUzLjQ0IDk3Ni4xNyA0NTMuNDQgOTQzLjYgNDIwLjg3IDk0My42IDQyMC44NyA5MTEuMDMgMzg4LjMgOTExLjAzIDM1NS43MyA5MTEuMDMgMzIzLjE2IDkxMS4wMyAzMjMuMTYgOTQzLjYgMjkwLjU5IDk0My42IDI1OC4wMiA5NDMuNiAyMjUuNDYgOTQzLjYgMjI1LjQ2IDk3Ni4xNyAyMjUuNDYgMTAwOC43MyAyNTguMDIgMTAwOC43MyAyNTguMDIgMTA0MS4zIDI5MC41OSAxMDQxLjMgMjkwLjU5IDEwNzMuODcgMzIzLjE2IDEwNzMuODcgMzIzLjE2IDExMDYuNDQgMzU1LjczIDExMDYuNDQgMzg4LjMgMTEwNi40NCA0MjAuODcgMTEwNi40NCA0NTMuNDQgMTEwNi40NCA0NTMuNDQgMTA3My44NyA0ODYuMDEgMTA3My44NyA0ODYuMDEgMTA0MS4zIDUxOC41OCAxMDQxLjMgNTE4LjU4IDEwMDguNzMgNDg2LjAxIDEwMDguNzMgNDg2LjAxIDk3Ni4xNyIvPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTk0MS45OCw3ODAuNzV2LTk3LjcxaC02NS4xNHYtMzIuNTdoLTMyLjU3di02NS4xNGgtMzIuNTd2LTEzMC4yOGgtOTcuNzF2LTk3LjcxaC0xMzAuMjh2LTk3LjcxaDEzMC4yOFY5Ni44aC0xOTUuNDF2OTcuNzFoLTEzMC4yOHYxNjIuODVoLTk3LjcxdjY1LjE0aC02NS4xNHY0MjMuNGg2NS4xNHYzMi41N2gxNjIuODV2MzIuNTdoMzIuNTd2MzIuNTdoMzIuNTd2MzIuNTdoNjUuMTR2MzIuNTdoOTcuNzF2MzIuNTdoMzIuNTd2MzIuNTdoMzIuNTd2MzIuNTdoNjUuMTR2LTMyLjU3aDMyLjU3di05Ny43MWgtMzIuNTd2LTMyLjU3aC0zMi41N3YtMzIuNTdoLTk3Ljcxdi0zMi41N2gzMi41N3YtMzIuNTdoMzIuNTd2LTY1LjE0aDMyLjU3djk3LjcxaDMyLjU3djMyLjU3aDk3Ljcxdi0zMi41N2gzMi41N3YtMzIuNTdoMzIuNTd2LTY1LjE0aC0zMi41N1pNNDUzLjQ0LDU4NS4zNHYxNjIuODVoLTk3Ljcxdi0xOTUuNDFoOTcuNzF2MzIuNTdaIi8+Cjwvc3ZnPg==";
+const DAY_R="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX+ugiOydtOyWtF8xIiBkYXRhLW5hbWU9IuugiOydtOyWtCAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDEyMDAiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICMwZjk7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxwYXRoIGQ9Ik03NDYuNTYsMTEzNi40NGMtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMi41N2MtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMi41N2MtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMzUuMTRjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTMyLjU3YzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoMi41N3YtMzUuMTRjMC0xNi41NywxMy40My0zMCwzMC0zMGgxMzAuMjhjMTYuNTcsMCwzMCwxMy40MywzMCwzMHYyLjU3aDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHYyLjU3aDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHY5Ny43MWMwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0yLjU3djIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtNjUuMTRaIi8+CiAgPHBhdGggZD0iTTMyMy4xNiwxMTM2LjQ0Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC0yLjU3Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC0yLjU3Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC0yLjU3Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi02NS4xNGMwLTE2LjU3LDEzLjQzLTMwLDMwLTMwaDY3Ljcxdi0yLjU3YzAtLjg3LjA0LTEuNzIuMTEtMi41N2gtMi42OGMtMTYuNTcsMC0zMC0xMy40My0zMC0zMHYtMi41N2gtMzUuMTRjLTE2LjU3LDAtMzAtMTMuNDMtMzAtMzB2LTQyMy40YzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoMzUuMTR2LTM1LjE0YzAtMTYuNTcsMTMuNDMtMzAsMzAtMzBoNjcuNzF2LTEzMi44NWMwLTE2LjU3LDEzLjQzLTMwLDMwLTMwaDEwMC4yOHYtNjcuNzFjMC0xNi41NywxMy40My0zMCwzMC0zMGgxOTUuNDFjMTYuNTcsMCwzMCwxMy40MywzMCwzMHYxNjIuODVjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMTAwLjI4djM3LjcxaDEwMC4yOGMxNi41NywwLDMwLDEzLjQzLDMwLDMwdjY3LjcxaDY3LjcxYzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2MTAwLjI4aDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHYzNS4xNGgyLjU3YzE2LjU3LDAsMzAsMTMuNDMsMzAsMzB2Mi41N2gzNS4xNGMxNi41NywwLDMwLDEzLjQzLDMwLDMwdjY3LjcxaDIuNTdjMTYuNTcsMCwzMCwxMy40MywzMCwzMHY2NS4xNGMwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0yLjU3djIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMi41N3YyLjU3YzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTk3LjcxYy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjU3aC0yLjU3Yy0xNi41NywwLTMwLTEzLjQzLTMwLTMwdi0yLjY4Yy0uODUuMDctMS43LjExLTIuNTcuMTFoLTIuNTd2Mi41N2MwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC02Ny43MXYzNS4xNGMwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0yLjU3djIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMi41N3YyLjU3YzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTIuNTd2Mi41N2MwLDE2LjU3LTEzLjQzLDMwLTMwLDMwaC0yLjU3djIuNTdjMCwxNi41Ny0xMy40MywzMC0zMCwzMGgtMi41N3YyLjU3YzAsMTYuNTctMTMuNDMsMzAtMzAsMzBoLTEzMC4yOFpNNDIzLjQ0LDcxOC4xOHYtMTM1LjQxaC0zNy43MXYxMzUuNDFoMzcuNzFaIi8+CiAgPHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9IjgxMS43IDk0My42IDc3OS4xMyA5NDMuNiA3NzkuMTMgOTExLjAzIDc0Ni41NiA5MTEuMDMgNzEzLjk5IDkxMS4wMyA2ODEuNDIgOTExLjAzIDY0OC44NSA5MTEuMDMgNjQ4Ljg1IDk0My42IDY0OC44NSA5NzYuMTcgNjE2LjI4IDk3Ni4xNyA2MTYuMjggMTAwOC43MyA2NDguODUgMTAwOC43MyA2ODEuNDIgMTAwOC43MyA2ODEuNDIgMTA0MS4zIDcxMy45OSAxMDQxLjMgNzEzLjk5IDEwNzMuODcgNzQ2LjU2IDEwNzMuODcgNzQ2LjU2IDExMDYuNDQgNzc5LjEzIDExMDYuNDQgODExLjcgMTEwNi40NCA4MTEuNyAxMDczLjg3IDg0NC4yNyAxMDczLjg3IDg0NC4yNyAxMDQxLjMgODQ0LjI3IDEwMDguNzMgODQ0LjI3IDk3Ni4xNyA4MTEuNyA5NzYuMTcgODExLjcgOTQzLjYiLz4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05NDEuOTgsNzgwLjc1di05Ny43MWgtNjUuMTR2LTMyLjU3aC0zMi41N3YtNjUuMTRoLTMyLjU3di0xMzAuMjhoLTk3Ljcxdi05Ny43MWgtMTMwLjI4di05Ny43MWgxMzAuMjhWOTYuOGgtMTk1LjQxdjk3LjcxaC0xMzAuMjh2MTYyLjg1aC05Ny43MXY2NS4xNGgtNjUuMTR2NDIzLjRoNjUuMTR2MzIuNTdoMTYyLjg1djMyLjU3aC0xMzAuMjh2MzIuNTdoLTk3LjcxdjY1LjE0aDMyLjU3djMyLjU3aDMyLjU3djMyLjU3aDMyLjU3djMyLjU3aDEzMC4yOHYtMzIuNTdoMzIuNTd2LTMyLjU3aDMyLjU3di0zMi41N2gzMi41N3YtMzIuNTdoMzIuNTd2LTMyLjU3aDMyLjU3di02NS4xNGg5Ny43MXYtMzIuNTdoMzIuNTd2LTY1LjE0aDMyLjU3djk3LjcxaDMyLjU3djMyLjU3aDk3Ljcxdi0zMi41N2gzMi41N3YtMzIuNTdoMzIuNTd2LTY1LjE0aC0zMi41N1pNNDUzLjQ0LDU4NS4zNHYxNjIuODVoLTk3Ljcxdi0xOTUuNDFoOTcuNzF2MzIuNTdaIi8+Cjwvc3ZnPg==";
+const SPRITE_URL = DAY_C; // 폴백(reduced-motion·프레임 미로드 시) — 정면 charC
+const DAY_SVG = `<svg viewBox="0 0 26 30" width="26" height="30" aria-hidden="true">
+  <rect x="8" y="2" width="10" height="8" rx="2" fill="#e9ebef"/>
+  <rect x="9" y="11" width="8" height="10" rx="2" fill="#4fd1a1"/>
+  <rect x="9" y="21" width="3" height="7" fill="#98a0ad"/><rect x="14" y="21" width="3" height="7" fill="#98a0ad"/>
+  <circle cx="11" cy="6" r="1.1" fill="#0f1115"/><circle cx="15" cy="6" r="1.1" fill="#0f1115"/></svg>`;
+
+/* ===== 샘플 (파일 없이도 시연) ===== */
+const SAMPLE={version:1,generated_at:"2026-07-25T15:40:00+09:00",members:[
+  {name:"심상윤",role:"Master PD",yellow_policy:"auto",master:true,
+   missions:[{id:"M0",title:"홈페이지 리뉴얼 런칭",status:"진행",due:"2026-08-15",progress:0.35,
+     roadmap:[{step:"파워링크",done:true},{step:"핌 사이트",done:false},{step:"파노라마",done:false},{step:"런칭",done:false}]},
+    {id:"M3",title:"브랜드 리포지셔닝",status:"진행",due:"2026-09-30",progress:0.2,
+     roadmap:[{step:"경쟁분석",done:true},{step:"포지셔닝",done:false},{step:"적용",done:false}]}],
+   gates:{red:[{ts:"260725_1530",item:"M3 텀블벅 포함 여부 결정",state:"대기",log:"260725_1530_log.md"}],yellow:[],
+     green:[{ts:"260725_1600",item:"포피스 대시보드 확정",state:"완료",log:"260725_1600_log.md"}]},
+   todos:[{text:"홈페이지 작업 시작",state:"doing",wo:false,mission:"M0",importance:"high",date:"260725"},
+     {text:"파노라마 B&W 방향 확정",state:"done",wo:false,mission:"M0",importance:"mid",date:"260725"},
+     {text:"포피스 스키마 확정",state:"done",wo:false,mission:"M0",importance:"mid",date:"260725"}],
+   sessions:[{ts:"260725_1540",summary:"포피스 v0.2 워크스페이스 설계 확정",detail:"인물선택·마일스톤·권한신호등·세션로그 opacity·메모 반영. Poffice-Skill 명칭 확정."},
+     {ts:"260725_1200",summary:"파노라마 B&W 라인 미니멀 재구성",detail:"레드 인더스트리얼 폐기, 무채색 라인+포스터 포워드."},
+     {ts:"260724_1730",summary:"핌 사이트 랜덤스튜디오식 히어로",detail:"풀블리드 필름 + CI를 빛으로."},
+     {ts:"260722_1010",summary:"키이스케이프 경쟁 분석",detail:"오체분시 — 권한/포지셔닝 각 도출."},
+     {ts:"260715_0930",summary:"브랜드 리포지셔닝 착수",detail:"집객밸류 중심 포지셔닝 초안."}]},
+  {name:"이정민",role:"Device",yellow_policy:"report",
+   missions:[{id:"D1",title:"디바이스 트래킹 정리",status:"진행",due:"2026-08-05",progress:0.5,
+     roadmap:[{step:"목록화",done:true},{step:"연동테스트",done:false}]}],
+   gates:{red:[],yellow:[{ts:"260724_1100",item:"센서 발주 승인 요청",state:"진행",log:"260724_1100_log.md"}],green:[]},
+   todos:[{text:"장치 트래킹 시트 업데이트",state:"done",wo:false,mission:"D1",importance:"mid",date:"260724"},
+     {text:"긴급: 현장 센서 점검",state:"doing",wo:true,mission:"D1",importance:"high",date:"260725"}],
+   sessions:[{ts:"260724_1100",summary:"센서 발주 검토",detail:"승인 대기."}]},
+  {name:"오세원",role:"Art",yellow_policy:"auto",
+   missions:[{id:"A1",title:"파노라마 테마 포스터",status:"진행",due:"2026-08-20",progress:0.6,
+     roadmap:[{step:"컨셉 3안",done:true},{step:"메인",done:true},{step:"서브컷",done:false}]}],
+   gates:{red:[],yellow:[],green:[]},
+   todos:[{text:"봉인된 저택 포스터",state:"done",wo:false,mission:"A1",importance:"high",date:"260725"},
+     {text:"마지막 실험실 포스터",state:"doing",wo:false,mission:"A1",importance:"high",date:"260725"}],
+   sessions:[{ts:"260725_1400",summary:"포스터 2종 진행",detail:""}]},
+  {name:"유지호",role:"Build",yellow_policy:"auto",
+   missions:[{id:"B1",title:"시공 자동화 파이프라인",status:"예정",due:"2026-09-10",progress:0,roadmap:[{step:"요구정리",done:false}]}],
+   gates:{red:[],yellow:[],green:[{ts:"260723_1400",item:"자재 리스트 정리",state:"완료",log:"260723_log.md"}]},
+   todos:[{text:"파이프라인 리서치",state:"todo",wo:false,mission:"B1",importance:"low",date:"260723"}],
+   sessions:[{ts:"260723_1400",summary:"자재 정리",detail:""}]},
+  {name:"신승희",role:"Content",yellow_policy:"report",
+   missions:[{id:"C1",title:"테마 시나리오 집필",status:"진행",due:"2026-08-25",progress:0.4,roadmap:[{step:"플롯",done:true},{step:"퍼즐",done:false}]}],
+   gates:{red:[],yellow:[{ts:"260725_0930",item:"시나리오 방향 보고",state:"대기",log:"260725_0930_log.md"}],green:[]},
+   todos:[{text:"봉인된 저택 퍼즐 5종",state:"doing",wo:true,mission:"C1",importance:"high",date:"260725"}],
+   sessions:[{ts:"260725_0930",summary:"시나리오 방향 보고 대기",detail:""}]}
+]};
+
+/* ===== 코워크 소통 가이드 (v0.3) — 베이크된 기본값 =====
+   board.json 에 DATA.guide (또는 DATA.guide_full) 가 있으면 그것으로 덮어씀(config override).
+   → 문구만 고칠 땐 board.json 의 guide 만 바꾸면 코드 수정 불필요.
+   구조: essentials(상시 표) + tip(한 줄) + more(더보기 접힘) + master_hint(대표 전용 한 줄). */
+const GUIDE={
+  teaser:'<b>"나는 ㅇㅇㅇ이야"</b> · <b>"세션요약"</b> · <b>"마무리"</b> — 이 세 마디면 끝나요',
+  note:"이 대시보드는 보기 전용이에요. 실제 작업·수정은 전부 코워크(대화)로 해요. 어려운 명령어는 몰라도 돼요.",
+  essentials:{
+    headers:["이렇게 말하면","언제","무슨 일이"],
+    rows:[
+      {say:'"나는 핌아트웍스 팀원인 ㅇㅇㅇ이야"',when:"일 시작할 때",what:"지난번에 하던 일·할 일·대표님 지시를 다시 불러와요"},
+      {say:'"세션요약"',when:"일하는 중간중간, 끝낼 때",what:"지금까지 한 일이 자동으로 기록돼요 (여기 대시보드에 반영)"},
+      {say:'"마무리"',when:"오늘 일 끝날 때",what:"마지막 정리 + 결과물을 최종본으로 저장해요"}
+    ],
+    tip:'이 세 마디만 하면 대시보드도, 주간 보고도, 대표님 보고도 알아서 채워져요. 상단 <span class="stale">연동상태</span>가 <span class="stale">🔴 빨강</span>이면 "한동안 세션요약을 안 했네요" 라는 뜻이에요.'
+  },
+  more:[
+    {title:"처음 딱 한 번만", icon:"🔧", type:"ol", lead:"아래 순서대로 한 번만 해두면, 다음부터는 인사만 하면 돼요.",
+     items:[
+       "코워크(Cowork)를 켜요",
+       "<code>pimm-cowork-plugin</code> 을 설치해요 — 이름 그대로 붙여넣으면 돼요",
+       "구글 드라이브를 연결해요 — 내 기록이 저장될 곳이에요",
+       '<span class="say">"나는 …팀원인 ㅇㅇㅇ이야"</span> 하고 인사하면 준비 끝!']},
+    {title:"자주 쓰는 말", icon:"🗣️", type:"ul", lead:"필요할 때 이렇게 말만 걸면 돼요.",
+     items:[
+       '어제 하던 걸 이어서 하고 싶을 때 → <span class="say">"지난 세션 이어서"</span>',
+       '내 목표가 어디까지 왔나 볼 때 → <span class="say">"미션보드 보여줘"</span>',
+       '서류·보고를 정리하고 싶을 때 → <span class="say">"포피스"</span>',
+       '알림(브리핑)을 받고 싶을 때 → <span class="say">"내 포피스알림 켜줘"</span> · 그만 받을 땐 <span class="say">"꺼줘"</span>',
+       '꼭 기억시키고 싶은 게 있을 때 → <span class="say">"이거 기억해줘, …"</span>']},
+    {title:"무언가 만들고 싶을 때", icon:"🎬", type:"ul", lead:"도구 이름은 외울 필요 없어요. 하고 싶은 걸 그냥 말하면, 코워크가 알맞은 도구를 알아서 꺼내와요.",
+     items:[
+       '게임·비주얼시나리오를 만들 때 → <span class="say">"비트시트 짜자"</span> 또는 <span class="say">"빌드하자"</span>',
+       '홈페이지 작업을 할 때 → <span class="say">"홈페이지 작업 시작"</span>',
+       '테마를 만들 때 → 만들 <b>테마 이름</b>만 말하면 돼요',
+       '상업 프로젝트나 관공서 일이면 → <span class="say">"이건 상업 프로젝트야"</span> / <span class="say">"관공서 건이야"</span> 라고 알려주면 그에 맞게 진행해요',
+       '파일 이름·저장 위치가 헷갈릴 때 → <span class="say">"이거 어디에 저장해?"</span> 하고 물어보면 돼요']},
+    {title:"이 3가지만 기억해요", icon:"⚠️", type:"ol", warn:true,
+     items:[
+       '<b>먼저 인사부터.</b> <span class="say">"나는 ㅇㅇㅇ이야"</span> 라고 안 하면 기록이 안 남아요 (대시보드에도 안 떠요).',
+       '<b>너무 자주 안 해도 돼요.</b> 방금 기록했으면 30분 안엔 또 안 해도 알아서 넘어가요. <span class="say">"세션요약"</span>을 남발할 필요 없어요.',
+       '<b>잘못 적혔어도 지우지 마세요.</b> <span class="say">"정정해줘"</span> 라고 하면, 고친 내용이 새 기록으로 남아요 (원본은 그대로 보존돼요).']}
+  ],
+  master_hint:'대표 전용: 게이트 브리핑 · "사내공지로 해줘" · 마더로그 생성 <b>(자세한 건 대표가 알고 있어요)</b>'
+};
+
+let DATA=null, ME=null, sortKey="importance", logLimit=3, guideOpen=false, usingSample=false;
+const SCHEMA_V=1;   /* v0.8: 이 대시보드가 아는 board 스키마 '메이저' 버전. DATA.version의 메이저가 크면 경고(마이너 1.1 등은 호환). */
+/* v0.8: 상단 배너 — 샘플 데이터 경고(우선) / 미지의 새 스키마 경고 */
+function updateBanner(){
+  const b=document.getElementById("appBanner"); if(!b)return;
+  let msg="", cls="warn";
+  if(usingSample){
+    msg='⚠ <b>샘플 데이터</b>입니다 (실제 보드 아님). 실데이터를 보려면 같은 폴더에 <b>poffice_board.js</b>/json 을 두거나(더블클릭도 .js면 자동), 파일을 이 창에 <b>드래그</b>하세요.';
+  } else if(DATA && DATA.version!=null && Math.floor(parseFloat(DATA.version))>SCHEMA_V){
+    cls="info"; msg='⚠ 이 대시보드가 모르는 <b>새 데이터 형식 v'+esc(DATA.version)+'</b> — 최신 대시보드로 여세요(일부 항목이 안 보일 수 있음).';
+    console.warn("[poffice] board schema major v"+DATA.version+" > known v"+SCHEMA_V);
+  }
+  b.hidden=!msg; b.className="appbanner "+cls; b.innerHTML=msg;
+}
+const memoState={}, checkState={};   // key -> value
+const IMP={high:0,mid:1,low:2};
+const RANKS=[{n:"게이트마스터",e:"🏆",min:30},{n:"베테랑 요원",e:"🥇",min:15},{n:"숙련 요원",e:"🥈",min:5},{n:"신입 요원",e:"🎖️",min:0}];
+const $=s=>document.querySelector(s), esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function ck(i,f){return checkState[ME+"|"+i]!==undefined?checkState[ME+"|"+i]:f}
+function tsToDate(ts){const m=/^(\d\d)(\d\d)(\d\d)_?(\d\d)?(\d\d)?/.exec(ts||"");if(!m)return null;
+  return new Date(2000+ +m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0));}
+function ageDays(ts){const d=tsToDate(ts);if(!d)return 999;return Math.max(0,(Date.now()-d)/86400000);}
+function ageOpacity(a){return a<2?1:a<7?.72:a<30?.46:.26}
+function ageLabel(a){a=Math.floor(a);return a<=0?"오늘":a<7?a+"일 전":a<30?Math.floor(a/7)+"주 전":Math.floor(a/30)+"개월 전";}
+function dday(due){if(!due)return"";const d=new Date(due+"T00:00:00"),diff=Math.ceil((d-Date.now())/86400000);return diff===0?"D-DAY":diff>0?"D-"+diff:"D+"+(-diff);}
+function me(){return DATA.members.find(m=>m.name===ME);}
+function doneCount(m){return m.todos.reduce((a,t,i)=>a+(ck(i,t.state)==="done"?1:0),0);}
+
+/* ===== 연동상태 (v0.5) — 최신 세션로그 ts + 데이터 기준시각 + 새로고침 ===== */
+/* v0.9 (②): 사내공지 렌더 — DATA.notices[] 중 active(≠false) 최신순 카드. 없으면 빈 문자열(자리 안 만듦). */
+function noticesBlock(){
+  const ns=(DATA&&DATA.notices||[]).filter(n=>n&&n.active!==false&&(n.title||n.body));
+  if(!ns.length)return"";
+  ns.sort((a,b)=>String(b.ts||b.date||"").localeCompare(String(a.ts||a.date||"")));
+  const lv=v=>v==="urgent"?"urgent":v==="warn"?"warn":"info";           // level → 카드 색
+  const tg=v=>v==="urgent"?"긴급 공지":v==="warn"?"주의 공지":"사내공지";
+  return `<div class="sec noticesec">`+ns.map(n=>{
+    const meta=[(n.date||n.ts),n.by].filter(Boolean).map(esc).join(" · ");
+    return `<div class="notice ${lv(n.level)}">
+    <div class="nti">📢 ${esc(tg(n.level))}</div>
+    ${n.title?`<div class="ntt">${esc(n.title)}</div>`:""}
+    ${n.body?`<div class="ntb">${esc(n.body)}</div>`:""}
+    ${meta?`<div class="ntd">${meta}</div>`:""}
+  </div>`;}).join("")+`</div>`;
+}
+function allSessions(){return (DATA&&DATA.members||[]).reduce((a,m)=>a.concat(m.sessions||[]),[]);}
+function latestLogTs(){const ts=allSessions().map(s=>s.ts).filter(Boolean).sort();return ts.length?ts[ts.length-1]:null;}
+/* v0.9: generated_at을 KST로 포맷(브라우저 tz 무관 보장 — UTC ms + 9h 후 getUTC*). */
+function fmtGen(iso){if(!iso)return"";const d=new Date(iso);if(isNaN(d))return String(iso);
+  const k=new Date(d.getTime()+9*3600000),p=n=>String(n).padStart(2,"0");
+  return `${String(k.getUTCFullYear()).slice(2)}-${p(k.getUTCMonth()+1)}-${p(k.getUTCDate())} ${p(k.getUTCHours())}:${p(k.getUTCMinutes())} KST`;}
+function genAgeDays(iso){const d=new Date(iso);if(isNaN(d))return null;return Math.max(0,(Date.now()-d.getTime())/86400000);}
+/* v0.9 (⑤): 칩 본문·신호등 = 보드 생성시각(generated_at) 기준. 최신 세션로그(latestLogTs)는 툴팁으로.
+   generated_at 없거나 파싱 실패 시 latestLogTs로 폴백 + "(추정)". "이 보드가 얼마나 오래된 데이터인가"를 답한다. */
+function renderConn(){
+  const el=$("#connState"); if(!el||!DATA)return;
+  const gen=DATA.generated_at, ga=gen?genAgeDays(gen):null, latest=latestLogTs();
+  let lvl, mainText, rel;
+  if(ga!=null){                                   // 정상: generated_at 기준
+    lvl=ga<1?"g":ga<3?"y":"r"; mainText=esc(fmtGen(gen)); rel=ageLabel(ga);
+  }else{                                          // 폴백: 구 board / 파싱실패
+    const a=latest?ageDays(latest):999;
+    lvl=!latest?"r":a<1?"g":a<3?"y":"r";
+    mainText=(latest?esc(latest):"—")+' <span class="cest">(추정)</span>'; rel=latest?ageLabel(a):"기록 없음";
+  }
+  el.className="conn "+lvl;
+  el.innerHTML=`<span class="cdot"></span><span class="ct">${mainText}</span><span class="crel">${esc(rel)}</span>${lvl!=="g"?'<span class="crf">⟳ 새로고침</span>':""}`;
+  el.title=(ga!=null?`데이터 기준: ${fmtGen(gen)} · `:"데이터 기준시각 없음(구 board) · ")+(latest?`최신 세션로그: ${latest} · `:"")+"클릭하면 새로고침";
+}
+/* ===== 데이터 로드 (v0.7) =====
+   순서: ① poffice_board.js (window.POFFICE_BOARD) — <script> 태그라 file:// 더블클릭에서도 자동 로드
+        ② poffice_board.json (fetch) — 로컬서버/일렉트론에서 자동
+        ③ SAMPLE (내장) — 파일 둘 다 없을 때 데모
+   ※ 같은 폴더에 poffice_board.js 만 있으면 더블클릭으로도 실데이터가 뜬다(코워크 미러가 .js도 생성). */
+function injectBoardScript(done){
+  const old=document.getElementById("pofcData"); if(old)old.remove();
+  try{ delete window.POFFICE_BOARD; }catch(e){ window.POFFICE_BOARD=undefined; }
+  const s=document.createElement("script"); s.id="pofcData";
+  s.charset="utf-8";                                    // ★핫픽스: file://서 외부 클래식 스크립트가 로케일 기본(latin-1)으로 폴백해 이모지(🔴🟡🟢)가 깨지는 것 방지 — UTF-8 강제
+  s.src="./poffice_board.js?t="+Date.now();            // 캐시버스트(서버/일렉트론), file://선 재실행으로 갱신
+  s.onload=()=>done(window.POFFICE_BOARD?window.POFFICE_BOARD:null);
+  s.onerror=()=>done(null);
+  document.head.appendChild(s);
+}
+function loadBoardData(onData){                          // onData(obj|null)
+  injectBoardScript(js=>{
+    if(js){ onData(js); return; }
+    fetch("poffice_board.json",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject())
+      .then(o=>onData(o)).catch(()=>onData(null));
+  });
+}
+let refreshing=false;
+function refreshBoard(){
+  if(refreshing)return; refreshing=true;
+  const el=$("#connState"); if(el)el.classList.add("loading");
+  loadBoardData(o=>{
+    if(o){ usingSample=false; DATA=o; if(ME&&DATA.members.some(m=>m.name===ME))render(); else load(o); }
+    else if(el){ el.classList.remove("loading"); el.classList.add("r");
+      const c=el.querySelector(".crel"); if(c)c.textContent="데이터 파일 없음 · 코워크 미러 확인 또는 드래그"; }
+    refreshing=false; if(el)el.classList.remove("loading");
+  });
+}
+
+/* ===== 진입 렌더 ===== */
+function renderGate(){
+  $("#whoList").innerHTML=DATA.members.map(m=>`<button data-n="${esc(m.name)}"><div class="nm">${esc(m.name)}</div><div class="rl">${esc(m.role||"")}</div></button>`).join("");
+}
+function enter(name){ ME=name; try{localStorage.setItem("poffice_me",name)}catch(e){}
+  $("#gate").classList.add("hide"); $("#app").classList.add("on"); render(); }
+
+/* ===== 워크스페이스 렌더 ===== */
+function render(){
+  const m=me(); if(!m)return;
+  $("#meChip").innerHTML=`<span class="dot"></span><b>${esc(m.name)}</b><span class="r">${esc(m.role||"")}</span>`;
+  const done=doneCount(m),total=m.todos.length,pct=total?Math.round(done/total*100):0;
+  const rank=RANKS.find(r=>done>=r.min),nextR=RANKS.slice().reverse().find(r=>r.min>done);
+  let h=noticesBlock();  /* v0.9 ②: 사내공지 최상단 */
+  h+=guideBlock(m);      /* v0.4: 코워크 소통 가이드 — 접기/펴기 */
+  h+=`<div class="hero-me">
+    <div><div class="big">${esc(m.name)}<span class="r">${esc(m.role||"")}</span></div>
+      <div class="rank"><span class="e">${rank.e}</span>${rank.n}</div></div>
+    <div class="stat"><div class="n">${done}<small> / ${total} 처리</small></div>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <div class="next">${nextR?`다음 칭호까지 ${nextR.min-done}건`:"최고 등급"}</div></div></div>`;
+  h+=woBlock(m);
+  h+=`<div class="sec"><div class="sec-h"><h2>미션 마일스톤</h2><span class="d">골인까지</span><span class="line"></span></div>${missionBlock(m)}</div>`;
+  h+=`<div class="sec"><div class="sec-h"><h2>게이트 · 권한</h2><span class="d">🔴 대표검수 · 🟡 팀장판단·보고 · 🟢 자율</span><span class="line"></span></div>${gateBlock(m)}</div>`;
+  h+=`<div class="sec"><div class="sec-h"><h2>체크리스트</h2><span class="line"></span></div>${todoBlock(m)}</div>`;
+  h+=`<div class="sec"><div class="sec-h"><h2>세션로그</h2><span class="d">최근순 · 오래될수록 흐림</span><span class="line"></span></div>${logBlock(m)}</div>`;
+  $("#work").innerHTML=h;
+  renderConn();   /* v0.5: 상단 연동상태 갱신 */
+  updateBanner(); /* v0.8: 샘플/스키마 경고 배너 */
+  bind();
+}
+function woBlock(m){
+  const items=m.todos.map((t,i)=>({t,i})).filter(x=>x.t.wo&&ck(x.i,x.t.state)!=="done");
+  if(!items.length)return"";
+  return `<div class="wo"><div class="t">Work Order · 대표 지시</div><ul>${items.map(x=>`<li>${esc(x.t.text)}${x.t.mission?`<span class="m mono">${esc(x.t.mission)}</span>`:""}</li>`).join("")}</ul></div>`;
+}
+function missionBlock(m){
+  if(!m.missions||!m.missions.length)return`<div class="gempty">등록된 미션 없음</div>`;
+  return m.missions.map(x=>{
+    const rm=x.roadmap||[],n=rm.length;
+    const pct=Math.round((x.progress!=null?x.progress:(n?rm.filter(s=>s.done).length/n:0))*100);
+    const nodes=rm.map((s,i)=>{const left=n>1?(i/(n-1))*100:0;return `<div class="node ${s.done?'done':''}" style="left:${left}%"><span class="lbl">${esc(s.step)}</span></div>`;}).join("");
+    const charInner=(DAY_L&&DAY_R)?`<span class="daywalk" role="img" aria-label="Day">
+        <img class="dayframe dayframeL" src="${DAY_L}" alt="" aria-hidden="true">
+        <img class="dayframe dayframeR" src="${DAY_R}" alt="" aria-hidden="true">
+        <img class="dayframe dayframeC" src="${DAY_C}" alt="" aria-hidden="true"></span>`
+      :(SPRITE_URL?`<img src="${SPRITE_URL}" width="26" height="30" alt="Day">`:DAY_SVG);
+    const memoKey="mission|"+x.id, mv=memoState[memoKey]!==undefined?memoState[memoKey]:"";
+    return `<div class="mission">
+      <div class="mh"><div><span class="id">${esc(x.id)}</span><h3>${esc(x.title)}</h3></div><span class="pill ${x.status}">${x.status}</span></div>
+      ${x.due?`<div class="dday">${x.status!=="달성"?`<b>${dday(x.due)}</b> · `:""}${esc(x.due)}</div>`:""}
+      <div class="track">
+        <div class="rail"></div><div class="fill" style="width:${pct}%"></div>${nodes}
+        <div class="goal">🚩</div>
+        <div class="pctlab" style="left:${pct}%">${pct}%</div>
+        <div class="char" style="left:${pct}%">${charInner}</div>
+      </div>
+      <div class="memo"><label>미션 메모 <span class="req">*</span></label>
+        <textarea data-memo="${esc(memoKey)}" placeholder="이 미션 관련 메모 (업로드 시 코워크가 확인)">${esc(mv)}</textarea></div>
+    </div>`;
+  }).join("");
+}
+function gateBlock(m){
+  const rule={red:"대표(심상윤) 검수·승인 후 진행",yellow:(m.yellow_policy==="report"?"팀장 판단 진행 · 팀원 보고 필수":"팀장 판단 진행"),green:"자율 진행 (기록만)"};
+  const col=(k,label,items)=>`<div class="gcol ${k}"><div class="gt"><span class="lamp"></span>${label}<span class="cnt">${items?items.length:0}</span></div>
+    <div class="rule">${rule[k]}</div>
+    ${items&&items.length?items.map(g=>`<div class="gitem"><div class="l1"><span class="st ${g.state}">${esc(g.state)}</span><span>${esc(g.item)}</span><span class="ts">${esc(g.ts||"")}</span></div>${g.log?`<div class="log">근거 ${esc(g.log)}</div>`:""}</div>`).join(""):`<div class="gempty">—</div>`}</div>`;
+  return `<div class="gates">${col("red","보고처리",m.gates.red)}${col("yellow","자체결재",m.gates.yellow)}${col("green","기록만",m.gates.green)}</div>`;
+}
+function todoBlock(m){
+  if(!m.todos.length)return`<div class="gempty">투두 없음</div>`;
+  const idx=m.todos.map((t,i)=>i).sort((a,b)=>{
+    const ta=m.todos[a],tb=m.todos[b]; if((tb.wo?1:0)-(ta.wo?1:0))return (tb.wo?1:0)-(ta.wo?1:0);
+    if(sortKey==="date")return String(tb.date||"").localeCompare(String(ta.date||""));
+    return (IMP[ta.importance]??1)-(IMP[tb.importance]??1);});
+  const bar=`<div class="sortbar">정렬 <button data-sort="importance" class="${sortKey==="importance"?"on":""}">중요도</button><button data-sort="date" class="${sortKey==="date"?"on":""}">일자</button></div>`;
+  return bar+`<div class="todos">`+idx.map(i=>{const t=m.todos[i],st=ck(i,t.state);
+    return `<div class="todo ${t.wo?"wo":""} ${st==="done"?"done":""}">
+      <button class="cb ${st==="done"?"on":st==="doing"?"doing":""}" data-i="${i}"></button>
+      <div><div class="tx">${esc(t.text)}</div><div class="tags">
+        ${t.wo?'<span class="tg wo">WO</span>':""}
+        ${t.importance?`<span class="tg im ${t.importance}">${t.importance==="high"?"중요":t.importance==="mid"?"보통":"낮음"}</span>`:""}
+        ${t.mission?`<span class="tg mid">${esc(t.mission)}</span>`:""}
+        ${t.date?`<span class="tg dt">${esc(t.date)}</span>`:""}
+      </div></div></div>`;}).join("")+`</div>`;
+}
+function logBlock(m){
+  const logs=(m.sessions||[]).slice().sort((a,b)=>String(b.ts).localeCompare(String(a.ts)));
+  if(!logs.length)return`<div class="gempty">세션로그 없음</div>`;
+  const rows=logs.map((s,i)=>{const a=ageDays(s.ts),op=ageOpacity(a);
+    const memoKey="session|"+s.ts, mv=memoState[memoKey]!==undefined?memoState[memoKey]:"";
+    return `<details class="${i>=logLimit?"hidden":""}" style="opacity:${op}">
+      <summary><span class="ts">${esc(s.ts)}</span><span class="sm">${esc(s.summary)}</span><span class="age">${ageLabel(a)}</span><span class="cv">▸</span></summary>
+      <div class="body">${s.raw_omitted?`<div class="detail omitted">원문 생략(용량 예산 초과) — 드라이브 원본: ${esc(s.raw_source||s.file||"—")}</div>`:((s.raw||s.detail)?`<div class="detail">${esc(s.raw||s.detail)}</div>`:"")}
+        <div class="memo"><label>세션 메모</label><textarea data-memo="${esc(memoKey)}" placeholder="이 세션 관련 메모">${esc(mv)}</textarea></div></div>
+    </details>`;}).join("");
+  const more=logs.length>logLimit?`<div class="more" id="logMore">오래된 세션로그 ${logs.length-logLimit}개 더 보기 ▾</div>`:"";
+  return `<div class="slog">${rows}${more}</div>`;
+}
+
+/* ===== 코워크 소통 가이드 렌더 (v0.3) =====
+   config override: board.json 의 DATA.guide(또는 DATA.guide_full) 가 있으면 우선, 없으면 베이크된 GUIDE.
+   가이드 문구는 오너/베이크된 신뢰 콘텐츠라 의도적으로 HTML 마크업(span/code/b)을 그대로 렌더한다. */
+function guideData(){ return (DATA&&(DATA.guide||DATA.guide_full))||GUIDE; }
+function guideBlock(m){
+  const g=guideData(); const e=g.essentials||{};
+  const heads=(e.headers||["이렇게 말하면","언제","무슨 일이"]).map(h=>`<th>${esc(h)}</th>`).join("");
+  const rows=(e.rows||[]).map(r=>`<tr><td class="say">${r.say||""}</td><td>${esc(r.when||"")}</td><td>${r.what||""}</td></tr>`).join("");
+  // 자세히 카드 (패널이 펼쳐지면 항상 보임) — 쉬운 말, 카드마다 한 줄 안내(lead) 지원
+  const cards=(g.more||[]).map(c=>{
+    const tag=c.type==="ol"?"ol":"ul";
+    const items=(c.items||[]).map(it=>`<li>${it}</li>`).join("");
+    return `<div class="gcard ${c.warn?"warn":""}"><h4>${c.icon?esc(c.icon)+" ":""}${esc(c.title)}</h4>${c.lead?`<p class="lead">${esc(c.lead)}</p>`:""}<${tag}>${items}</${tag}></div>`;
+  }).join("");
+  // 대표 전용 최소 힌트 — me()가 master 일 때만 렌더 (팀원에게는 아예 출력 안 함)
+  const masterHint=(m&&m.master&&g.master_hint)?`<div class="gmaster" id="guideMaster">${g.master_hint}</div>`:"";
+  const teaser=g.teaser||'"나는 ㅇㅇㅇ이야" · "세션요약" · "마무리"';
+  // 전체를 하나의 접이식 패널로. 접혀 있어도 헤더의 teaser(핵심 3마디)는 항상 보임.
+  return `<div class="sec guide-sec"><div class="guide">
+      <button class="ghead" id="guideHeadBtn" type="button" aria-expanded="${guideOpen?"true":"false"}" aria-controls="guidePanel">
+        <span class="gh-ic">💬</span><span class="gh-tt">코워크와 이렇게 대화해요</span>
+        <span class="gh-teaser">${teaser}</span>
+        <span class="gh-cv"><span id="guideHeadLbl">${guideOpen?"접기":"펼치기"}</span><span class="ar">▾</span></span>
+      </button>
+      <div class="gpanel" id="guidePanel" ${guideOpen?"":"hidden"}>
+        <div class="gnote">${esc(g.note||"")}</div>
+        <div class="btitle">이 세 마디면 됩니다 · 항상 이렇게</div>
+        <table class="gtable"><thead><tr>${heads}</tr></thead><tbody>${rows}</tbody></table>
+        ${e.tip?`<div class="gtip">${e.tip}</div>`:""}
+        <div class="gdetail">${cards}</div>
+        ${masterHint}
+      </div>
+    </div></div>`;
+}
+
+/* ===== 바인딩 ===== */
+function bind(){
+  document.querySelectorAll(".cb").forEach(b=>b.onclick=()=>{const i=+b.dataset.i,k=ME+"|"+i,cur=ck(i,me().todos[i].state);
+    checkState[k]=cur==="done"?"todo":cur==="doing"?"done":"doing"; render();});
+  document.querySelectorAll("[data-sort]").forEach(b=>b.onclick=()=>{sortKey=b.dataset.sort;render();});
+  document.querySelectorAll("textarea[data-memo]").forEach(t=>{
+    t.oninput=()=>{memoState[t.dataset.memo]=t.value; t.classList.add("edited");};});
+  const more=$("#logMore"); if(more)more.onclick=()=>{logLimit=999;render();};
+  /* v0.4: 코워크 가이드 전체 패널 접기/펴기 (aria-expanded, 키보드 포커스, 기본 접힘) */
+  const gb=$("#guideHeadBtn");
+  if(gb)gb.onclick=()=>{ guideOpen=!guideOpen;
+    gb.setAttribute("aria-expanded",guideOpen?"true":"false");
+    $("#guidePanel").hidden=!guideOpen;
+    $("#guideHeadLbl").textContent=guideOpen?"접기":"펼치기";};
+}
+
+/* ===== export (체크+메모) ===== */
+function exportData(){
+  const checks={},memos={};
+  Object.keys(checkState).forEach(k=>{const[n,i]=k.split("|");if(n===ME)(checks[i]=checkState[k]);});
+  Object.keys(memoState).forEach(k=>{if(memoState[k]!=="")memos[k]=memoState[k];});
+  const out={member:ME,generated_from:DATA.generated_at||null,check_overrides:checks,memo_overrides:memos,
+    note:"Poffice-Skill 이 세션로그·미션 메모/체크에 반영 (타임스탬프는 반영 시 부여)"};
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:"application/json"}));
+  a.download=`poffice_export_${ME}.json`;a.click();
+}
+
+/* ===== 로드 ===== */
+function load(o){DATA=o; renderGate();
+  let saved=null;try{saved=localStorage.getItem("poffice_me")}catch(e){}
+  if(saved&&DATA.members.some(m=>m.name===saved))enter(saved);}
+function readFile(f){const r=new FileReader();r.onload=()=>{try{usingSample=false;load(JSON.parse(r.result))}catch(e){alert("파싱 실패: "+e.message)}};r.readAsText(f);}
+
+$("#whoList").addEventListener("click",e=>{const b=e.target.closest("button[data-n]");if(b)enter(b.dataset.n);});
+$("#switchBtn").onclick=()=>{try{localStorage.removeItem("poffice_me")}catch(e){};ME=null;$("#app").classList.remove("on");$("#gate").classList.remove("hide");};
+$("#connState").onclick=refreshBoard;   /* v0.5: 클릭 시 poffice_board.json 재로드 */
+$("#exportBtn").onclick=exportData;
+$("#gateLoad").onclick=()=>$("#fileInput").click();
+$("#fileInput").addEventListener("change",e=>{if(e.target.files[0])readFile(e.target.files[0]);});
+const drop=$("#drop");
+["dragenter","dragover"].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("show");}));
+window.addEventListener("dragleave",e=>{if(e.clientX===0&&e.clientY===0)drop.classList.remove("show");});
+window.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("show");const f=e.dataTransfer.files[0];if(f)readFile(f);});
+
+/* 마더 config 자동 로드 (v0.7): poffice_board.js(script·file:// 자동) → poffice_board.json(fetch) → SAMPLE.
+   더블클릭이어도 같은 폴더에 poffice_board.js 있으면 실데이터 로드. 없으면 드래그앤드롭도 가능. */
+loadBoardData(o=>{ usingSample=!o; load(o||SAMPLE); });
+</script>
+</body>
+</html>
