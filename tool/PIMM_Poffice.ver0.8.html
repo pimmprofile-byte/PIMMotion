@@ -375,16 +375,16 @@ const GUIDE={
 };
 
 let DATA=null, ME=null, sortKey="importance", logLimit=3, guideOpen=false, usingSample=false;
-const SCHEMA_V=1;   /* v0.8: 이 대시보드가 아는 board 스키마 버전. DATA.version이 크면 경고. */
+const SCHEMA_V=1;   /* v0.8: 이 대시보드가 아는 board 스키마 '메이저' 버전. DATA.version의 메이저가 크면 경고(마이너 1.1 등은 호환). */
 /* v0.8: 상단 배너 — 샘플 데이터 경고(우선) / 미지의 새 스키마 경고 */
 function updateBanner(){
   const b=document.getElementById("appBanner"); if(!b)return;
   let msg="", cls="warn";
   if(usingSample){
     msg='⚠ <b>샘플 데이터</b>입니다 (실제 보드 아님). 실데이터를 보려면 같은 폴더에 <b>poffice_board.js</b>/json 을 두거나(더블클릭도 .js면 자동), 파일을 이 창에 <b>드래그</b>하세요.';
-  } else if(DATA && DATA.version!=null && +DATA.version>SCHEMA_V){
+  } else if(DATA && DATA.version!=null && Math.floor(parseFloat(DATA.version))>SCHEMA_V){
     cls="info"; msg='⚠ 이 대시보드가 모르는 <b>새 데이터 형식 v'+esc(DATA.version)+'</b> — 최신 대시보드로 여세요(일부 항목이 안 보일 수 있음).';
-    console.warn("[poffice] board schema v"+DATA.version+" > known v"+SCHEMA_V);
+    console.warn("[poffice] board schema major v"+DATA.version+" > known v"+SCHEMA_V);
   }
   b.hidden=!msg; b.className="appbanner "+cls; b.innerHTML=msg;
 }
