@@ -59,5 +59,5 @@ description: 포피스 개인별 페르소나 브리핑/알림 봇. 신원확인
 
 ## 7. 참고
 - 데이터/스키마 정본: `docs/poffice-board-spec.md`
-- 시각화: `tool/PIMM_Poffice.ver0.2.html` (인물선택 워크스페이스)
+- 시각화: `tool/PIMM_Poffice.ver0.9.html` (인물선택 워크스페이스)
 - 기록: `Poffice-Skill` (대화 → 개인세션로그) · 집계 생성: `Poffice-MotherLog` (개인세션로그 → `poffice_board.json` 마더 config, 자동예약)

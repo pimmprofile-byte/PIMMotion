@@ -7,7 +7,7 @@ description: 포피스 업무기록 코어 스킬. 기존 개인세션로그 스
 
 > "서류를 쓰는 게 아니라 대화가 서류가 된다." 대화 → 개인세션로그 → 분류(게이트·체크·미션).
 > **개인세션로그 기록 + 역방향 export 반영만.** 대시보드 config(`poffice_board.json`) 집계·생성·소유는 `Poffice-MotherLog`,
-> 시각화는 포피스 대시보드(`tool/PIMM_Poffice.ver0.2.html`), 알림·브리핑은 `Poffice-Report-Bot`.
+> 시각화는 포피스 대시보드(`tool/PIMM_Poffice.ver0.9.html`), 알림·브리핑은 `Poffice-Report-Bot`.
 > 정본 스키마·계층: `docs/poffice-board-spec.md`(A~H).
 
 ## 1. 데이터 계층 (개인세션로그 폴더 · spec §2/C)

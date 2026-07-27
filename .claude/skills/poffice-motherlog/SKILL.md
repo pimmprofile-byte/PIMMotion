@@ -1,6 +1,6 @@
 ---
 name: poffice-motherlog
-description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽어 분석하여 '포피스 대시보드가 그대로 읽는 config(마더 세션로그)'를 만들어 드라이브 그린필드 내 포피스영역에 뿌린다. ★원문 보존 우선(요약 금지) — sessions[]에 원문 전문 raw + 1줄 summary, 분단위 타임스탬프. 구형의 리포트/브리프/워크오더 텍스트 형식이 아니라, 현재 포피스 대시보드(tool/PIMM_Poffice.ver0.2.html)에 노출되는 데이터 형식(poffice_board.json)으로 출력한다. 빌드된 HTML이 이 config를 로드한다. 트리거: 마더세션로그, 마더로그, 포피스 config 생성, 포피스 대시보드 갱신, 세션로그 집계, poffice_board.json 생성. 데이터 생성 담당(개인 기록은 Poffice-Skill, 브리핑은 Poffice-Report-Bot).
+description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽어 분석하여 '포피스 대시보드가 그대로 읽는 config(마더 세션로그)'를 만들어 드라이브 그린필드 내 포피스영역에 뿌린다. ★원문 보존 우선(요약 금지) — sessions[]에 원문 전문 raw + 1줄 summary, 분단위 타임스탬프. 구형의 리포트/브리프/워크오더 텍스트 형식이 아니라, 현재 포피스 대시보드(tool/PIMM_Poffice.ver0.9.html)에 노출되는 데이터 형식(poffice_board.json)으로 출력한다. 빌드된 HTML이 이 config를 로드한다. 트리거: 마더세션로그, 마더로그, 포피스 config 생성, 포피스 대시보드 갱신, 세션로그 집계, poffice_board.json 생성. 데이터 생성 담당(개인 기록은 Poffice-Skill, 브리핑은 Poffice-Report-Bot).
 ---
 
 # Poffice-MotherLog — 개인세션로그 → 대시보드 config(마더 세션로그)
@@ -64,7 +64,7 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 ## 4. 출력 = 대시보드 config (구형 폐기)
 - 형식 = **포피스 대시보드가 읽는 데이터** = `poffice_board.json`. 스키마 정본 `docs/poffice-board-spec.md`(A~H + 확장: meta·guide·freshness·sessions[].raw). 스키마 변경 시 **확정본을 코워크에 회신**.
 - ~~구형: 리포트/브리프/워크오더 텍스트 문서~~ → **더 이상 정본 아님.** 대시보드 config로 일원화.
-- 빌드된 `tool/PIMM_Poffice.ver0.2.html`이 이 config를 로드(같은 폴더 fetch 또는 드래그앤드롭).
+- 빌드된 `tool/PIMM_Poffice.ver0.9.html`이 이 config를 로드(같은 폴더 fetch 또는 드래그앤드롭).
 
 ## 5. 자동예약 / 흐름
 - CronCreate 등으로 **주기적 생성·갱신**(예: 주 1회·세션로그 갱신 시).
