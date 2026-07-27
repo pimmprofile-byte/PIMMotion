@@ -201,6 +201,10 @@ button{font:inherit;cursor:pointer}
 .notice .ntt{font-size:15px;font-weight:800;color:var(--ink);margin-top:6px}
 .notice .ntb{font-size:13px;color:var(--ink2);margin-top:5px;white-space:pre-wrap;line-height:1.55}
 .notice .ntd{font-size:11px;color:var(--ink3);margin-top:8px;font-family:var(--mono)}
+.notice.warn{background:linear-gradient(180deg,rgba(232,179,74,.1),transparent);border-color:rgba(232,179,74,.45)}
+.notice.warn .nti{color:var(--yellow)}
+.notice.urgent{background:linear-gradient(180deg,rgba(242,114,107,.11),transparent);border-color:rgba(242,114,107,.5)}
+.notice.urgent .nti{color:var(--red)}
 .guide-sec{margin:0 0 26px}
 .guide{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 /* 접이식 헤더 (접혀도 항상 보임) */
@@ -417,12 +421,16 @@ function noticesBlock(){
   const ns=(DATA&&DATA.notices||[]).filter(n=>n&&n.active!==false&&(n.title||n.body));
   if(!ns.length)return"";
   ns.sort((a,b)=>String(b.ts||b.date||"").localeCompare(String(a.ts||a.date||"")));
-  return `<div class="sec noticesec">`+ns.map(n=>`<div class="notice">
-    <div class="nti">📢 사내공지</div>
+  const lv=v=>v==="urgent"?"urgent":v==="warn"?"warn":"info";           // level → 카드 색
+  const tg=v=>v==="urgent"?"긴급 공지":v==="warn"?"주의 공지":"사내공지";
+  return `<div class="sec noticesec">`+ns.map(n=>{
+    const meta=[(n.date||n.ts),n.by].filter(Boolean).map(esc).join(" · ");
+    return `<div class="notice ${lv(n.level)}">
+    <div class="nti">📢 ${esc(tg(n.level))}</div>
     ${n.title?`<div class="ntt">${esc(n.title)}</div>`:""}
     ${n.body?`<div class="ntb">${esc(n.body)}</div>`:""}
-    ${(n.date||n.ts)?`<div class="ntd">${esc(n.date||n.ts)}</div>`:""}
-  </div>`).join("")+`</div>`;
+    ${meta?`<div class="ntd">${meta}</div>`:""}
+  </div>`;}).join("")+`</div>`;
 }
 function allSessions(){return (DATA&&DATA.members||[]).reduce((a,m)=>a.concat(m.sessions||[]),[]);}
 function latestLogTs(){const ts=allSessions().map(s=>s.ts).filter(Boolean).sort();return ts.length?ts[ts.length-1]:null;}
@@ -446,7 +454,7 @@ function renderConn(){
   }
   el.className="conn "+lvl;
   el.innerHTML=`<span class="cdot"></span><span class="ct">${mainText}</span><span class="crel">${esc(rel)}</span>${lvl!=="g"?'<span class="crf">⟳ 새로고침</span>':""}`;
-  el.title=(ga!=null?`데이터 기준: ${fmtGen(gen)} · `:"")+(latest?`최신 세션로그: ${latest} · `:"")+"클릭하면 새로고침";
+  el.title=(ga!=null?`데이터 기준: ${fmtGen(gen)} · `:"데이터 기준시각 없음(구 board) · ")+(latest?`최신 세션로그: ${latest} · `:"")+"클릭하면 새로고침";
 }
 /* ===== 데이터 로드 (v0.7) =====
    순서: ① poffice_board.js (window.POFFICE_BOARD) — <script> 태그라 file:// 더블클릭에서도 자동 로드
