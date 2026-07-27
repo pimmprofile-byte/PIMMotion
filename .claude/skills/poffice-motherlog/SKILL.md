@@ -29,9 +29,9 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
   > ⚠️ **동일 파일명 중복 금지.** 커넥터에 **update 도구가 없다**(create 계열뿐, 2026-07-27 실측). 같은 이름으로 create를 반복하면 Drive가 fileId로 구분해 `poffice_board (1).json`·`(2)`… 로 복제되고, 접미사 없는 정본이 옛 파일이 되어 대시보드가 **옛 데이터를 읽는 버그**가 난다.
   > ✅ **쓰기 규칙 = 제자리 수정(in-place overwrite)** — *구 "update-by-fileId"는 커넥터에 update가 없어 구현 불가, 폐기.* 라이브·미러는 **같은 경로를 `open(path,"w")`로 덮어써 inode를 유지**한다. Drive 데스크톱 마운트가 이를 새 파일이 아니라 **같은 파일의 새 리비전**으로 처리 → fileId 보존, `(1)(2)` 복제 없음. (실측: 마운트에서 `rm`은 "Operation not permitted"로 막히고, in-place 덮어쓰기·`rename`은 정상. truncate가 `Errno 35 Resource deadlock`로 거부되면 **rename-swap 폴백**.)
   > **하드삭제 금지**: 폐기물은 지우지 말고 제로필드로 이동.
-  > **파이프라인 3단**: **scan**(변경 감지·수집) → **assemble**(아카이브 `04_LogArchive_로그집계/`에 `{YYMMDD_HHMM}_poffice_board.json` **타임스탬프 신규 생성**) → **promote**(라이브 + 런처 미러에 **제자리 덮어쓰기**). 아카이브만 파일이 쌓임(의도됨·별도 정리). 예약세션(`pimm-log-bot`)은 **scan+assemble까지만**(라이브 미접촉), **promote(승격)는 코워크세션**이 한다. 정본은 언제나 **접미사 없는 단일 `poffice_board.json`**.
+  > **파이프라인 3단**: **scan**(변경 감지·수집) → **assemble**(아카이브 `04_LogArchive_로그집계/`에 `{YYMMDD_HHMM}_poffice_board.json` **타임스탬프 신규 생성**) → **promote**(라이브 + 런처 미러에 **제자리 덮어쓰기**). 아카이브만 파일이 쌓임(의도됨·별도 정리). 예약(`pimm-motherlog-daily`, 1일 1회 11:00)이 scan+assemble+promote까지 수행. 정본은 언제나 **접미사 없는 단일 `poffice_board.json`**.
 - **★ 배포 미러 (런처 폴더 · 매 run promote 단계)**: 런처 폴더 `PIMM_Launcher`(id `1pC9V2ZKO5rWrIDXc0mRAsHRgDEL9iqkX`)의 `poffice_board.json`을 **제자리 덮어쓰기**(+ 개인DB 동일본 미러도 함께 유지). 대시보드/허브가 같은 폴더 상대 fetch로 로드 — 별도 링크·ID 불필요.
-  > **★ `.js` 미러도 함께 (더블클릭 자동 로드용):** 런처 폴더에 `poffice_board.js`(=**`window.POFFICE_BOARD = <그 JSON 그대로>;`**, 한 줄 전역 대입, 내용 100% 동일)도 **제자리 덮어쓰기**로 둔다. `file://`에서 `fetch(.json)`는 막히지만 `<script src>`는 허용 → 팀원이 대시보드를 **더블클릭만 해도** 실데이터 로드(대시보드 v0.7+가 `.js` 우선 로드). `contentMimeType=application/javascript`. **주의: 현재(2026-07-27) 코워크 파이프라인은 `.json`만 promote한다 — `.js` promote 추가 필요**(그래야 더블클릭 자동 로드 성립; 안 그러면 v0.7도 SAMPLE로 폴백).
+  > **★ `.js` 미러도 함께 (더블클릭 자동 로드용):** 런처 폴더에 `poffice_board.js`(=**`window.POFFICE_BOARD = <그 JSON 그대로>;`**, 한 줄 전역 대입, 내용 100% 동일)도 **제자리 덮어쓰기**로 둔다. `file://`에서 `fetch(.json)`는 막히지만 `<script src>`는 허용 → 팀원이 대시보드를 **더블클릭만 해도** 실데이터 로드(대시보드 v0.7+가 `.js` 우선 로드). `contentMimeType=application/javascript` + **UTF-8 BOM(`utf-8-sig`)** (file://서 charset보다 우선해 이모지 보존). **promote가 라이브·미러·`.js` 3종을 항상 함께 동기화**(v0.9.10에서 조기리턴 제거·`--mirror append` 수정 완료).
   > ※ 정본은 포피스영역(.json), 런처의 .json/.js는 대시보드 로드용 미러. 세 파일 모두 제자리 덮어쓰기, 내용 동일.
   > ※★ **원문 축약 금지**: `.js`/`.json` 어느 쪽이든 `sessions[].raw`는 스크립트가 **원본 바이트를 그대로 주입**(요약·재작성 금지). 예산(멤버당 최근 14일/최소 5건/200KB) 초과 시만 **통째 생략** + `raw:null`·`raw_omitted:true`·`raw_source`(경로) — 절대 절단하지 않음.
 - **카테고리 폴더(넘버링+영문, 대시보드 카테고리와 동일)** — 구버전·이전 자료 확인용 아카이브 축:
@@ -50,11 +50,11 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
   - **예산 초과 시 통째 생략**(절단 금지): `raw:null` + `raw_omitted:true` + `raw_source`(원본 경로). 예산 = 멤버당 최근 14일 / 최소 5건 / 200KB.
   - MotherLog 내부용 필드: 멤버별 `_fingerprint`(sha1, 증분 갱신)·`_carried_forward`(직전 board에서 그대로 가져온 인물). **HTML·타 소비자는 무시.**
 - 파생 상태(요약 아님, 롤업/원문에서 도출): 미션(progress·roadmap), 게이트(권한 신호등), 투두(체크·중요도·일자·WO).
-- **윈도우 = 시간 기준(2026-07-26 확정, 하루 2회 예약 기준)**: **최근 13시간 이내**에 기록된 세션·작업물만 원문 포함(예약 주기 12h + **1h 겹침**으로 경계 세션 누락 방지). 기준 시각 = **파일명 ts(`YYMMDD_HHMM` = 실제 작업시각), KST**(업로드 createdTime 아님). 원문은 안 자르고 **윈도우(담는 범위)만** 시간으로 제한한다.
-  - **인별 floor**: 13h 안에 세션이 없어도 그 사람의 **가장 최근 세션 1개는 항상 유지**(오전만 일한 사람이 오후 보드에서 텅 비어 보이지 않게).
-  - 창 밖으로 밀린 원문은 **삭제 아님** — 개인 세션폴더(불변) + `04_LogArchive_로그집계/`에 보존. 롤업(게이트·투두·미션)은 시간 창과 무관하게 **상시 유지**(회전하는 건 세션 원문뿐).
-  - **작업물**: 각 인물 `Output_산출물/`(또는 동등 폴더)의 **최근 13h 항목**을 함께 스캔해 세션 raw/참조에 파일명·경로를 남긴다. ※ 대시보드 전용 렌더 칸은 후속(현재는 참조까지).
-  - ⚠️ 예약은 **12h 등간격**(예: 09:00 / 21:00 KST)으로 두어야 각 실행이 직전 12h를 커버 + 1h 겹침이 성립한다. 주기를 바꾸면 창(13h)도 함께 조정.
+- **★ 윈도우 = 실행 주기와 무관 (2026-07-27 확정).** **최근 14일 + 인물별 최소 5건(14일을 넘겨도 포함) + raw 예산 200KB/인** 을 그대로 쓴다.
+  - **주기 기반 슬라이딩 윈도우(13h 등)를 두지 않는다** — 그렇게 하면 봇이 하루 죽었을 때 그 하루가 영구 실종된다. **고정 14일 윈도우**면 다음 회차가 빈 구간을 자동으로 덮는다(안전장치). **예약 주기를 바꿔도 윈도우는 손대지 않는다.**
+  - *구 "13h(2회/일 기준)"은 ver0.2 시절 잔재라 폐기.* 원문은 안 자르고 **담는 범위만** 위 기준으로 제한(초과분은 raw_omitted, §3 상단).
+  - 창 밖으로 밀린 원문은 **삭제 아님** — 개인 세션폴더(불변) + `04_LogArchive_로그집계/`에 보존. 롤업(게이트·투두·미션)은 윈도우와 무관하게 **상시 유지**.
+  - **작업물**: 각 인물 `Output_산출물/`의 산출물 참조(파일명·경로)를 세션 raw에 남긴다. ※ 대시보드 전용 렌더 칸은 후속.
 - **신선도 파생**: 인별 `freshness{last_log_ts, status}` — `green`(24h 이내)/`yellow`(24~72h)/`red`(72h+ stale). **숨기지 않는다**(기록 공백 가시화).
 - **메타**: `meta{generated_at(ISO 분단위), generator, source_files[{member,file,drive_id,modified}], warnings[]}`. 롤업 동일파일명 다중 존재 시 **modifiedTime 최신본만 채택** + 채택 근거를 `source_files`에.
 - **사용 지침**: `guide{title, items[]}`(대시보드 상단 렌더 — 하드코딩 금지, config가 정본).
@@ -67,9 +67,9 @@ description: 포피스 마더로그 생성 스킬. 각 개인세션로그를 읽
 - 빌드된 `tool/PIMM_Poffice.ver0.9.html`이 이 config를 로드(같은 폴더 fetch 또는 드래그앤드롭).
 
 ## 5. 자동예약 / 흐름
-- CronCreate 등으로 **주기적 생성·갱신**(예: 주 1회·세션로그 갱신 시).
-- `Poffice-Skill`(개인 기록) → **`Poffice-MotherLog`(scan→assemble(아카이브)→promote(라이브+런처 미러 제자리 덮어쓰기))** → 대시보드(같은 폴더 로드) → export(체크·메모) → Poffice-Skill 반영 → `Poffice-Report-Bot`(직전 config와 diff 브리핑 + 인물별 디스코드 푸시, 웹훅 URL 정본은 `pimm-notice` 스킬 한 곳).
-- **하루 2회 예약**: 예약세션(`pimm-log-bot`)은 scan+assemble까지(아카이브 타임스탬프 생성), **promote(라이브·미러 승격)는 코워크세션**. 미러 누락 시 대시보드가 옛 데이터를 봄.
+- **예약 = 1일 1회 11:00 KST**(태스크 `pimm-motherlog-daily`, 디스패치 지터로 실착수 11:0x). 구 `pimm-log-bot`(2회/일)은 `enabled:false` 퇴역 보존.
+- `Poffice-Skill`(개인 기록) → **`Poffice-MotherLog`(scan→assemble(아카이브)→promote(라이브+런처/개인DB 미러 + `.js` 제자리 덮어쓰기))** → 대시보드(같은 폴더 로드) → export(체크·메모) → Poffice-Skill 반영 → `Poffice-Report-Bot`(직전 config와 diff 브리핑 + 인물별 디스코드 푸시, 웹훅 URL 정본은 `pimm-notice` 스킬 한 곳).
+- **Report-Bot §4.5 예외(2026-07-27)**: `sessions`가 **비어 있으면**(로그 0건) `_carried_forward` 무관하게 **매일 1줄 발송**. 로그는 있는데 이번 회차 변경만 없는 인물은 기존대로 건너뜀. (0건이어도 매일 보낸다 = 대표 지시.)
 
 ## 6. 경계
 - **원본 세션로그 수정 금지**(불변·아카이빙). config만 생성.

@@ -32,7 +32,7 @@ _발신: coworking-review 세션(대시보드/스킬 담당) → 수신: 코워�
 1. **중복 금지 · 제자리 수정(in-place overwrite).** 커넥터에 update 도구가 없으므로 `.json`/`.js` 모두 **같은 경로를 `open(path,"w")`로 덮어써 inode/fileId 보존**(Drive 데스크톱 마운트가 새 리비전으로 처리). create 반복 금지 → 안 그러면 `poffice_board (1).json`·`(2)`… 처럼 복제되고, 접미사 없는 정본은 옛 파일이 되어 대시보드가 **옛 데이터를 읽는 버그**가 난다. 하드삭제 금지(폐기물=제로필드 이동).
 2. **★ 원문 축약 금지 (이번 핸드오프 핵심).** `sessions[].raw`는 **개인 세션로그 원본 전문을 그대로** 담는다. 요약·축약·재작성·의역 금지. `summary`는 1줄 헤드라인만 별도. `.js`/`.json` 미러도 **내용 변형 없이** 같은 JSON을 옮긴다. (요약된 board는 실제 업무 파악이 안 된다는 실사용 피드백 반영.)
 3. **텍스트 무손상.** UTF-8·한글·이모지(🔴🟡🟢) 안 깨지게, JSON 이스케이프 정확. 생성 후 JSON 파싱 검증. (LLM이 긴 원문을 base64로 나르면 손상되므로, 커넥터의 안정적 읽기/쓰기 경로를 쓸 것.)
-4. **13h 시간 창 + 인별 floor.** 최근 13h(예약 12h 주기 + 1h 겹침) 이내 세션·작업물 원문 + 각 인물 최신 세션 1개는 항상 유지. 기준 = 파일명 ts(`YYMMDD_HHMM`, KST). 롤업(게이트·투두·미션)은 상시 유지. (정본 = poffice-motherlog SKILL §3.)
+4. **윈도우 = 실행 주기와 무관.** 최근 14일 + 인물별 최소 5건(14일 넘겨도 포함) + raw 예산 200KB/인. 주기 기반 슬라이딩(13h 등) 안 씀 — 봇이 하루 죽어도 다음 회차가 덮음. 롤업(게이트·투두·미션)은 상시 유지. (정본 = poffice-motherlog SKILL §3.)
 
 ## 실행 후 검증
 - 런처 폴더에 `poffice_board.json`(1개) + `poffice_board.js`(1개)만 있고 `(1)(2)(3)` 없음.
@@ -40,6 +40,6 @@ _발신: coworking-review 세션(대시보드/스킬 담당) → 수신: 코워�
 - 대시보드를 **더블클릭**해서 실데이터가 뜨는지(샘플 아님) 확인.
 
 ## 참고 (정본 문서)
-- 스킬: `.claude/skills/poffice-motherlog/SKILL.md` (§1 저장·미러·`.js`, §3 13h 창)
+- 스킬: `.claude/skills/poffice-motherlog/SKILL.md` (§1 저장·미러·`.js`, §3 14일 윈도우)
 - 스키마: `docs/poffice-board-spec.md`
-- 대시보드: `tool/PIMM_Poffice.ver0.7.html` (로드 순서 `.js`→`.json`→SAMPLE)
+- 대시보드: `tool/PIMM_Poffice.ver0.9.html` (로드 순서 `.js`→`.json`→SAMPLE)
