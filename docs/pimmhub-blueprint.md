@@ -31,7 +31,7 @@
 - 심화 나머지 5이론(공간구성·게임퍼즐·장면연출·장르컨셉·운영설계) = 🔒 원문 정독 후.
 
 ### 3.2 포피스 Poffice — 업무보고/운영 (LIVE)
-- 파일: `tool/PIMM_Poffice.ver0.8.html` (0.5 연동상태 → 0.6 Day charC·원문 raw → 0.7 **poffice_board.js script 로드**(file:// 더블클릭 자동) → 0.8 **샘플경고 배너·raw_omitted 표시·스키마 version 가드**). **읽기전용 대시보드 + 체크·메모만 로컬**.
+- 파일: `tool/PIMM_Poffice.ver0.9.html` (0.7 .js 로드 → 0.8 샘플경고·raw_omitted·version가드 → 0.9 **사내공지 notices 렌더** + **연동상태 칩=generated_at(보드 생성시각·KST) 기준·신호등·툴팁에 최신 세션로그·구board 폴백**). **읽기전용 대시보드 + 체크·메모만 로컬**.
 - 흐름(5단계): `poffice-skill`(기록) → `poffice-motherlog`(집계→`poffice_board.json`) → 대시보드(시각화) → export(체크·메모) → 반영 → `poffice-report-bot`(페르소나 브리핑).
 - 3판: 미션보드(Day char 마일스톤) · 게이트보드(🔴🟡🟢 권한 신호등) · 투두. + 인물선택(본인만) · WO배너 · 게이미피케이션.
 - **★원문 보존 정책(2026-07-26)**: 마더로그 요약 폐기 → `sessions[].raw` 원문 전문 + 1줄 summary, **분단위 타임스탬프** 필수.
@@ -88,7 +88,7 @@
 | 게임 에디터 | ver1.14 |
 | 디바이스 어시스턴트 | ver0.3 (와이어링뷰 전기정밀) |
 | 플로직 | ver0.2 (Day 스프라이트·걷기·비주얼시나리오) |
-| 포피스 대시보드 | ver0.8 (.js 로드 + 샘플경고 배너·raw_omitted 표시·스키마 version 가드) |
+| 포피스 대시보드 | ver0.9 (사내공지 notices 렌더 + 연동상태=generated_at 기준·KST·툴팁/폴백) |
 | 코워크 플러그인(포피스 3종) | v0.9.2 |
 
 ## 8. 로드맵 / 남은 것
