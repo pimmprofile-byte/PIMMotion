@@ -19,6 +19,7 @@
    · v0.7: 데이터 로드에 poffice_board.js(script 태그) 우선 추가 → file:// 더블클릭에서도 자동 로드(.json fetch·드래그·샘플 폴백 유지).
    · v0.8: 샘플 폴백 경고 배너 + raw_omitted(원문 생략) 표시 + 스키마 version 가드. (코워크 마더로그 인계 반영)
    · v0.9: 사내공지 notices[] 최상단 렌더(②) + 연동상태 칩을 generated_at(보드 생성시각·KST) 기준으로(신호등도)·latestLogTs는 툴팁·구board 폴백(⑤).
+   · v0.9 핫픽스(2026-07-27): 동적 주입 script에 charset="utf-8" 지정 — file:// 더블클릭 시 .js 이모지(🔴🟡🟢) latin-1 폴백으로 깨지던 것 수정. + notices level 색/by.
    ============================================================ */
 :root{
   --bg:#0f1115; --bg2:#0c0e12; --panel:#161922; --panel2:#1b1f2a; --raise:#20252f;
@@ -465,6 +466,7 @@ function injectBoardScript(done){
   const old=document.getElementById("pofcData"); if(old)old.remove();
   try{ delete window.POFFICE_BOARD; }catch(e){ window.POFFICE_BOARD=undefined; }
   const s=document.createElement("script"); s.id="pofcData";
+  s.charset="utf-8";                                    // ★핫픽스: file://서 외부 클래식 스크립트가 로케일 기본(latin-1)으로 폴백해 이모지(🔴🟡🟢)가 깨지는 것 방지 — UTF-8 강제
   s.src="./poffice_board.js?t="+Date.now();            // 캐시버스트(서버/일렉트론), file://선 재실행으로 갱신
   s.onload=()=>done(window.POFFICE_BOARD?window.POFFICE_BOARD:null);
   s.onerror=()=>done(null);
