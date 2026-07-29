@@ -120,7 +120,8 @@ app.whenReady().then(() => {
     try {
       const data = await fs.promises.readFile(filePath);
       const mime = MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-      return new Response(data, { headers: { 'content-type': mime } });
+      // no-store: 새로고침/재실행 때 항상 Drive 폴더의 '최신' HTML을 읽게(캐시로 옛 UI 안 뜨게).
+      return new Response(data, { headers: { 'content-type': mime, 'cache-control': 'no-store' } });
     } catch {
       return new Response('404 Not Found', { status: 404 });
     }
