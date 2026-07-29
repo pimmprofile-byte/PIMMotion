@@ -103,6 +103,11 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // 개발 실행(npm start)에서도 Dock 아이콘을 핌 로고로. (빌드본은 Info.plist에 이미 구워짐)
+  if (process.platform === 'darwin' && app.dock) {
+    try { app.dock.setIcon(path.join(__dirname, 'build', 'icon.png')); } catch {}
+  }
+
   protocol.handle(SCHEME, async (req) => {
     const dir = getFolder();
     if (!dir) return new Response('폴더 미선택', { status: 404 });
