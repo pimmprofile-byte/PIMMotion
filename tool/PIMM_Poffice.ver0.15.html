@@ -26,6 +26,7 @@
    · v0.13: (1) 미션 마일스톤 상세화 — 미션 설명(desc) + 단계별 상세(step.detail). 트랙 팝업이 단계명+상세를 함께 보여줌. SAMPLE 콘텐츠도 풍부화. (2) 결재 인박스에 '답변란'(텍스트) 추가 + '인물별 내보내기' — 대상 인물별로 결재 답변을 JSON export, 파일에 해당 인물의 세션로그 폴더경로(record_to) 명시. 각 개인이 자신의 세션로그에 기록하는 흐름. (board에 member.session_dir 있으면 그 경로 사용.)
    · v0.14: 결재 워크플로우 구조화 — 인박스 각 건에 승인/반려/보류 셀렉터 + 메모. '인물별 내보내기'가 confirm_id(=kind|인물|ts)·decision·reply를 담은 poffice_confirm_<인물>.json 생성, record_to = 대상 인물 세션로그의 Poffice_confirm 폴더. 결재자가 각 인물 Poffice_confirm에 드롭 → 코워크(즉시 트리거+일일 배치)가 confirm_id로 보드 게이트에 반영(승인→완료 등). 반영된 결재는 게이트 항목에 decision 배지+메모로 표시(읽기 루프 닫힘). 핸드오프: docs/handoff-poffice-confirm.md.
    · v0.15: (1) 게이트 3판(레드·옐로·그린)을 접기·펼치기(details)로 — 평소엔 라벨+갯수만, 헤더 클릭 시 규칙·항목 펼침. (2) 결재 인박스는 항목·결재 셀렉터(승인/반려/보류)는 그대로 두고 '메모란'만 접기·펼치기(기본 접힘, 기존 메모 있으면 자동 펼침) — 보통 결재만 하면 되니 화면 간결화.
+   · v0.15 핫픽스(2026-07-30): 연동상태 칩 기준을 generated_at(보드 파일 생성시각·새로 쓰면 '지금'이 돼 오도) → '최신 세션로그' 시각으로 변경(실데이터 신선도 반영). generated_at은 툴팁으로. + 칩 cursor:pointer·hover·항상 '⟳ 새로고침' 노출·클릭 피드백(불러오는 중…→갱신됨 ✓)으로 새로고침 무반응 문제 개선.
    ============================================================ */
 :root{
   --bg:#0f1115; --bg2:#0c0e12; --panel:#161922; --panel2:#1b1f2a; --raise:#20252f;
@@ -68,7 +69,9 @@ button{font:inherit;cursor:pointer}
 .tbtn.ac{color:#08130f;background:var(--ac);border-color:var(--ac);font-weight:700}
 .ro{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--ac);border:1px solid rgba(79,209,161,.3);border-radius:999px;padding:3px 8px}
 /* ===== 연동상태 (v0.5) — 최신 세션로그 타임스탬프 + 새로고침 ===== */
-.conn{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;transition:.2s;font-family:inherit;white-space:nowrap}
+.conn{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;transition:.2s;font-family:inherit;white-space:nowrap;cursor:pointer}
+.conn:hover{border-color:rgba(79,209,161,.5)}
+.conn.loading{opacity:.6}
 .conn:hover{border-color:var(--line2);color:var(--ink)}
 .conn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .conn .cdot{width:7px;height:7px;border-radius:50%;background:var(--ink3);flex:none}
@@ -568,22 +571,26 @@ function fmtGen(iso){if(!iso)return"";const d=new Date(iso);if(isNaN(d))return S
   const k=new Date(d.getTime()+9*3600000),p=n=>String(n).padStart(2,"0");
   return `${String(k.getUTCFullYear()).slice(2)}-${p(k.getUTCMonth()+1)}-${p(k.getUTCDate())} ${p(k.getUTCHours())}:${p(k.getUTCMinutes())} KST`;}
 function genAgeDays(iso){const d=new Date(iso);if(isNaN(d))return null;return Math.max(0,(Date.now()-d.getTime())/86400000);}
-/* v0.9 (⑤): 칩 본문·신호등 = 보드 생성시각(generated_at) 기준. 최신 세션로그(latestLogTs)는 툴팁으로.
-   generated_at 없거나 파싱 실패 시 latestLogTs로 폴백 + "(추정)". "이 보드가 얼마나 오래된 데이터인가"를 답한다. */
+/* 세션로그 ts(YYMMDD_HHMM)를 표시용으로 포맷. ts 자체가 KST 로컬이라 tz 변환 없이 그대로. */
+function fmtLog(ts){const m=/^(\d\d)(\d\d)(\d\d)_?(\d\d)?(\d\d)?/.exec(ts||"");
+  return m?`${m[1]}-${m[2]}-${m[3]} ${m[4]||"00"}:${m[5]||"00"} KST`:String(ts||"");}
+/* v0.15 핫픽스(⑤ 재정의): 칩 본문·신호등 = '최신 세션로그' 시각 기준(마더로그가 담은 실데이터의 최신 시각).
+   generated_at(보드 파일 생성시각)은 파일을 새로 쓰면 '지금'이 돼 실제 데이터 신선도를 오도하므로 툴팁으로만.
+   세션로그가 하나도 없을 때만 generated_at 폴백. */
 function renderConn(){
   const el=$("#connState"); if(!el||!DATA)return;
-  const gen=DATA.generated_at, ga=gen?genAgeDays(gen):null, latest=latestLogTs();
+  const gen=DATA.generated_at, latest=latestLogTs();
   let lvl, mainText, rel;
-  if(ga!=null){                                   // 정상: generated_at 기준
-    lvl=ga<1?"g":ga<3?"y":"r"; mainText=esc(fmtGen(gen)); rel=ageLabel(ga);
-  }else{                                          // 폴백: 구 board / 파싱실패
-    const a=latest?ageDays(latest):999;
-    lvl=!latest?"r":a<1?"g":a<3?"y":"r";
-    mainText=(latest?esc(latest):"—")+' <span class="cest">(추정)</span>'; rel=latest?ageLabel(a):"기록 없음";
-  }
+  if(latest){                                     // ★ 기준 = 최신 세션로그
+    const a=ageDays(latest);
+    lvl=a<1?"g":a<3?"y":"r"; mainText=esc(fmtLog(latest)); rel=ageLabel(a);
+  }else if(gen){                                  // 폴백: 세션로그 없으면 보드 생성시각
+    const ga=genAgeDays(gen); lvl=ga==null?"r":ga<1?"g":ga<3?"y":"r";
+    mainText=esc(fmtGen(gen))+' <span class="cest">(생성시각)</span>'; rel=ga==null?"—":ageLabel(ga);
+  }else{ lvl="r"; mainText="—"; rel="기록 없음"; }
   el.className="conn "+lvl;
-  el.innerHTML=`<span class="cdot"></span><span class="ct">${mainText}</span><span class="crel">${esc(rel)}</span>${lvl!=="g"?'<span class="crf">⟳ 새로고침</span>':""}`;
-  el.title=(ga!=null?`데이터 기준: ${fmtGen(gen)} · `:"데이터 기준시각 없음(구 board) · ")+(latest?`최신 세션로그: ${latest} · `:"")+"클릭하면 새로고침";
+  el.innerHTML=`<span class="cdot"></span><span class="ct">${mainText}</span><span class="crel">${esc(rel)}</span><span class="crf">⟳ 새로고침</span>`;
+  el.title=(latest?`최신 세션로그: ${fmtLog(latest)} · `:"")+(gen?`보드 생성시각: ${fmtGen(gen)} · `:"")+"클릭하면 새로고침";
 }
 /* ===== 데이터 로드 (v0.7) =====
    순서: ① poffice_board.js (window.POFFICE_BOARD) — <script> 태그라 file:// 더블클릭에서도 자동 로드
@@ -610,12 +617,13 @@ function loadBoardData(onData){                          // onData(obj|null)
 let refreshing=false;
 function refreshBoard(){
   if(refreshing)return; refreshing=true;
-  const el=$("#connState"); if(el)el.classList.add("loading");
+  const el=$("#connState");
+  if(el){ el.classList.add("loading"); const c=el.querySelector(".crel"); if(c)c.textContent="불러오는 중…"; }
   loadBoardData(o=>{
-    if(o){ usingSample=false; DATA=o; if(ME&&DATA.members.some(m=>m.name===ME))render(); else load(o); }
-    else if(el){ el.classList.remove("loading"); el.classList.add("r");
-      const c=el.querySelector(".crel"); if(c)c.textContent="데이터 파일 없음 · 코워크 미러 확인 또는 드래그"; }
-    refreshing=false; if(el)el.classList.remove("loading");
+    refreshing=false; const e2=$("#connState"); if(e2)e2.classList.remove("loading");
+    if(o){ usingSample=false; DATA=o; if(ME&&DATA.members.some(m=>m.name===ME))render(); else load(o);
+      const e3=$("#connState"); if(e3){ const c=e3.querySelector(".crel"); if(c)c.textContent="갱신됨 ✓"; setTimeout(()=>{try{renderConn()}catch(_){}} ,1300); } }
+    else if(e2){ e2.classList.add("r"); const c=e2.querySelector(".crel"); if(c)c.textContent="데이터 파일 없음 · 코워크 미러 확인 또는 드래그"; }
   });
 }
 
