@@ -57,7 +57,7 @@ git tag desktop-v0.1.0 && git push origin desktop-v0.1.0
 ## 이후 확정할 것
 - [ ] (선택) 자동 업데이트: `electron-updater` + GitHub Releases (private repo면 토큰 또는 공개 releases repo).
 - [ ] (선택) 코드서명·공증(윈 SmartScreen·맥 Gatekeeper 경고 제거).
-- [ ] 아이콘 최종본 교체(`build/icon.png`, 1024² 권장) — 현재는 임시 P 마크.
+- [x] 앱 아이콘 = 핌 리퀴드 글래스 로고(`build/icon.png`, 1024², 허브 상단 로고와 동일). electron-builder가 .ico/.icns 자동 생성.
 
 ## 검증 참고
 - 이 스캐폴드는 로직 재작성 없이 **폴더의 허브/툴을 그대로 감싸는** 구조.

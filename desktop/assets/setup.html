@@ -11,9 +11,7 @@
   body { background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
     display:flex; align-items:center; justify-content:center; padding:32px; }
   .card { max-width:560px; width:100%; text-align:center; }
-  .mark { width:92px; height:92px; margin:0 auto 22px; border-radius:22px; background:var(--panel);
-    border:3px solid var(--ac); display:flex; align-items:center; justify-content:center;
-    font-size:52px; font-weight:800; color:var(--ac); letter-spacing:-2px; }
+  .mark { width:96px; height:96px; margin:0 auto 22px; display:block; object-fit:contain; }
   h1 { font-size:22px; font-weight:800; margin:0 0 6px; }
   h1 b { color:var(--ac); }
   p { color:var(--ink2); font-size:14px; line-height:1.7; margin:0 0 8px; }
@@ -27,7 +25,7 @@
 </head>
 <body>
   <div class="card">
-    <div class="mark">P</div>
+    <img class="mark" src="../build/icon.png" alt="PIMM 로고" />
     <h1><b>PIMM</b> Launcher</h1>
     <p>처음이시네요. 팀 워크스페이스가 담긴 <b>PIMM_Launcher</b> 폴더를 한 번만 지정해 주세요.</p>
     <p>보통 Google Drive 동기 폴더 안에 있고, 허브·툴들과 <code>poffice_board</code> 가 들어 있어요.</p>
