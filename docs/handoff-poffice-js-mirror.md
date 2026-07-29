@@ -42,4 +42,4 @@ _발신: coworking-review 세션(대시보드/스킬 담당) → 수신: 코워�
 ## 참고 (정본 문서)
 - 스킬: `.claude/skills/poffice-motherlog/SKILL.md` (§1 저장·미러·`.js`, §3 14일 윈도우)
 - 스키마: `docs/poffice-board-spec.md`
-- 대시보드: `tool/PIMM_Poffice.ver0.14.html` (로드 순서 `.js`→`.json`→SAMPLE)
+- 대시보드: `tool/PIMM_Poffice.ver0.15.html` (로드 순서 `.js`→`.json`→SAMPLE)
