@@ -31,6 +31,7 @@
       "session_dir": "[2.포피스_섹터].Poffice/이름/세션로그/",  // [ver0.13] 이 인물의 세션로그 폴더경로.
                                         //          결재 인박스에서 '인물별 내보내기' 시 export JSON의 record_to 로 사용
                                         //          (없으면 기본 템플릿 경로 사용). 각 개인이 자신의 세션로그에 결재 답변 기록
+      "wo_issuer": true,                // [ver0.16] 워크오더 발신권자(대시보드 '발신 WO' 영역 노출). master는 자동 발신권자
       "missions": [
         { "id": "M0", "title": "홈페이지 리뉴얼 런칭",
           "status": "진행",             // 예정 | 진행 | 달성 | 보류
@@ -56,7 +57,9 @@
       "todos": [
         { "text": "홈페이지 작업 시작",
           "state": "doing",             // todo | doing | done
-          "wo": false,                  // true면 대표 지시 → WO 배너 상단 강제 고정 + 강조
+          "wo": false,                  // true면 워크오더(대표/발신권자 지시) → WO 배너 상단 고정 + 강조
+          "issued_by": "심상윤",        // [ver0.16] 이 WO(wo:true)를 지시한 사람. 없으면 대표(master) 발신으로 간주.
+                                        //          발신자 화면 '발신 WO 현황'은 issued_by===나(대상≠나)로 필터
           "mission": "M0",              // 연결 미션 id (표시용)
           "importance": "high",         // [조정2] high | mid | low — '중요도별' 정렬용
           "date": "260725" }            // [조정2] YYMMDD — '일자별' 정렬용
