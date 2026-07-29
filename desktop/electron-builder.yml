@@ -1,23 +1,30 @@
-appId: works.pimm.pimmotion
-productName: PIMMotion
+appId: com.pimmartworks.launcher
+productName: PIMM Launcher
 directories:
-  output: dist
-  buildResources: assets
+  output: release
+  buildResources: build
 files:
   - main.js
   - preload.js
-  - renderer/**/*
+  - settings.js
+  - assets/**/*
+  - build/icon.*
   - "!**/*.map"
-# 내부 배포 = 무서명(첫 실행 경고는 우회). 2.0에서 서명·공증 원하면 아래 주석 해제 + secrets.
+# 내부 배포 = 무서명. 첫 실행 경고(Win SmartScreen / Mac Gatekeeper)는 우회 안내(README).
+# 서명·공증은 이후: win.certificateFile / mac.identity + notarize secrets 추가.
 win:
   target: nsis
-  # icon: assets/icon.ico   # 2.0 마스터링: 핌 로고
-mac:
-  target: dmg
-  category: public.app-category.graphics-design
-  # icon: assets/icon.icns  # 2.0 마스터링: 핌 로고
-  # identity: null          # 무서명(기본). 공증 시 팀 인증서 지정.
+  icon: build/icon.png
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-${version}-Setup.${ext}
+mac:
+  target: dmg
+  icon: build/icon.png
+  identity: null            # 무서명(기본). 팀 인증서 있으면 지정 + notarize.
+  category: public.app-category.productivity
+  artifactName: ${productName}-${version}.${ext}
+dmg:
+  title: PIMM Launcher ${version}

@@ -1,8 +1,10 @@
-// 최소 프리로드 — 에디터가 "데스크톱 앱에서 실행 중"임을 알 수 있게만 노출.
-// (프로젝트 폴더는 File System Access API로 직접 처리하므로 별도 fs 브리지 불필요.)
-const { contextBridge } = require('electron');
+// 프리로드 — 렌더러(허브/툴/설정 화면)에 최소 안전 API 노출.
+// 툴 HTML은 자체완결이라 이 API를 안 써도 되고, 설정 화면(setup.html)만 pickFolder 사용.
+const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('pimmDesktop', {
+contextBridge.exposeInMainWorld('pimm', {
   isDesktop: true,
-  platform: process.platform, // 'win32' | 'darwin' | 'linux'
+  platform: process.platform,        // 'win32' | 'darwin' | 'linux'
+  pickFolder: () => ipcRenderer.invoke('pick-folder'),
+  getFolder: () => ipcRenderer.invoke('get-folder'),
 });

@@ -74,7 +74,7 @@
 ## 5. 배포
 - **현재**: Drive `PIMM_Launcher` 폴더에 허브 + 5개 툴 HTML **co-location**(상대경로 `./` 링크 → 카드 클릭 실행). 더블클릭 실행.
 - **포피스 데이터 로드**: 마더로그가 런처 폴더에 `poffice_board.json` + `poffice_board.js`(=`window.POFFICE_BOARD=…`) 미러. 대시보드 v0.7이 `.js`(script 태그)를 우선 로드 → **더블클릭(file://)에서도 자동**. (fetch(.json)은 file://서 차단되므로 .js가 핵심.) 코워크 핸드오프 = `docs/handoff-poffice-js-mirror.md`.
-- **후속**: **Electron 데스크톱앱**(repo `desktop/`) — 허브 진입, NSIS/.dmg 듀얼빌드. 2.0 마스터링 때 로고·아이콘 확정.
+- **Electron 데스크톱앱**(repo `desktop/` = **PIMM Launcher**, 스캐폴드 완료 2026-07-29): 얇은 셸 — 각자 Drive-동기 `PIMM_Launcher` 폴더를 최초 1회 선택(`settings.json` 저장) → `pimm://` 보안 오리진으로 그 폴더의 허브·툴·`poffice_board` 서빙(툴 내 `fetch`·File System Access API 정상). 폴더만 갱신하면 앱 재배포 없이 새로고침으로 반영. win NSIS(.exe)/mac dmg(.dmg) 무서명, GitHub Actions(`desktop-v*` 태그)로 듀얼빌드→Release 첨부. 자동업데이트·코드서명은 이후. 아이콘 임시(P 마크).
 - ⚠️ 큰 HTML(허브 339KB·게임 611KB)은 코워크가 Drive에 직접 업로드 불가(도구 한계) → 사용자가 GitHub raw 다운로드 후 폴더에 배치.
 
 ## 6. 용어 (통일)

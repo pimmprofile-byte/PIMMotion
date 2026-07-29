@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIMM Launcher — 폴더 선택</title>
+<style>
+  :root { --bg:#0f1115; --panel:#161922; --line:rgba(255,255,255,.09); --ink:#e9ebef; --ink2:#98a0ad; --ink3:#5c6472; --ac:#00ff99; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+    display:flex; align-items:center; justify-content:center; padding:32px; }
+  .card { max-width:560px; width:100%; text-align:center; }
+  .mark { width:92px; height:92px; margin:0 auto 22px; border-radius:22px; background:var(--panel);
+    border:3px solid var(--ac); display:flex; align-items:center; justify-content:center;
+    font-size:52px; font-weight:800; color:var(--ac); letter-spacing:-2px; }
+  h1 { font-size:22px; font-weight:800; margin:0 0 6px; }
+  h1 b { color:var(--ac); }
+  p { color:var(--ink2); font-size:14px; line-height:1.7; margin:0 0 8px; }
+  .hint { color:var(--ink3); font-size:12.5px; line-height:1.7; margin-top:18px; }
+  .hint code { background:var(--panel); border:1px solid var(--line); border-radius:5px; padding:1px 6px; color:var(--ink); font-size:12px; }
+  button { margin-top:26px; font:inherit; font-size:15px; font-weight:800; color:#07130d; background:var(--ac);
+    border:0; border-radius:12px; padding:13px 30px; cursor:pointer; transition:filter .15s; }
+  button:hover { filter:brightness(1.08); }
+  .err { margin-top:16px; color:#f2726b; font-size:13px; min-height:18px; line-height:1.5; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="mark">P</div>
+    <h1><b>PIMM</b> Launcher</h1>
+    <p>처음이시네요. 팀 워크스페이스가 담긴 <b>PIMM_Launcher</b> 폴더를 한 번만 지정해 주세요.</p>
+    <p>보통 Google Drive 동기 폴더 안에 있고, 허브·툴들과 <code>poffice_board</code> 가 들어 있어요.</p>
+    <button id="pick">PIMM_Launcher 폴더 선택</button>
+    <div class="err" id="err"></div>
+    <div class="hint">
+      선택한 폴더는 이 기기에 기억됩니다. 나중에 바꾸려면 상단 메뉴 <b>파일 → 폴더 선택/변경</b>.<br />
+      폴더 안의 허브·툴·<code>poffice_board.json</code> 이 갱신되면 앱을 새로고침만 해도 최신으로 반영돼요.
+    </div>
+  </div>
+  <script>
+    const err = document.getElementById('err');
+    document.getElementById('pick').addEventListener('click', async () => {
+      err.textContent = '';
+      try {
+        const r = await window.pimm.pickFolder();
+        if (!r || r.canceled) return;
+        if (!r.ok) err.textContent = r.error || '폴더를 확인할 수 없어요.';
+        // 성공 시 메인 프로세스가 창을 허브로 전환합니다.
+      } catch (e) { err.textContent = String(e); }
+    });
+  </script>
+</body>
+</html>

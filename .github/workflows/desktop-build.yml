@@ -1,12 +1,16 @@
 name: desktop-build
 
-# 데스크톱 앱 듀얼빌드: 윈도우(.exe) + 맥(.dmg). 무서명 내부배포.
-# 트리거: 'desktop-v*' 태그 push 또는 수동 실행. (기능 프리즈 후 2.0에서 사용)
+# PIMM Launcher 듀얼빌드: 윈도우(.exe) + 맥(.dmg). 무서명 내부배포.
+# 트리거: 'desktop-v*' 태그 push 또는 수동 실행.
+# 태그 push 시 해당 Release 에 설치파일 첨부(+ 아티팩트 업로드).
 on:
   push:
     tags:
       - 'desktop-v*'
   workflow_dispatch:
+
+permissions:
+  contents: write   # 태그 Release 에 설치파일 첨부
 
 jobs:
   build:
@@ -28,12 +32,21 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run sync           # tool/ 최신 에디터 → renderer/index.html
       - run: npx electron-builder ${{ matrix.target }} --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
-          name: pimmotion-${{ matrix.os }}
+          name: pimm-launcher-${{ matrix.os }}
           path: |
-            desktop/dist/*.exe
-            desktop/dist/*.dmg
+            desktop/release/*.exe
+            desktop/release/*.dmg
           if-no-files-found: warn
+      - name: Attach to Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            desktop/release/*.exe
+            desktop/release/*.dmg
+          fail_on_unmatched_files: false

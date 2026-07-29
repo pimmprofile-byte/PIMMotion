@@ -1,21 +1,21 @@
 {
-  "name": "pimmotion-desktop",
-  "productName": "PIMMotion",
+  "name": "pimm-launcher",
+  "productName": "PIMM Launcher",
   "version": "0.1.0",
-  "description": "PIMMotion 게임에디터 데스크톱 앱 (Electron 래퍼) — 최신 tool/ 에디터 HTML을 감싼다.",
+  "description": "PIMM Launcher HUB 데스크톱 셸 — Drive-동기 PIMM_Launcher 폴더의 허브·툴·poffice_board 를 로드",
   "main": "main.js",
-  "author": "PIMM",
+  "author": "PIMM Artworks",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "sync": "node scripts/sync-renderer.mjs",
-    "start": "npm run sync && electron .",
-    "dist": "npm run sync && electron-builder",
-    "dist:win": "npm run sync && electron-builder --win",
-    "dist:mac": "npm run sync && electron-builder --mac"
+    "start": "electron .",
+    "dev": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac"
   },
   "devDependencies": {
-    "electron": "^31.7.0",
+    "electron": "^31.7.6",
     "electron-builder": "^24.13.3"
   }
 }
