@@ -31,7 +31,7 @@
 - 심화 나머지 5이론(공간구성·게임퍼즐·장면연출·장르컨셉·운영설계) = 🔒 원문 정독 후.
 
 ### 3.2 포피스 Poffice — 업무보고/운영 (LIVE)
-- 파일: `tool/PIMM_Poffice.ver0.16.html` (0.10 Day 달리기 → 0.11 좌우반전·마일스톤 배지/툴팁 → 0.12 팝업 중앙고정·체크리스트 범례·옐로 정책배지·결재 인박스(레드→대표/report 옐로→결재자) → 0.13 미션 상세화(desc·step.detail) + 인박스 답변란·인물별 내보내기 → 0.14 **결재 워크플로우 구조화** — 인박스 승인/반려/보류 셀렉터+메모 → `poffice_confirm_<인물>.json`(confirm_id·decision) → 결재자가 각 인물 `Poffice_confirm/` 드롭 → 코워크(즉시 트리거+일일 배치)가 confirm_id로 보드 게이트 반영(승인→완료), 게이트에 decision 배지+메모 표시(읽기 루프) → 0.15 **게이트 3판 접기·펼치기(갯수만 노출)** + **결재 인박스 메모란 접기·펼치기**(결재 셀렉터는 상시) → 0.16 **발신 워크오더 영역**(지시권자 master/wo_issuer: 내가 지시한 WO 현황 + 작성) + **결재·WO 통합 인물별 export** `poffice_person_<인물>.json`(confirms+work_orders). 코워크가 결재는 게이트에, WO는 대상 todos(wo:true)에 반영. 내 레드게이트→WO 편입은 마더로그(§handoff-poffice-workorder)). **읽기전용 대시보드 + 체크·메모만 로컬**.
+- 파일: `tool/PIMM_Poffice.ver0.17.html` (0.10 Day 달리기 → 0.11 좌우반전·마일스톤 배지/툴팁 → 0.12 팝업 중앙고정·체크리스트 범례·옐로 정책배지·결재 인박스(레드→대표/report 옐로→결재자) → 0.13 미션 상세화(desc·step.detail) + 인박스 답변란·인물별 내보내기 → 0.14 **결재 워크플로우 구조화** — 인박스 승인/반려/보류 셀렉터+메모 → `poffice_confirm_<인물>.json`(confirm_id·decision) → 결재자가 각 인물 `Poffice_confirm/` 드롭 → 코워크(즉시 트리거+일일 배치)가 confirm_id로 보드 게이트 반영(승인→완료), 게이트에 decision 배지+메모 표시(읽기 루프) → 0.15 **게이트 3판 접기·펼치기(갯수만 노출)** + **결재 인박스 메모란 접기·펼치기**(결재 셀렉터는 상시) → 0.16 **발신 워크오더 영역**(지시권자 master/wo_issuer: 내가 지시한 WO 현황 + 작성) + **결재·WO 통합 인물별 export** `poffice_person_<인물>.json`(confirms+work_orders). 코워크가 결재는 게이트에, WO는 대상 todos(wo:true)에 반영. 내 레드게이트→WO 편입은 마더로그(§handoff-poffice-workorder) → 0.17 **QA 보완**: 로컬 편집(체크·메모·결재·WO초안) localStorage 자동저장·복원 + '로컬 편집(미내보냄)' 표시 · 미션 Day 캐릭터 양끝 잘림 clamp · 상단 요약 배지(레드/결재/WO/할일 카운트)). **읽기전용 대시보드 + 체크·메모만 로컬(localStorage 유지)**.
 - 흐름(5단계): `poffice-skill`(기록) → `poffice-motherlog`(집계→`poffice_board.json`) → 대시보드(시각화) → export(체크·메모) → 반영 → `poffice-report-bot`(페르소나 브리핑).
 - 3판: 미션보드(Day char 마일스톤) · 게이트보드(🔴🟡🟢 권한 신호등) · 투두. + 인물선택(본인만) · WO배너 · 게이미피케이션.
 - **★원문 보존 정책(2026-07-26)**: 마더로그 요약 폐기 → `sessions[].raw` 원문 전문 + 1줄 summary, **분단위 타임스탬프** 필수.
@@ -88,7 +88,7 @@
 | 게임 에디터 | ver1.14 |
 | 디바이스 어시스턴트 | ver0.3 (와이어링뷰 전기정밀) |
 | 플로직 | ver0.2 (Day 스프라이트·걷기·비주얼시나리오) |
-| 포피스 대시보드 | ver0.16 (발신 워크오더 영역 + 결재/WO 통합 인물별 export[poffice_person] + 이전 계승) |
+| 포피스 대시보드 | ver0.17 (QA보완: 로컬저장·복원 + 캐릭터 clamp + 상단 요약배지 / 이전 계승) |
 | 코워크 플러그인(포피스 3종) | v0.9.2 |
 
 ## 8. 로드맵 / 남은 것
