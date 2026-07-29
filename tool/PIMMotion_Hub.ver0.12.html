@@ -930,7 +930,12 @@ function toggleEditors(sectorId, cardEl){
   cardEl.classList.toggle('open', open);
   cardEl.setAttribute('aria-expanded', open?'true':'false');
 }
-function launch(url){ window.open(url,'_blank','noopener'); }
+function launch(url){
+  // 데스크톱 앱(Electron): 같은 창에서 이동(새 창은 셸에서 안 뜨는 경우가 있어 런처처럼 in-place). 홈은 앱 메뉴 '보기 → 홈(허브)'.
+  // 브라우저(더블클릭): 기존대로 새 탭.
+  if (window.pimm && window.pimm.isDesktop) { window.location.href = url; }
+  else { window.open(url,'_blank','noopener'); }
+}
 
 function findName(kind,id){
   const src = kind==='sector'?SECTORS : kind==='editor'?EDITORS : kind==='engine'?ENGINES : TRACK5;
