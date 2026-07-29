@@ -21,10 +21,14 @@ nsis:
   allowToChangeInstallationDirectory: true
   artifactName: ${productName}-${version}-Setup.${ext}
 mac:
-  target: dmg
+  target:
+    - target: dmg
+      arch:
+        - arm64          # Apple Silicon (M1~)
+        - x64            # Intel 맥
   icon: build/icon.png
   identity: null            # 무서명(기본). 팀 인증서 있으면 지정 + notarize.
   category: public.app-category.productivity
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: ${productName}-${version}-${arch}.${ext}
 dmg:
   title: PIMM Launcher ${version}
