@@ -1,0 +1,588 @@
+<title>해금게임 작업 허브 — CardUnlock</title>
+
+<style>
+:root{
+  --ground:#EDE9E3; --panel:#FFFFFF; --panel-2:#F5F2EC;
+  --line:#D9D3C9; --line-soft:#E7E2DA;
+  --ink:#26231F; --ink-2:#57514A; --ink-3:#8B837A;
+  --mint:#0A7A4A; --amber:#8F5A00; --mag:#AB1F58; --cyan:#0C6A85;
+  --mint-bg:rgba(10,122,74,.10); --amber-bg:rgba(143,90,0,.10);
+  --mag-bg:rgba(171,31,88,.10); --cyan-bg:rgba(12,106,133,.10);
+  --shadow:0 1px 2px rgba(40,35,30,.06), 0 8px 24px -12px rgba(40,35,30,.18);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#1E1B19; --panel:#26231F; --panel-2:#2C2924;
+    --line:#3D3830; --line-soft:#332F2A;
+    --ink:#EAE5DD; --ink-2:#B0A89D; --ink-3:#847C72;
+    --mint:#00FF99; --amber:#FFB020; --mag:#FF3D8B; --cyan:#38E8FF;
+    --mint-bg:rgba(0,255,153,.10); --amber-bg:rgba(255,176,32,.10);
+    --mag-bg:rgba(255,61,139,.10); --cyan-bg:rgba(56,232,255,.10);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="light"]{
+  --ground:#EDE9E3; --panel:#FFFFFF; --panel-2:#F5F2EC;
+  --line:#D9D3C9; --line-soft:#E7E2DA;
+  --ink:#26231F; --ink-2:#57514A; --ink-3:#8B837A;
+  --mint:#0A7A4A; --amber:#8F5A00; --mag:#AB1F58; --cyan:#0C6A85;
+  --mint-bg:rgba(10,122,74,.10); --amber-bg:rgba(143,90,0,.10);
+  --mag-bg:rgba(171,31,88,.10); --cyan-bg:rgba(12,106,133,.10);
+  --shadow:0 1px 2px rgba(40,35,30,.06), 0 8px 24px -12px rgba(40,35,30,.18);
+}
+:root[data-theme="dark"]{
+  --ground:#1E1B19; --panel:#26231F; --panel-2:#2C2924;
+  --line:#3D3830; --line-soft:#332F2A;
+  --ink:#EAE5DD; --ink-2:#B0A89D; --ink-3:#847C72;
+  --mint:#00FF99; --amber:#FFB020; --mag:#FF3D8B; --cyan:#38E8FF;
+  --mint-bg:rgba(0,255,153,.10); --amber-bg:rgba(255,176,32,.10);
+  --mag-bg:rgba(255,61,139,.10); --cyan-bg:rgba(56,232,255,.10);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+.wrap{display:grid;grid-template-columns:200px minmax(0,1fr);gap:40px;
+  max-width:1180px;margin:0 auto;padding:40px 28px 96px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;gap:24px;padding:24px 18px 64px}}
+
+/* nav */
+nav{position:sticky;top:32px;align-self:start;font-family:var(--mono);font-size:12px}
+@media(max-width:860px){nav{position:static;display:flex;flex-wrap:wrap;gap:6px;
+  border-bottom:1px solid var(--line);padding-bottom:16px}}
+nav .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:14px}
+@media(max-width:860px){nav .brand{width:100%;margin-bottom:4px}}
+nav a{display:block;padding:5px 0;color:var(--ink-2);text-decoration:none;
+  border-left:2px solid transparent;padding-left:10px;margin-left:-12px;transition:.15s}
+@media(max-width:860px){nav a{border-left:0;padding:4px 9px;margin:0;
+  border:1px solid var(--line);border-radius:3px}}
+nav a:hover{color:var(--ink);border-left-color:var(--mint)}
+nav a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* head */
+header{margin-bottom:44px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3)}
+h1{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.01em;
+  margin:8px 0 10px;text-wrap:balance}
+header p{margin:0;color:var(--ink-2);max-width:62ch}
+
+section{margin-bottom:56px;scroll-margin-top:24px}
+h2{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 18px;
+  padding-bottom:9px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;font-weight:600;margin:26px 0 10px;text-wrap:balance}
+p{margin:0 0 12px;max-width:70ch}
+.lede{color:var(--ink-2)}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.06em;padding:2px 7px;border-radius:3px;
+  border:1px solid currentColor;white-space:nowrap;vertical-align:middle}
+.c-done{color:var(--mint);background:var(--mint-bg)}
+.c-wait{color:var(--amber);background:var(--amber-bg)}
+.c-act{color:var(--mag);background:var(--mag-bg)}
+.c-info{color:var(--cyan);background:var(--cyan-bg)}
+.c-off{color:var(--ink-3);background:transparent}
+
+/* phase board */
+.phases{display:grid;gap:8px}
+.ph{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:14px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:5px;
+  padding:11px 14px;box-shadow:var(--shadow)}
+@media(max-width:560px){.ph{grid-template-columns:1fr auto;gap:6px}
+  .ph .pn{grid-column:1/-1}}
+.ph .pn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
+.ph .pt{font-size:14px}
+.ph .pt small{display:block;color:var(--ink-3);font-size:12.5px}
+
+/* cabinet grid */
+.cab{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:18px;box-shadow:var(--shadow);overflow-x:auto}
+.cabin{display:grid;grid-template-columns:64px repeat(4,minmax(96px,1fr));gap:6px;min-width:520px}
+.ch{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-3);
+  text-align:center;padding-bottom:4px}
+.rh{font-family:var(--mono);font-size:11px;color:var(--ink-2);
+  display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
+.cell{border:1px solid var(--line);border-radius:4px;padding:8px 9px;background:var(--panel-2);
+  min-height:62px;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.cell .id{font-family:var(--mono);font-size:12px;font-weight:600}
+.cell .mt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--ink-3)}
+.cell.easy{opacity:.55}
+.cell.theme{border-color:var(--amber);background:var(--amber-bg)}
+.cell.theme .id{color:var(--amber)}
+.cell.image{border-color:var(--cyan);background:var(--cyan-bg)}
+.cell.image .id{color:var(--cyan)}
+.cell.device{border-color:var(--mint);background:var(--mint-bg)}
+.cell.device .id{color:var(--mint)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-family:var(--mono);
+  font-size:11px;color:var(--ink-3)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:9px;height:9px;border-radius:2px;border:1px solid currentColor}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel);
+  box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--panel-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.m{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+
+/* prompt blocks */
+.pgroup{display:grid;gap:8px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  box-shadow:var(--shadow);overflow:hidden}
+summary{cursor:pointer;padding:11px 14px;font-family:var(--mono);font-size:12.5px;
+  display:flex;align-items:center;gap:10px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+summary::before{content:"+";color:var(--ink-3);font-size:14px;width:11px}
+details[open] summary::before{content:"\2212"}
+summary .nm{font-weight:600}
+summary .ds{color:var(--ink-3);font-size:11.5px;font-family:var(--sans)}
+.pbody{border-top:1px solid var(--line);background:var(--panel-2)}
+.ptools{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:8px 12px;border-bottom:1px solid var(--line-soft)}
+.ptools .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+button.copy{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:4px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer;
+  transition:.15s;white-space:nowrap}
+button.copy:hover{color:var(--ink);border-color:var(--ink-3)}
+button.copy:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+button.copy.ok{color:var(--mint);border-color:var(--mint);background:var(--mint-bg)}
+pre{margin:0;padding:13px 14px;overflow-x:auto;font-family:var(--mono);
+  font-size:11.5px;line-height:1.55;color:var(--ink-2);white-space:pre;tab-size:2}
+
+/* notes */
+.note{border-left:2px solid var(--mag);background:var(--mag-bg);padding:11px 14px;
+  border-radius:0 5px 5px 0;margin:14px 0;font-size:13.5px}
+.note.i{border-left-color:var(--cyan);background:var(--cyan-bg)}
+.note strong{font-weight:600}
+ul{margin:0 0 12px;padding-left:19px;max-width:70ch}
+li{margin-bottom:5px}
+code{font-family:var(--mono);font-size:.9em;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:3px;padding:1px 4px}
+a.ext{color:var(--cyan);text-decoration:none;border-bottom:1px solid currentColor}
+a.ext:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+footer{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  border-top:1px solid var(--line);padding-top:16px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<nav>
+  <div class="brand">CardUnlock</div>
+  <a href="#status">현황</a>
+  <a href="#grid">20칸 구조</a>
+  <a href="#hard">고난도 10종</a>
+  <a href="#assets">에셋 36개</a>
+  <a href="#prompts">프롬프트</a>
+  <a href="#open">결정 대기</a>
+</nav>
+
+<main>
+<header>
+  <div class="eyebrow">방탈출 서브게임 · 작업 허브</div>
+  <h1>20종 해금 게임</h1>
+  <p class="lede">룰렛으로 뽑고, 퍼즐을 풀고, 자물쇠를 열어 카드를 해금한다. 이 페이지는 배경 에셋·퍼즐 스키마·프롬프트를 한 곳에 모은 작업 문서다. 원본은 <a class="ext" href="https://github.com/pimmprofile-byte/PIMMotion/tree/claude/game-progression-sheet-assets-xejluv/games/CardUnlock">GitHub</a>에 있다.</p>
+</header>
+
+<section id="status">
+<h2>현황</h2>
+<div class="phases">
+  <div class="ph"><span class="pn">PHASE 0</span><span class="pt">배경 판<small>36개 확보 · 11개 계열로 분류 완료</small></span><span class="chip c-act">규격 조치</span></div>
+  <div class="ph"><span class="pn">PHASE 1</span><span class="pt">공용 껍데기<small>해금 팝업 6종 완료 · 8항목 남음</small></span><span class="chip c-wait">진행중</span></div>
+  <div class="ph"><span class="pn">PHASE 2</span><span class="pt">유니티 1라운드 검증<small>직렬 게이트 — 통과 전 3·4 착수 금지</small></span><span class="chip c-off">대기</span></div>
+  <div class="ph"><span class="pn">PHASE 3</span><span class="pt">보상물 20종<small>캐릭터 4 + 장신구·무기·상의·하의 각 4</small></span><span class="chip c-off">대기</span></div>
+  <div class="ph"><span class="pn">PHASE 4</span><span class="pt">퍼즐 20종<small>고난도 10종 슬롯 확정 · 내용은 작성중</small></span><span class="chip c-done">슬롯 확정</span></div>
+  <div class="ph"><span class="pn">PHASE 5·6</span><span class="pt">연출·오디오 → 핸드오프<small></small></span><span class="chip c-off">대기</span></div>
+</div>
+</section>
+
+<section id="grid">
+<h2>20칸 구조</h2>
+<p>현장 자물쇠함 그리드가 그대로 카드 분할이다. <strong>가로 행 = 카테고리</strong>, 각 행 4칸. 오른쪽 두 칸(col3·col4)이 고난도라 카테고리마다 정확히 2개씩 배정된다.</p>
+<div class="cab"><div class="cabin" id="cabin"></div>
+  <div class="legend">
+    <span><i class="sw" style="color:var(--amber);background:var(--amber-bg)"></i>테마 전체 3</span>
+    <span><i class="sw" style="color:var(--cyan);background:var(--cyan-bg)"></i>이미지만 3</span>
+    <span><i class="sw" style="color:var(--mint);background:var(--mint-bg)"></i>조작부 4</span>
+    <span><i class="sw" style="color:var(--ink-3)"></i>저난도 10 (미정)</span>
+  </div>
+</div>
+<div class="note i"><strong>진행 구조는 20문제가 동일하다.</strong> 퍼즐 풀이 → 코드(또는 열쇠) 획득 → 해당 자물쇠 개방 → 함 안 버튼 → 해금. 자물쇠가 카드마다 1개씩 20개이므로 조작부 문제도 자물쇠를 거친다. 조작부는 판정기가 아니라 <strong>코드를 얻는 수단</strong>이다.</div>
+</section>
+
+<section id="hard">
+<h2>고난도 10종 배정</h2>
+<div class="tw"><table>
+<thead><tr><th>ID</th><th>칸</th><th>카테고리</th><th>방식</th><th>조작부</th><th>가이드</th><th>자물쇠</th><th>근거</th></tr></thead>
+<tbody id="hardrows"></tbody>
+</table></div>
+
+<h3>자물쇠 배정 원칙</h3>
+<p>8종을 고난도 10문제에 전부 한 번씩 넣었다(열쇠·5자리 영문만 2회). 저난도는 반복돼도 무방하다 — <strong>다양성은 고난도가 담당</strong>한다. 궁합이 특히 강한 셋:</p>
+<ul>
+  <li><strong>조이스틱 → 방향 자물쇠 (H05)</strong> — 방향으로 풀고 방향으로 잠근다. 설명이 필요 없다</li>
+  <li><strong>열쇠 자물쇠 → 테마 전체형 (H01·H06)</strong> — 열쇠는 코드가 없어 방에서 물리적으로 찾아오는 문제에만 쓸 수 있다. 사실상 강제 배정</li>
+  <li><strong>로딩바 토막 3개 → 3자리 숫자 (H08)</strong> — 토막 수와 자릿수가 일치</li>
+</ul>
+<div class="note"><strong>로딩바 주의.</strong> 토막 3개면 순열이 6가지뿐이라 찍기 확률 17%다. 순열 자체를 정답으로 쓰지 말고, <strong>맞게 끼우면 3자리 코드가 드러나는</strong> 구조로 가야 한다. 6가지를 다 시도해도 어느 게 맞는지 알 수 없다는 게 핵심이다.</div>
+
+<h3>가이드 슬롯 규격</h3>
+<div class="tw"><table>
+<thead><tr><th>타입</th><th>구성</th><th>미디어 규격</th><th>쓰는 문제</th></tr></thead>
+<tbody>
+<tr><td class="m">G-A</td><td>단일 이미지</td><td class="m">1520 × 680</td><td class="m">H02 H03 H07 H08 H09</td></tr>
+<tr><td class="m">G-B</td><td>3스텝 가로</td><td class="m">480 × 680 × 3</td><td class="m">—</td></tr>
+<tr><td class="m">G-C</td><td>영상</td><td class="m">1520 × 680 / mp4</td><td class="m">H05</td></tr>
+<tr><td class="m">G-D</td><td>2장 비교</td><td class="m">745 × 680 × 2</td><td class="m">H04</td></tr>
+<tr><td class="m">G-N</td><td>화면 가이드 없음</td><td class="m">이미지 0장</td><td class="m">H01 H06 H10</td></tr>
+</tbody>
+</table></div>
+<div class="note i"><strong>유형별로 체감이 갈린다.</strong> 조작부 4종은 IN 신호가 오므로 틀린 조작을 감지해 즉각 피드백(부저·점멸)이 가능하다. 나머지 6종은 자물쇠가 물리라 게임이 실패를 아예 감지하지 못하고 타이머 힌트만 가능하다. 섞어 배치하면 리듬이 생긴다.</div>
+
+<h3>시리얼 채널</h3>
+<div class="tw"><table>
+<thead><tr><th>조작부</th><th class="num">직결</th><th class="num">매트릭스</th></tr></thead>
+<tbody>
+<tr><td>20버튼 그리드</td><td class="num m">20</td><td class="num m">9</td></tr>
+<tr><td>줄당기기 ×2</td><td class="num m">2</td><td class="num m">2</td></tr>
+<tr><td>조이스틱 4방향 + 버튼 5</td><td class="num m">9</td><td class="num m">9</td></tr>
+<tr><td>왕버튼 3</td><td class="num m">3</td><td class="num m">3</td></tr>
+<tr><td>아이템박스 센서 2</td><td class="num m">2</td><td class="num m">2</td></tr>
+<tr><td>로딩바 토막 3</td><td class="num m">3</td><td class="num m">3</td></tr>
+<tr><td>룰렛 휠</td><td class="num m">1</td><td class="num m">1</td></tr>
+<tr><td><strong>합계</strong> <span style="color:var(--ink-3)">/ Mega 32ch</span></td><td class="num m" style="color:var(--mag)"><strong>40</strong></td><td class="num m" style="color:var(--mint)"><strong>29</strong></td></tr>
+</tbody>
+</table></div>
+<p class="lede">그리드 4×5 매트릭스 스캔은 필수. 그러면 보드 1대로 들어가지만 <strong>여유가 3ch뿐</strong>이라 장치가 하나만 늘어도 2대가 된다. 자물쇠 개방 감지는 하지 않는다 — 버튼 누름이 곧 해금 신호다.</p>
+</section>
+
+<section id="assets">
+<h2>에셋 36개 — 계열 분류</h2>
+<p>파일명만으로는 계열이 안 갈린다. <code>sub_bg_phase1</code>과 <code>sub_bg_phase2</code>는 완전히 다른 기계고, <code>sub_bg_roll*</code>은 애초에 배경이 아니다. <strong>구조가 다른 두 장을 스왑하면 화면이 튄다</strong> — 같은 계열 안에서만 스왑하고, 계열이 바뀔 때는 디졸브 0.4s를 넣는다.</p>
+<div class="tw"><table>
+<thead><tr><th>계열</th><th class="num">개수</th><th>정체</th><th>배정</th></tr></thead>
+<tbody>
+<tr><td class="m">BAY</td><td class="num m">8</td><td><code>sub_bg</code> 원본 + 색 배리에이션 (픽셀 구조 동일)</td><td>진행 단계 배경 5종이 이미 다 있음</td></tr>
+<tr><td class="m">HAND</td><td class="num m">6</td><td>게임기 셸 + 좌측 5-LED 컬럼 셔플</td><td><strong>룰렛 스핀 애니메이션</strong></td></tr>
+<tr><td class="m">CON</td><td class="num m">5</td><td>같은 기계 위에 장식이 누적</td><td><strong>진행도 tier 1~5</strong></td></tr>
+<tr><td class="m">GRV</td><td class="num m">3</td><td>기계를 나무·마을이 뒤덮음</td><td>진행도 tier 6~7</td></tr>
+<tr><td class="m">POD · RACK</td><td class="num m">4</td><td>캡슐 / 서버랙 (각 2장 페어)</td><td>카테고리 배경</td></tr>
+<tr><td class="m">GLS · SUB · HATCH · CBL</td><td class="num m">4</td><td>글래스 / 잠수함 / 에어록 / 케이블</td><td>카테고리 배경 · 타이틀</td></tr>
+<tr><td class="m">POP</td><td class="num m">6</td><td>해금 팝업 (텍스트 0, 명판 전부 비어 있음)</td><td>해금 팝업</td></tr>
+</tbody>
+</table></div>
+
+<h3>이름과 실제가 다른 것 둘</h3>
+<p><strong><code>sub_bg_roll0~5</code>는 배경이 아니라 룰렛 스핀 프레임이다.</strong> 6장 모두 같은 게임기 셸이고 좌측 5칸 LED 색 순서만 다르다. 원형 20슬롯 휠보다 낫다 — 1024폭에서 20슬롯은 카드 그림이 안 읽히고, LED 컬럼은 <strong>물리 게이밍보드 LED와 싱크</strong>시킬 수 있다.</p>
+<pre style="border:1px solid var(--line);border-radius:5px;background:var(--panel)">f0(대기) → [스핀 IN] → f2~f5 루프, 감속 80→120→200→400ms
+        → f1(전체 백색 = 확정 플래시) → 결과 팝업</pre>
+<p><strong><code>sub_phase3~7</code>은 성장 시리즈다.</strong> 좌측 X자 밸브, 우측 랙, 하단 팬·다이얼이 전부 같은 자리고 장식만 누적된다. 깨끗 → 녹·경고등 → 앰버 랜턴 → 크리스탈 → 나무 침식 → 마을 지배. <strong>해금 진행도 n/20에 7 tier로 그대로 매핑</strong>되고, 전환은 해금 팝업이 떠 있는 동안 몰래 바꾸면 된다.</p>
+
+<h3>조치 필요</h3>
+<div class="tw"><table>
+<thead><tr><th>대상</th><th>문제</th></tr></thead>
+<tbody>
+<tr><td class="m">배경 30장</td><td><strong>1024×572</strong> — 1920×1080 아니고 비율도 1.790 (16:9 = 1.778)</td></tr>
+<tr><td class="m">팝업 6장</td><td><strong>629×396</strong> — 1200×760에 넣으면 1.9배 업스케일. 네이티브 재생성 권장</td></tr>
+<tr><td class="m">phase6_var1</td><td>우상단 ♥ 하트, 우하단 "8-BIT ART" 워터마크</td></tr>
+<tr><td class="m">phase4 · phase5</td><td>개구부 상·하단에 희미한 문자열 흔적</td></tr>
+<tr><td class="m">village · phase2_var · var5_white</td><td>개구부가 밝음 → 그 위 텍스트는 <strong>어두운 색</strong>이어야 함</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="prompts">
+<h2>프롬프트</h2>
+<p>각 블록이 자체완결이다. 공통 헤더를 따로 합칠 필요 없이 통째로 복사해서 넣으면 된다. 전부 <strong>1920×1080</strong>(팝업·아이콘 제외).</p>
+<div class="pgroup" id="prompts-list"></div>
+</section>
+
+<section id="open">
+<h2>결정 대기 · 다음</h2>
+<div class="tw"><table>
+<thead><tr><th>항목</th><th>상태</th></tr></thead>
+<tbody>
+<tr><td>고난도 10종 슬롯 · 조작부 · 자물쇠</td><td><span class="chip c-done">확정</span></td></tr>
+<tr><td>고난도 10종 퍼즐 내용</td><td><span class="chip c-wait">사용자 작성</span></td></tr>
+<tr><td>로딩바 토막 개수</td><td><span class="chip c-wait">3개 가정</span></td></tr>
+<tr><td>저난도 10종 (col1·col2)</td><td><span class="chip c-off">고난도 확정 후</span></td></tr>
+<tr><td>Phase 1 잔여 8항목</td><td><span class="chip c-act">착수 가능</span></td></tr>
+<tr><td>자물쇠 20개 리셋 운영 체크리스트</td><td><span class="chip c-off">미작성</span></td></tr>
+</tbody>
+</table></div>
+<h3>Phase 1 잔여</h3>
+<p>카드 프레임(P2) · 분류 배지 4종(P3) · 가이드 프레임 4타입 · HUD · <strong>컬렉션 20칸 그리드</strong> · 커스터마이즈 스테이지 · 버튼 3종×3상태 · 자물쇠 대기 비주얼.</p>
+<div class="note"><strong>컬렉션 그리드가 우선이다.</strong> 자물쇠함 램프를 개별 제어할 수 없어서 해금 상태를 물리적으로 표시할 방법이 없다. 화면 컬렉션 UI가 진행도 표시를 혼자 짊어진다.</div>
+</section>
+
+<footer>PIMMotion · CardUnlock · 원본 문서는 저장소 <code>games/CardUnlock/</code></footer>
+</main>
+</div>
+
+<script>
+const MODE={theme:"테마 전체",image:"이미지만",device:"조작부"};
+const CARDS=[
+ {r:1,cat:"캐릭터",cells:[{id:"E01"},{id:"E02"},{id:"H01",m:"theme",lk:"열쇠"},{id:"H02",m:"device",lk:"버튼"}]},
+ {r:2,cat:"장신구",cells:[{id:"E03"},{id:"E04"},{id:"H03",m:"device",lk:"4자리 숫자"},{id:"H04",m:"image",lk:"5자리 영문"}]},
+ {r:3,cat:"무기",  cells:[{id:"E05"},{id:"E06"},{id:"H05",m:"device",lk:"방향"},{id:"H06",m:"theme",lk:"열쇠"}]},
+ {r:4,cat:"상의",  cells:[{id:"E07"},{id:"E08"},{id:"H07",m:"image",lk:"4자리 영문"},{id:"H08",m:"device",lk:"3자리 숫자"}]},
+ {r:5,cat:"하의",  cells:[{id:"E09"},{id:"E10"},{id:"H09",m:"image",lk:"5자리 숫자"},{id:"H10",m:"theme",lk:"5자리 영문"}]}
+];
+const HARD=[
+ ["H01","R1·C3","캐릭터","theme","—","G-N","열쇠","방에서 열쇠를 찾아옴"],
+ ["H02","R1·C4","캐릭터","device","줄당기기 ×2","G-A","버튼","당긴 순서 → 버튼 누름 순서"],
+ ["H03","R2·C3","장신구","device","아이템박스","G-A","4자리 숫자","확정 — 귀걸이"],
+ ["H04","R2·C4","장신구","image","—","G-D","5자리 영문","2장 비교로 단어 도출"],
+ ["H05","R3·C3","무기","device","조이스틱+버튼5","G-C","방향","장치와 자물쇠가 같은 언어"],
+ ["H06","R3·C4","무기","theme","—","G-N","열쇠","방에서 무기(=열쇠)를 찾아옴"],
+ ["H07","R4·C3","상의","image","—","G-A","4자리 영문","단일 이미지 해독 → 단어"],
+ ["H08","R4·C4","상의","device","로딩바 토막","G-A","3자리 숫자","토막 3개 = 3자리"],
+ ["H09","R5·C3","하의","image","—","G-A","5자리 숫자","좌표·계산형 최고 자릿수"],
+ ["H10","R5·C4","하의","theme","—","G-N","5자리 영문","최종 문제. 최고 난도"]
+];
+
+const HDR_A=`PIXEL SCALE: 8-bit pixel art on a coarse pixel grid (480x270 logical pixels upscaled 4x,
+hard nearest-neighbour edges, no anti-aliasing, no blur). Limited palette, ordered
+dithering for all gradients. CRT phosphor glow, faint scanlines, subtle chromatic fringing.
+
+BASE COLOR: warm grey throughout — deep warm charcoal (#2A2724) in the center rising to
+mid warm grey (#3E3A35) and dusty warm grey (#6B645C) at the edges. Warm neutral grey,
+NOT blue-grey, NOT black.`;
+const COMP_A=`COMPOSITION: the central 70% x 70% stays almost EMPTY — flat low-contrast warm grey with
+faint dithering and a soft vignette. All detail is pushed to the top band, bottom band and
+left/right margins, forming a thin bezel of chunky pixel-art machinery hugging the screen
+edge. Keep the inner corner radius SMALL so the corners stay usable. Perfectly flat
+straight-on view, no perspective, no vanishing point, no horizon, no floor grid. Even dim
+lighting, corners vignetted.
+
+MUST NOT CONTAIN: any window, panel, card, slot, button, dialog, HUD, meter, icon, logo,
+watermark, text, letters, numbers, character, person, creature, or a dominant regular grid
+across the center.`;
+const A=(concept,neon)=>`A 16:9 empty background plate for a retro-futuristic arcade game UI, 1920x1080.
+
+CONCEPT: ${concept}
+
+${HDR_A}
+
+NEON: ${neon}
+
+${COMP_A}`;
+const B_HDR=`Keep the exact same layout, geometry, bezel machinery and pixel structure as the reference
+image. Change ONLY the lighting, neon color and overall brightness. Do not add or remove
+any object. Do not move anything. Do not add text, numbers or logos.`;
+const B=body=>`${B_HDR}\n\n${body}`;
+const STRUCT=`STRUCTURE (must match exactly — this is a fixed frame layout):
+A continuous bezel runs around all four screen edges, enclosing a single large
+rounded-rectangle opening in the middle.
+- top band: the top 7% of the frame height, full width
+- bottom band: the bottom 12% of the frame height, full width
+- left and right bands: each 6% of the frame width, full height
+- the inner opening is a rounded rectangle with a corner radius of about 9% of frame width
+- the opening is EMPTY: flat, dark, low-contrast warm grey with only faint dithering and a
+  soft vignette. Nothing sits inside it.
+- the bezel is built from flat rectangular plates butted together, seen straight on, with
+  visible seams between plates
+- short neon tube segments are scattered along the INNER edge of the bezel, hugging the
+  opening: two or three horizontal segments along the top, one or two vertical segments on
+  each side, one or two along the bottom. Thin bars, never an outline of the whole frame.`;
+const D=(concept,base,neon,extra)=>`A 16:9 empty background plate for a retro-futuristic arcade game UI, 1920x1080.
+
+CONCEPT: ${concept}
+
+${STRUCT}
+
+PIXEL SCALE: 8-bit pixel art on a coarse pixel grid (480x270 logical pixels upscaled 4x,
+hard nearest-neighbour edges, no anti-aliasing, no blur). Limited palette, ordered dithering
+for all gradients. CRT phosphor glow, faint scanlines.
+
+BASE COLOR: ${base}
+
+NEON: ${neon}
+
+MUST NOT CONTAIN: any ${extra}window, panel, card, slot, button, dialog, HUD, meter, icon, logo,
+watermark, text, letters, numbers, character, person, creature, or a dominant regular grid
+across the center.`;
+
+const PROMPTS=[
+{g:"A · 카테고리 배경",n:"A1 관찰·탐색",d:"시안 · 광학 검사실 — 틀린그림 / 개수세기 / 그림자 / 미로",t:A(
+"an optical inspection bay. The machinery along the screen edge reads as lens housings,\niris rings, calibration ticks and thin fiber-optic runs.",
+"neon cyan (#38E8FF) dominant, used as cool clean examination light — thin glowing\ntubes and edge-lit seams only, never solid shapes. A few tiny mint (#00FF99) status pips.\nTotal neon coverage under 5% of the frame. The center is very slightly brighter than\nusual, as if lit for close inspection.")},
+{g:"A · 카테고리 배경",n:"A2 논리·수리",d:"민트 · 연산 랙 — sub_bg 계열 기본값",t:A(
+"a computation rack. The machinery along the screen edge reads as heat-sink fins,\nventilation slots, cable looms and rivet rows.",
+"neon mint (#00FF99) dominant as steady operating light — thin glowing tubes and\nedge-lit seams only, never solid shapes. Small magenta (#FF3D8B) and cyan (#38E8FF)\nindicator pips. Total neon coverage under 5% of the frame. Calm, neutral,\neveryday-operation mood.")},
+{g:"A · 카테고리 배경",n:"A3 암호·해독",d:"마젠타 · 암호 해독대 — 시저 / 모스 / 심볼 / 아나그램",t:A(
+"a cryptography desk. The machinery along the screen edge reads as rotor drums,\npunched tape reels, thin slotted apertures and coiled wiring.",
+"neon magenta (#FF3D8B) dominant with a deep violet bloom — thin glowing tubes and\nedge-lit seams only, never solid shapes. Mint (#00FF99) reduced to rare tiny pips. Total\nneon coverage under 5% of the frame. Secretive, low-lit mood.")},
+{g:"A · 카테고리 배경",n:"A4 공간·좌표",d:"앰버 · 항법 콘솔 — 방향 / 격자 / 오버레이 / 시계",t:A(
+"a navigation console. The machinery along the screen edge reads as brass-toned\nbezels, gimbal rings, engraved bearing ticks and dial housings. Slightly older and more\nanalogue than the other plates.",
+"neon amber (#FFB020) dominant as warm instrument light — thin glowing tubes and\nedge-lit seams only, never solid shapes. Small cyan (#38E8FF) indicator pips. Total neon\ncoverage under 5% of the frame.")},
+{g:"A · 카테고리 배경",n:"A5 복합·조합",d:"프리즘 · 최고 난도 그룹",t:A(
+"a prism core. The machinery along the screen edge reads as faceted crystal mounts,\nsplit light guides and layered plating. More ornate than the other plates.",
+"all four neons appear at once as a thin spectral gradient running along the bezel —\nmint (#00FF99) into cyan (#38E8FF) into magenta (#FF3D8B) into amber (#FFB020). Thin\nglowing tubes and edge-lit seams only, never solid shapes. Brighter than the other plates,\nbut total neon coverage still under 5% of the frame.")},
+
+{g:"B · 진행 단계 (img2img)",n:"B1 룰렛 · 기대",d:"strength 0.25~0.35 · sub_bg 입력",t:B(
+"Bring all edge neon up to full brightness in neon mint (#00FF99). Indicator pips lit and\nlively. Slightly warmer overall. Energetic, anticipatory. The center stays empty and\nlow-contrast.")},
+{g:"B · 진행 단계 (img2img)",n:"B2 퍼즐 가이드 · 집중",d:"strength 0.25~0.35",t:B(
+"Dim the whole plate by about 30%. Reduce edge neon to a thin neon cyan (#38E8FF) outline\nonly; switch off most indicator pips. Very calm and quiet so foreground content reads\nclearly. The center stays empty and low-contrast.")},
+{g:"B · 진행 단계 (img2img)",n:"B3 자물쇠 대기 · 긴장",d:"strength 0.25~0.35",t:B(
+"Darken the plate. Concentrate a neon magenta (#FF3D8B) rim light along the BOTTOM band\nonly; the top and side bands fall to near-unlit warm grey. Tense, waiting. The center stays\nempty and low-contrast.")},
+{g:"B · 진행 단계 (img2img)",n:"B4 해금 연출 · 보상",d:"strength 0.25~0.35",t:B(
+"A warm amber (#FFB020) bloom washes inward from all four edges toward the center, lifting\nthe center from charcoal to a warm lit grey. Neon at maximum brightness. Celebratory and\nradiant, but the center stays free of objects.")},
+{g:"B · 진행 단계 (img2img)",n:"B5 컬렉션·결과 · 진열",d:"strength 0.25~0.35",t:B(
+"Raise the overall brightness; the base warm grey becomes noticeably lighter and more even.\nFlat museum-style lighting, minimal neon, no vignette falloff. Neutral and display-like.\nThe center stays empty.")},
+
+{g:"D · 컨셉 (구조 고정)",n:"D1 글래스",d:"STRUCTURE 블록은 한 글자도 고치지 말 것",t:D(
+"the bezel is built from thick frosted glass and smoked acrylic slabs, edge-lit so\nthat light creeps along every bevel and seam. Polished metal clamps and standoffs hold the\nslabs. Cool, clean, precise.\nThe glass is FROSTED AND OPAQUE — nothing is visible behind or through it.",
+"warm grey throughout — deep warm charcoal (#2A2724) in the opening rising to\nmid warm grey (#3E3A35) and dusty warm grey (#6B645C) on the bezel. Warm neutral grey,\nNOT blue-grey, NOT black.",
+"neon cyan (#38E8FF) dominant, refracting through the glass edges with a crisp\ninner glow. Small mint (#00FF99) pips. Total neon coverage under 5% of the frame.",
+"reflection of a room or person, anything visible through the glass, ")},
+{g:"D · 컨셉 (구조 고정)",n:"D2 우주선",d:"창문·별 금지 — 세이프존 파괴 1순위",t:D(
+"the bezel is the interior hull of a spacecraft — layered armour plating, recessed\npressure hatches, hex-head fasteners, insulated conduit runs and small recessed lamp\nhousings. Utilitarian and heavy.\nNO viewport, NO window, NO stars, NO space visible anywhere — this is an interior wall.",
+"warm grey throughout — deep warm charcoal (#2A2724) in the opening rising to\nmid warm grey (#3E3A35) and dusty warm grey (#6B645C) on the bezel. Warm neutral grey,\nNOT blue-grey, NOT black.",
+"neon mint (#00FF99) dominant as cabin running lights, with small amber (#FFB020)\ncaution pips near the hatches. Total neon coverage under 5% of the frame.",
+"viewport, porthole, stars, planet, space, ")},
+{g:"D · 컨셉 (구조 고정)",n:"D3 잠수함",d:"포트홀·물 금지",t:D(
+"the bezel is the inner pressure hull of a submarine — riveted steel plate, heavy\nweld seams, valve wheels, bundled pipework, gauge housings with the glass removed, and\npatches of worn paint and rust bloom. Old, wet, industrial.\nNO porthole, NO window, NO water visible — this is an interior wall.",
+"warm grey leaning toward oxidised iron and old ochre paint — deep warm charcoal\n(#2A2724) in the opening rising to mid warm grey (#3E3A35) and dusty warm grey (#6B645C)\non the bezel. Warm neutral grey, NOT blue-grey, NOT black.",
+"neon amber (#FFB020) dominant as dim emergency lighting, with rare magenta (#FF3D8B)\nalarm pips. Dimmer overall than the other plates. Total neon coverage under 5% of the frame.",
+"porthole, water, bubbles, sea life, ")},
+{g:"D · 컨셉 (구조 고정)",n:"D4 게임기",d:"물리 몰딩 버튼은 베젤 안에서만 허용",t:D(
+"the bezel is the moulded plastic shell of a vintage handheld game console — matte\ninjection-moulded plastic, rounded parting lines, recessed screw bosses, a speaker grille of\npunched holes, ribbed grip texture and small moulded housings for physical controls.\nPhysical moulded button housings and D-pad wells are allowed ONLY within the bezel bands and\nmust read as unlabelled plastic mouldings, never as UI buttons.",
+"warm grey throughout — deep warm charcoal (#2A2724) in the opening rising to\nmid warm grey (#3E3A35) and dusty warm grey (#6B645C) on the plastic shell. Warm neutral\ngrey, NOT blue-grey, NOT black. Slightly yellowed, sun-aged plastic.",
+"neon mint (#00FF99) dominant with magenta (#FF3D8B) accents, reading as backlit\nindicator strips set into the shell. Total neon coverage under 5% of the frame.",
+"UI button, on-screen control, anything inside the opening, ")},
+
+{g:"P · UI (텍스트 0)",n:"P2 카드 프레임",d:"400×533 · 알파 PNG · 팝업·컬렉션·룰렛 공용",t:`A 400x533 empty trading-card frame for a retro-futuristic 8-bit game, on a transparent
+background.
+
+WHAT IT IS: a machined metal card holder in 3:4 portrait proportion. The middle is a large
+empty recessed window — a flat dark milled surface with an inner shadow, with nothing
+mounted in it. A narrow recessed blank nameplate runs across the bottom of the holder.
+Small corner brackets clamp the four corners of the window.
+
+STYLE: 8-bit pixel art, coarse pixel grid, hard nearest-neighbour edges, no anti-aliasing,
+no blur. Limited palette, ordered dithering. Machined metal with rivets and bevels.
+
+COLOR: warm grey — holder in mid warm grey (#3E3A35) and dusty warm grey (#6B645C),
+recessed window in deep warm charcoal (#2A2724). Warm neutral grey, NOT blue-grey.
+
+NEON: neon mint (#00FF99) as a thin edge-light along the inner lip of the window only.
+Sparse. Soft bloom onto the metal.
+
+BACKGROUND: fully transparent outside the holder. Slightly rounded outer corners,
+soft drop shadow.
+
+MUST NOT CONTAIN: text, letters, numbers, glyphs, symbols, engraving, labels, icons, logo,
+watermark, character, person, creature, portrait, artwork or any content inside the window,
+star rating, checkerboard transparency pattern.`},
+{g:"P · UI (텍스트 0)",n:"P3 분류 배지 4종",d:"128×128 각 1장 · SUBJECT / 색만 교체 · 한 장에 4개 금지",t:`A 128x128 pixel-art category icon on a fully transparent background.
+
+SUBJECT: <아래 넷 중 하나>
+  장신구  a simple ring with a single faceted gem set into it, seen straight on
+  무기    a short sword seen straight on, blade pointing up, with a simple crossguard
+  상의    a simple short-sleeved tunic seen straight on from the front, flat and symmetrical
+  하의    a simple pair of trousers seen straight on from the front, flat and symmetrical
+
+STYLE: 8-bit pixel art on a 32x32 logical pixel grid upscaled 4x. Hard nearest-neighbour
+edges, no anti-aliasing, no blur. Bold, chunky, highly readable at small size. A simple
+filled silhouette with one internal highlight — not a detailed illustration.
+
+COLOR: the silhouette is dusty warm grey (#6B645C) with a warm highlight (#A89E92) on the
+upper-left edge, and a 2-pixel neon rim light in <해당 색>.
+  장신구 neon cyan (#38E8FF) / 무기 neon magenta (#FF3D8B)
+  상의   neon mint (#00FF99) / 하의 neon amber (#FFB020)
+
+BACKGROUND: fully transparent. The icon is centered with even padding on all four sides.
+
+MUST NOT CONTAIN: text, letters, numbers, background fill, frame, border, badge shape,
+circle backing, shadow, checkerboard transparency pattern.`},
+{g:"P · UI (텍스트 0)",n:"N1 노이즈 오버레이",d:"알파 PNG · 시드만 바꿔 3장 · 100ms 루프",t:`A 1920x1080 transparent PNG overlay layer of analog video noise, nothing else.
+
+Fully transparent background. On it: sparse horizontal VHS tracking noise streaks, fine
+white and black dropout dashes, a faint band of RGB chroma smear, and light analog grain.
+Elements are thin, scattered and irregular.
+
+Keep the whole overlay very light — around 12% coverage. Concentrate the streaks near the
+top and bottom edges; the central area carries only faint grain so that UI underneath stays
+readable.
+
+Hard-edged pixels, no anti-aliasing, no blur. Monochrome white and black except for the
+chroma smear band.
+
+MUST NOT CONTAIN: any solid background fill, any opaque area, checkerboard transparency
+pattern, text, numbers, timecode, logo, icon, character, or any recognisable object.`}
+];
+
+/* cabinet */
+(function(){
+  const el=document.getElementById("cabin");
+  let h='<div></div>';
+  for(let c=1;c<=4;c++)h+='<div class="ch">COL '+c+'</div>';
+  CARDS.forEach(function(row){
+    h+='<div class="rh">'+row.cat+'</div>';
+    row.cells.forEach(function(c){
+      const cls=c.m?c.m:"easy";
+      h+='<div class="cell '+cls+'"><span class="id">'+c.id+'</span>'+
+         '<span class="mt">'+(c.m?MODE[c.m]:"저난도 · 미정")+'</span>'+
+         (c.lk?'<span class="mt">'+c.lk+'</span>':'')+'</div>';
+    });
+  });
+  el.innerHTML=h;
+})();
+
+/* hard rows */
+(function(){
+  const b=document.getElementById("hardrows");
+  b.innerHTML=HARD.map(function(r){
+    return '<tr><td class="m"><strong>'+r[0]+'</strong></td><td class="m">'+r[1]+'</td><td>'+r[2]+
+      '</td><td><span class="chip c-'+({theme:"wait",image:"info",device:"done"})[r[3]]+'">'+MODE[r[3]]+
+      '</span></td><td>'+r[4]+'</td><td class="m">'+r[5]+'</td><td class="m">'+r[6]+'</td><td>'+r[7]+'</td></tr>';
+  }).join("");
+})();
+
+/* prompts */
+(function(){
+  const wrap=document.getElementById("prompts-list");
+  let lastG="";
+  PROMPTS.forEach(function(p,i){
+    if(p.g!==lastG){
+      const h=document.createElement("h3");
+      h.textContent=p.g; h.style.margin=(lastG?"26px":"6px")+" 0 10px";
+      wrap.appendChild(h); lastG=p.g;
+    }
+    const d=document.createElement("details");
+    const lines=p.t.split("\n").length;
+    d.innerHTML='<summary><span class="nm">'+p.n+'</span><span class="ds">'+p.d+'</span></summary>'+
+      '<div class="pbody"><div class="ptools"><span class="meta">'+lines+' lines</span>'+
+      '<button class="copy" type="button">복사</button></div><pre></pre></div>';
+    d.querySelector("pre").textContent=p.t;
+    d.querySelector("button.copy").addEventListener("click",function(){
+      const btn=this;
+      const done=function(){btn.textContent="복사됨";btn.classList.add("ok");
+        setTimeout(function(){btn.textContent="복사";btn.classList.remove("ok")},1600)};
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(p.t).then(done,fallback);
+      } else fallback();
+      function fallback(){
+        const ta=document.createElement("textarea");
+        ta.value=p.t; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.select();
+        try{document.execCommand("copy");done()}catch(e){btn.textContent="복사 실패"}
+        ta.remove();
+      }
+    });
+    wrap.appendChild(d);
+  });
+})();
+</script>
