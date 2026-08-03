@@ -225,3 +225,109 @@ assets/assetsIngame/
 | **네 모서리** | 각 모서리 190×190 | **라운드 코너** — 여기 박스를 놓으면 잘려 보임 |
 
 → **실질 안전 배치 영역: x 150~1770, y 110~940 (1620×830).** HUD를 밴드 위에 얹고 싶으면 밴드 안쪽 경계에 맞춰 반투명 없이 올리는 게 낫습니다(베젤 위에 겹치면 픽셀 구조와 싸움).
+
+---
+
+## 7. C그룹 — 아날로그 / 레트로 / VHS 3종
+
+### 7.1 먼저 — 8비트와의 충돌 (★)
+
+VHS·아날로그는 **소프트·번짐·흔들림**이고 8비트는 **하드 엣지**입니다. 한 프롬프트에 그냥 같이 넣으면 서로 상쇄돼서 "흐릿한 픽셀 그림"이라는 최악이 나옵니다. 해결은 **층 분리**:
+
+> **밑그림은 하드 픽셀아트 그대로 두고, VHS 손상은 그 위에 별도 레이어로 얹는다.**
+> → "픽셀아트를 VCR로 재생한 화면"으로 읽힘. 아래 프롬프트의 `CONCEPT` 줄이 이 역할을 합니다.
+
+**섞어 쓰기 규칙**: C그룹은 A/B와 계열이 달라서 **한 라운드 안에서 8비트↔VHS를 오가면 안 됩니다.** 갈아탈 거면 **라운드 단위**로(= 카테고리 배경을 통째로 C로 교체), 또는 C를 **특정 시퀀스 전용**으로 두세요.
+
+**정지 이미지의 함정**: 진짜 VHS는 노이즈가 매 프레임 움직입니다. PNG 한 장에 노이즈를 구워두면 "얼어붙은 노이즈"로 보여서 오히려 싸구려가 됩니다.
+→ 움직임이 필요하면 **노이즈 오버레이만 2~3장 따로** 뽑아 100ms 루프로 상태 스왑(에셋 기반 애니메이션, C# 0줄).
+
+### 7.2 공통 헤더 (C1~C3 앞에 붙임 · A그룹 헤더와 다름)
+
+```
+A 16:9 empty background plate for a retro arcade game UI, 1920x1080.
+
+BASE: warm grey throughout — deep warm charcoal (#2A2724) in the center rising to
+mid warm grey (#3E3A35) and dusty warm grey (#6B645C) at the edges. Warm neutral
+grey, NOT blue-grey, NOT black.
+
+COMPOSITION: the central 70% x 70% stays almost EMPTY — flat, low-contrast, quiet.
+All detail is pushed to the top band, bottom band and left/right margins, forming a
+thin bezel hugging the screen edge. Small inner corner radius. Flat straight-on
+view, no perspective, no horizon, no floor grid.
+
+ANALOG DISCIPLINE (critical): every analog artifact — noise, tracking lines, chroma
+bleed, warble, dropout — must stay LOW AMPLITUDE across the central area and may only
+be strong inside the outer bands. The center must stay clean enough to read UI on top.
+
+MUST NOT CONTAIN: any window, panel, card, slot, button, dialog, HUD, meter, icon,
+logo, watermark, text, letters, numbers, character, person, creature, timecode,
+date stamp, "PLAY" / "REC" / "SP" indicator, or a dominant grid across the center.
+```
+
+> 마지막 줄의 `timecode / date stamp / PLAY·REC 표시` 금지가 핵심입니다. VHS 프롬프트는 **거의 항상** 우상단에 타임코드나 "▶ PLAY"를 그려 넣습니다.
+
+### C1 — VHS 플레이백 *(기본 · A그룹 대체 프리셋)*
+
+```
+CONCEPT: an 8-bit pixel-art machine bezel being played back on a worn VHS tape.
+The underlying artwork keeps hard nearest-neighbour pixel edges; the VHS damage sits
+ON TOP as a separate layer, so it reads as "pixel art through a VCR", not as a
+blurry painting.
+
+ARTIFACTS: horizontal tracking noise bands drifting near the top and bottom edges,
+RGB chroma bleed smearing to the right of every neon element, soft luminance halo,
+fine analog grain, faint interlace comb on high-contrast edges, and a band of
+head-switching tear along the very bottom 3% of the frame.
+
+COLOR: warm grey base slightly desaturated with lifted, milky blacks (never pure
+black). Neon mint (#00FF99) and magenta (#FF3D8B) bleed and halate the most.
+```
+
+### C2 — CRT 브라운관 *(B2 가이드 자리 · 텍스트 많은 화면용)*
+
+```
+CONCEPT: the same machine bezel seen on a warm, softly curved CRT monitor.
+The pixel structure stays hard-edged underneath; the CRT behaviour is the layer on top.
+
+ARTIFACTS: visible phosphor scanlines, subtle RGB triad texture, gentle barrel
+curvature implied only by corner falloff (the plate itself stays flat and rectangular),
+soft blooming around every lit element, and a slight vertical roll bar sitting in the
+upper third at very low contrast.
+
+COLOR: warm grey base with a faint amber phosphor cast. Neon cyan (#38E8FF) and mint
+(#00FF99) glow with a soft round bloom rather than a hard edge.
+Calm, steady, comfortable to look at for a long time — this plate sits under
+text-heavy content.
+```
+
+### C3 — 열화 테이프 *(A3 암호 자리 · 미스터리 계열)*
+
+```
+CONCEPT: the same machine bezel recovered from a badly degraded, sun-faded tape.
+Hard pixel edges survive underneath; the decay is layered over them.
+
+ARTIFACTS: intermittent dropout — short white and black dashes scattered along the top
+and side bands; a wobbling, unstable left edge (time-base error); heavy grain; smeared
+chroma drifted off-register; a soft crease of tape damage crossing one corner.
+The center stays comparatively intact.
+
+COLOR: heavily faded and warm — the grey has yellowed toward ochre, blacks are lifted
+and murky, saturation is low overall. Neon magenta (#FF3D8B) survives best and reads
+as sickly pink; mint is dulled toward grey-green.
+Unsettling, forgotten, archival.
+```
+
+### 7.3 파일명 · 배치
+
+```
+assets/assetsIngame/
+  bg_plate_C1_vhs.png
+  bg_plate_C2_crt.png
+  bg_plate_C3_decay.png
+  bg_noise_ovl_01.png ~ 03.png    # (선택) 노이즈 오버레이 루프용
+```
+
+- 동일한 `bg_plate` 박스의 **상태 s11~s13**으로 추가(§5 구조 그대로).
+- 노이즈 오버레이를 쓸 경우: **별도 박스** `bg_noise` (`frameType: fullframe`, `z: 1`, 알파 PNG,
+  `continuity: persist`) + 상태 3개 100ms 루프. 배경 판과 독립이라 어떤 배경 위에도 얹힘.
