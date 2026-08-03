@@ -385,6 +385,209 @@ pattern, text, numbers, timecode, logo, icon, character, or any recognisable obj
 
 ---
 
+---
+
+# D그룹 — 컨셉 배리에이션 4종 (구조 고정 · 재질만 교체)
+
+> **목적**: sub_bg의 **구조는 그대로**, 컨셉(재질·정체)만 바꾼 배경. A그룹 어느 자리든 대체 가능.
+>
+> **방식 판단**: 재질을 바꾸는 건 조명 변경(B그룹)보다 훨씬 큰 변화라 img2img 0.3으로는 안 바뀌고,
+> 0.6까지 올리면 구조가 무너집니다. 그래서 **구조를 프롬프트에 수치로 못 박고 신규 생성**합니다.
+> 아래 `STRUCTURE` 블록이 sub_bg 실측값(밴드 폭·코너 반경·네온 배치)입니다 — **한 글자도 고치지 마세요.**
+> (img2img를 굳이 쓴다면 strength 0.5~0.6. 다만 텍스트 생성 쪽이 안정적입니다.)
+>
+> 결과는 **픽셀 동일은 아니고 "같은 프레임 레이아웃"** 수준입니다. D그룹은 라운드 단위로 바뀌는
+> 카테고리 배경이라 이 정도면 충분합니다. 한 라운드 안에서 스왑할 B그룹만 픽셀 동일이 필요합니다.
+
+## D1 · 글래스
+
+```
+A 16:9 empty background plate for a retro-futuristic arcade game UI, 1920x1080.
+
+CONCEPT: the bezel is built from thick frosted glass and smoked acrylic slabs, edge-lit so
+that light creeps along every bevel and seam. Polished metal clamps and standoffs hold the
+slabs. Cool, clean, precise.
+The glass is FROSTED AND OPAQUE — nothing is visible behind or through it.
+
+STRUCTURE (must match exactly — this is a fixed frame layout):
+A continuous bezel runs around all four screen edges, enclosing a single large
+rounded-rectangle opening in the middle.
+- top band: the top 7% of the frame height, full width
+- bottom band: the bottom 12% of the frame height, full width
+- left and right bands: each 6% of the frame width, full height
+- the inner opening is a rounded rectangle with a corner radius of about 9% of frame width
+- the opening is EMPTY: flat, dark, low-contrast warm grey with only faint dithering and a
+  soft vignette. Nothing sits inside it.
+- the bezel is built from flat rectangular plates butted together, seen straight on, with
+  visible seams between plates
+- short neon tube segments are scattered along the INNER edge of the bezel, hugging the
+  opening: two or three horizontal segments along the top, one or two vertical segments on
+  each side, one or two along the bottom. Thin bars, never an outline of the whole frame.
+
+PIXEL SCALE: 8-bit pixel art on a coarse pixel grid (480x270 logical pixels upscaled 4x,
+hard nearest-neighbour edges, no anti-aliasing, no blur). Limited palette, ordered dithering
+for all gradients. CRT phosphor glow, faint scanlines.
+
+BASE COLOR: warm grey throughout — deep warm charcoal (#2A2724) in the opening rising to
+mid warm grey (#3E3A35) and dusty warm grey (#6B645C) on the bezel. Warm neutral grey,
+NOT blue-grey, NOT black.
+
+NEON: neon cyan (#38E8FF) dominant, refracting through the glass edges with a crisp
+inner glow. Small mint (#00FF99) pips. Total neon coverage under 5% of the frame.
+
+MUST NOT CONTAIN: any window, panel, card, slot, button, dialog, HUD, meter, icon, logo,
+watermark, text, letters, numbers, character, person, creature, reflection of a room or
+person, anything visible through the glass, or a dominant regular grid across the center.
+```
+
+## D2 · 우주선
+
+```
+A 16:9 empty background plate for a retro-futuristic arcade game UI, 1920x1080.
+
+CONCEPT: the bezel is the interior hull of a spacecraft — layered armour plating, recessed
+pressure hatches, hex-head fasteners, insulated conduit runs and small recessed lamp
+housings. Utilitarian and heavy.
+NO viewport, NO window, NO stars, NO space visible anywhere — this is an interior wall.
+
+STRUCTURE (must match exactly — this is a fixed frame layout):
+A continuous bezel runs around all four screen edges, enclosing a single large
+rounded-rectangle opening in the middle.
+- top band: the top 7% of the frame height, full width
+- bottom band: the bottom 12% of the frame height, full width
+- left and right bands: each 6% of the frame width, full height
+- the inner opening is a rounded rectangle with a corner radius of about 9% of frame width
+- the opening is EMPTY: flat, dark, low-contrast warm grey with only faint dithering and a
+  soft vignette. Nothing sits inside it.
+- the bezel is built from flat rectangular plates butted together, seen straight on, with
+  visible seams between plates
+- short neon tube segments are scattered along the INNER edge of the bezel, hugging the
+  opening: two or three horizontal segments along the top, one or two vertical segments on
+  each side, one or two along the bottom. Thin bars, never an outline of the whole frame.
+
+PIXEL SCALE: 8-bit pixel art on a coarse pixel grid (480x270 logical pixels upscaled 4x,
+hard nearest-neighbour edges, no anti-aliasing, no blur). Limited palette, ordered dithering
+for all gradients. CRT phosphor glow, faint scanlines.
+
+BASE COLOR: warm grey throughout — deep warm charcoal (#2A2724) in the opening rising to
+mid warm grey (#3E3A35) and dusty warm grey (#6B645C) on the bezel. Warm neutral grey,
+NOT blue-grey, NOT black.
+
+NEON: neon mint (#00FF99) dominant as cabin running lights, with small amber (#FFB020)
+caution pips near the hatches. Total neon coverage under 5% of the frame.
+
+MUST NOT CONTAIN: any window, viewport, porthole, stars, planet, space, panel, card, slot,
+button, dialog, HUD, meter, icon, logo, watermark, text, letters, numbers, character,
+person, creature, or a dominant regular grid across the center.
+```
+
+## D3 · 잠수함
+
+```
+A 16:9 empty background plate for a retro-futuristic arcade game UI, 1920x1080.
+
+CONCEPT: the bezel is the inner pressure hull of a submarine — riveted steel plate, heavy
+weld seams, valve wheels, bundled pipework, gauge housings with the glass removed, and
+patches of worn paint and rust bloom. Old, wet, industrial.
+NO porthole, NO window, NO water visible — this is an interior wall.
+
+STRUCTURE (must match exactly — this is a fixed frame layout):
+A continuous bezel runs around all four screen edges, enclosing a single large
+rounded-rectangle opening in the middle.
+- top band: the top 7% of the frame height, full width
+- bottom band: the bottom 12% of the frame height, full width
+- left and right bands: each 6% of the frame width, full height
+- the inner opening is a rounded rectangle with a corner radius of about 9% of frame width
+- the opening is EMPTY: flat, dark, low-contrast warm grey with only faint dithering and a
+  soft vignette. Nothing sits inside it.
+- the bezel is built from flat rectangular plates butted together, seen straight on, with
+  visible seams between plates
+- short neon tube segments are scattered along the INNER edge of the bezel, hugging the
+  opening: two or three horizontal segments along the top, one or two vertical segments on
+  each side, one or two along the bottom. Thin bars, never an outline of the whole frame.
+
+PIXEL SCALE: 8-bit pixel art on a coarse pixel grid (480x270 logical pixels upscaled 4x,
+hard nearest-neighbour edges, no anti-aliasing, no blur). Limited palette, ordered dithering
+for all gradients. CRT phosphor glow, faint scanlines.
+
+BASE COLOR: warm grey leaning toward oxidised iron and old ochre paint — deep warm charcoal
+(#2A2724) in the opening rising to mid warm grey (#3E3A35) and dusty warm grey (#6B645C) on
+the bezel. Warm neutral grey, NOT blue-grey, NOT black.
+
+NEON: neon amber (#FFB020) dominant as dim emergency lighting, with rare magenta (#FF3D8B)
+alarm pips. Dimmer overall than the other plates. Total neon coverage under 5% of the frame.
+
+MUST NOT CONTAIN: any porthole, window, water, bubbles, sea life, panel, card, slot, button,
+dialog, HUD, meter face, icon, logo, watermark, text, letters, numbers, character, person,
+creature, or a dominant regular grid across the center.
+```
+
+## D4 · 게임기
+
+```
+A 16:9 empty background plate for a retro-futuristic arcade game UI, 1920x1080.
+
+CONCEPT: the bezel is the moulded plastic shell of a vintage handheld game console — matte
+injection-moulded plastic, rounded parting lines, recessed screw bosses, a speaker grille of
+punched holes, ribbed grip texture and small moulded housings for physical controls.
+Physical moulded button housings and D-pad wells are allowed ONLY within the bezel bands and
+must read as unlabelled plastic mouldings, never as UI buttons.
+
+STRUCTURE (must match exactly — this is a fixed frame layout):
+A continuous bezel runs around all four screen edges, enclosing a single large
+rounded-rectangle opening in the middle.
+- top band: the top 7% of the frame height, full width
+- bottom band: the bottom 12% of the frame height, full width
+- left and right bands: each 6% of the frame width, full height
+- the inner opening is a rounded rectangle with a corner radius of about 9% of frame width
+- the opening is EMPTY: flat, dark, low-contrast warm grey with only faint dithering and a
+  soft vignette. Nothing sits inside it.
+- the bezel is built from flat moulded sections butted together, seen straight on, with
+  visible parting lines between sections
+- short neon tube segments are scattered along the INNER edge of the bezel, hugging the
+  opening: two or three horizontal segments along the top, one or two vertical segments on
+  each side, one or two along the bottom. Thin bars, never an outline of the whole frame.
+
+PIXEL SCALE: 8-bit pixel art on a coarse pixel grid (480x270 logical pixels upscaled 4x,
+hard nearest-neighbour edges, no anti-aliasing, no blur). Limited palette, ordered dithering
+for all gradients. CRT phosphor glow, faint scanlines.
+
+BASE COLOR: warm grey throughout — deep warm charcoal (#2A2724) in the opening rising to
+mid warm grey (#3E3A35) and dusty warm grey (#6B645C) on the plastic shell. Warm neutral
+grey, NOT blue-grey, NOT black. Slightly yellowed, sun-aged plastic.
+
+NEON: neon mint (#00FF99) dominant with magenta (#FF3D8B) accents, reading as backlit
+indicator strips set into the shell. Total neon coverage under 5% of the frame.
+
+MUST NOT CONTAIN: any UI button, on-screen control, window, panel, card, slot, dialog, HUD,
+meter, icon, logo, brand mark, watermark, text, letters, numbers, character, person,
+creature, anything inside the opening, or a dominant regular grid across the center.
+```
+
+## D그룹 사용 · 파일명
+
+```
+assets/assetsIngame/
+  bg_plate_D1_glass.png      bg_plate_D3_submarine.png
+  bg_plate_D2_ship.png       bg_plate_D4_console.png
+```
+
+- A그룹과 **같은 성격**(라운드 단위 전환)이므로 A 슬롯을 그대로 대체하거나, 5카테고리를 9개로 늘려 배분해도 됩니다.
+- 동일한 `bg_plate` 박스의 상태 s14~s17로 추가. 전환은 `setState` + 디졸브 0.4s.
+- **B그룹 img2img의 입력으로도 쓸 수 있습니다** — 예: D3 잠수함을 베이스로 B3(대기·마젠타 하단 림라이트)를 뽑으면
+  잠수함 톤의 긴장 배경이 나옵니다. 구조가 같으니 조합이 성립합니다.
+
+### 컨셉별 주의점 (모델이 실제로 자주 틀리는 것)
+
+| | 함정 | 프롬프트에서 막은 방식 |
+|---|---|---|
+| D1 글래스 | 유리를 **투명하게** 그려서 뒤가 비침 → 중앙이 지저분해짐 | `FROSTED AND OPAQUE` + 금지어에 `anything visible through the glass`, `reflection of a room or person` |
+| D2 우주선 | **창문 + 별**을 그려 넣음 → 세이프존 파괴 | `NO viewport, NO window, NO stars` + 금지어에 `porthole, planet, space` |
+| D3 잠수함 | **포트홀**과 물 | `NO porthole` + 금지어에 `water, bubbles, sea life`. 게이지도 유리 없는 하우징만 |
+| D4 게임기 | 실제 **UI 버튼**처럼 보이는 버튼을 화면 안에 그림 | 물리 몰딩 하우징은 **베젤 안에서만** 허용, 금지어는 `UI button / on-screen control`로 좁힘 + `anything inside the opening` |
+
+---
+
 # 산출 파일명 (그대로 저장)
 
 ```
@@ -394,8 +597,11 @@ assets/assetsIngame/
   bg_plate_A3_cipher.png      bg_plate_B3_wait.png         bg_plate_C3_decay.png
   bg_plate_A4_spatial.png     bg_plate_B4_unlock.png
   bg_plate_A5_composite.png   bg_plate_B5_collection.png   bg_noise_ovl_01~03.png
+
+  bg_plate_D1_glass.png       bg_plate_D3_submarine.png
+  bg_plate_D2_ship.png        bg_plate_D4_console.png
 ```
 
-- 13장 전부 **같은 `bg_plate` 박스 1개의 상태(states)**로 들어갑니다 → 전환은 `setState` 한 줄, C# 0줄.
+- 17장 전부 **같은 `bg_plate` 박스 1개의 상태(states)**로 들어갑니다 → 전환은 `setState` 한 줄, C# 0줄.
 - `bg_noise_ovl_*`만 **별도 박스** (`frameType: fullframe`, `z: 1`, `continuity: persist`).
 - 매핑 JSON은 `bg-variations.md` §5.
