@@ -1,0 +1,141 @@
+{
+  "format": "pimm-cardunlock-schema",
+  "version": "0.1",
+  "note": "20종 해금 카드 스키마. 자물쇠함 4열x5행 버튼 그리드 = 20칸. 행(row)=카테고리. 고난도 10종 확정, 저난도 10종 미정(TBD).",
+
+  "grid": {
+    "cols": 4,
+    "rows": 5,
+    "rowMeaning": "category",
+    "note": "현장 자물쇠함. 가로열(row) 1~5가 각 카테고리, 각 행 4칸 = 그 카테고리 아이템 4종.",
+    "wiring": "matrix-4x5-recommended",
+    "wiringNote": "20버튼 직결 시 IN 20ch 소모 -> 다른 조작부와 합쳐 32ch 초과. 4+5=9핀 매트릭스 스캔 권장."
+  },
+
+  "categories": [
+    { "row": 1, "id": "CHR", "label": "캐릭터", "equipSlot": null,        "note": "캐릭터 자체를 교체" },
+    { "row": 2, "id": "ACC", "label": "장신구", "equipSlot": "accessory" },
+    { "row": 3, "id": "WPN", "label": "무기",   "equipSlot": "weapon" },
+    { "row": 4, "id": "TOP", "label": "상의",   "equipSlot": "top" },
+    { "row": 5, "id": "BTM", "label": "하의",   "equipSlot": "bottom" }
+  ],
+
+  "devices": [
+    { "id": "DEV_PULL",   "label": "줄당기기(리미트스위치) 2종", "inCh": 2,  "role": "puzzle",  "assignedTo": ["H02"] },
+    { "id": "DEV_STICK",  "label": "조이스틱 1 + 버튼 5",        "inCh": 9,  "role": "puzzle",  "assignedTo": ["H05"] },
+    { "id": "DEV_ITEMBOX","label": "아이템박스 패널(주황·초록)", "inCh": 2,  "role": "puzzle",  "assignedTo": ["H03"], "note": "사용자 확정: 장신구-귀걸이" },
+    { "id": "DEV_LOADBAR","label": "로딩바 토막(노랑·초록·빨강)", "inCh": 6, "role": "puzzle",  "assignedTo": ["H08"], "note": "토막 개수 미정 -> inCh 가정치" },
+    { "id": "DEV_BIGBTN", "label": "왕버튼 3개",                 "inCh": 3,  "role": "system",  "assignedTo": [], "note": "캐릭터 선택 전용. 퍼즐에 쓰지 않음(역할 혼동 방지)" },
+    { "id": "DEV_WHEEL",  "label": "룰렛 휠",                    "inCh": 1,  "role": "system",  "assignedTo": [], "note": "룰렛 전용. 퍼즐에 쓰지 않음" },
+    { "id": "DEV_GRID",   "label": "자물쇠함 20버튼 그리드",     "inCh": 9,  "role": "claim",   "assignedTo": [], "note": "정답 입력이 아니라 '수령 확인 + 카드 선택'" },
+    { "id": "DEV_LOCK",   "label": "물리 자물쇠(함 개방)",       "inCh": 1,  "role": "answer",  "assignedTo": ["H01","H04","H06","H07","H09","H10"], "note": "조작부 미사용 문제 6종의 정답 입력 경로" }
+  ],
+
+  "solveModes": [
+    { "id": "theme",  "label": "테마 전체 진행", "count": 3, "guideType": "G-N", "note": "방 전체를 쓰는 문제. 화면 가이드 없음 or 힌트만" },
+    { "id": "image",  "label": "이미지만 보고",  "count": 3, "guideType": "G-A|G-D", "note": "가이드 이미지 자체가 퍼즐" },
+    { "id": "device", "label": "조작부 활용",    "count": 4, "guideType": "G-A|G-C", "note": "가이드는 조작 방법 안내, 판정은 조작부에서" }
+  ],
+
+  "cards": [
+    {
+      "id": "H01", "row": 1, "col": 3, "category": "CHR",
+      "difficulty": "hard", "solveMode": "theme", "devices": [],
+      "guideType": "G-N", "answerVia": "DEV_LOCK", "claimVia": "DEV_GRID",
+      "reward": { "id": "CHR_03", "name": "TBD", "slot": null },
+      "flavor": "캐릭터 = 서사. 방 전체를 돌며 정체를 밝히는 구조가 어울림",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H02", "row": 1, "col": 4, "category": "CHR",
+      "difficulty": "hard", "solveMode": "device", "devices": ["DEV_PULL"],
+      "guideType": "G-A", "answerVia": "DEV_PULL", "claimVia": "DEV_GRID",
+      "reward": { "id": "CHR_04", "name": "TBD", "slot": null },
+      "flavor": "줄 2개 = 순서/조합. 당기는 순서로 캐릭터를 호출하는 연출",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H03", "row": 2, "col": 3, "category": "ACC",
+      "difficulty": "hard", "solveMode": "device", "devices": ["DEV_ITEMBOX"],
+      "guideType": "G-A", "answerVia": "DEV_ITEMBOX", "claimVia": "DEV_GRID",
+      "reward": { "id": "ACC_03", "name": "귀걸이", "slot": "accessory" },
+      "flavor": "사용자 확정. ?상자 = 아이템 획득 은유 -> 장신구",
+      "puzzleContent": "TBD(사용자 작성)",
+      "locked": true
+    },
+    {
+      "id": "H04", "row": 2, "col": 4, "category": "ACC",
+      "difficulty": "hard", "solveMode": "image", "devices": [],
+      "guideType": "G-D", "answerVia": "DEV_LOCK", "claimVia": "DEV_GRID",
+      "reward": { "id": "ACC_04", "name": "TBD", "slot": "accessory" },
+      "flavor": "장신구 = 세부 관찰. 2장 비교형이 어울림",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H05", "row": 3, "col": 3, "category": "WPN",
+      "difficulty": "hard", "solveMode": "device", "devices": ["DEV_STICK"],
+      "guideType": "G-C", "answerVia": "DEV_STICK", "claimVia": "DEV_GRID",
+      "reward": { "id": "WPN_03", "name": "TBD", "slot": "weapon" },
+      "flavor": "무기 = 조작. 조이스틱+버튼 커맨드 입력이 가장 직관적",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H06", "row": 3, "col": 4, "category": "WPN",
+      "difficulty": "hard", "solveMode": "theme", "devices": [],
+      "guideType": "G-N", "answerVia": "DEV_LOCK", "claimVia": "DEV_GRID",
+      "reward": { "id": "WPN_04", "name": "TBD", "slot": "weapon" },
+      "flavor": "무기를 방 안에서 실제로 찾아오는 구조",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H07", "row": 4, "col": 3, "category": "TOP",
+      "difficulty": "hard", "solveMode": "image", "devices": [],
+      "guideType": "G-A", "answerVia": "DEV_LOCK", "claimVia": "DEV_GRID",
+      "reward": { "id": "TOP_03", "name": "TBD", "slot": "top" },
+      "flavor": "단일 이미지 해독형",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H08", "row": 4, "col": 4, "category": "TOP",
+      "difficulty": "hard", "solveMode": "device", "devices": ["DEV_LOADBAR"],
+      "guideType": "G-A", "answerVia": "DEV_LOADBAR", "claimVia": "DEV_GRID",
+      "reward": { "id": "TOP_04", "name": "TBD", "slot": "top" },
+      "flavor": "토막을 끼워 맞춤 = 옷을 짜 맞추는 은유. 색 조합 퍼즐",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H09", "row": 5, "col": 3, "category": "BTM",
+      "difficulty": "hard", "solveMode": "image", "devices": [],
+      "guideType": "G-A", "answerVia": "DEV_LOCK", "claimVia": "DEV_GRID",
+      "reward": { "id": "BTM_03", "name": "TBD", "slot": "bottom" },
+      "flavor": "단일 이미지 해독형",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+    {
+      "id": "H10", "row": 5, "col": 4, "category": "BTM",
+      "difficulty": "hard", "solveMode": "theme", "devices": [],
+      "guideType": "G-N", "answerVia": "DEV_LOCK", "claimVia": "DEV_GRID",
+      "reward": { "id": "BTM_04", "name": "TBD", "slot": "bottom" },
+      "flavor": "마지막 테마형. 난이도 최상 배치 권장",
+      "puzzleContent": "TBD(사용자 작성)"
+    },
+
+    { "id": "E01", "row": 1, "col": 1, "category": "CHR", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "CHR_01", "name": "TBD" } },
+    { "id": "E02", "row": 1, "col": 2, "category": "CHR", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "CHR_02", "name": "TBD" } },
+    { "id": "E03", "row": 2, "col": 1, "category": "ACC", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "ACC_01", "name": "TBD", "slot": "accessory" } },
+    { "id": "E04", "row": 2, "col": 2, "category": "ACC", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "ACC_02", "name": "TBD", "slot": "accessory" } },
+    { "id": "E05", "row": 3, "col": 1, "category": "WPN", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "WPN_01", "name": "TBD", "slot": "weapon" } },
+    { "id": "E06", "row": 3, "col": 2, "category": "WPN", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "WPN_02", "name": "TBD", "slot": "weapon" } },
+    { "id": "E07", "row": 4, "col": 1, "category": "TOP", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "TOP_01", "name": "TBD", "slot": "top" } },
+    { "id": "E08", "row": 4, "col": 2, "category": "TOP", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "TOP_02", "name": "TBD", "slot": "top" } },
+    { "id": "E09", "row": 5, "col": 1, "category": "BTM", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "BTM_01", "name": "TBD", "slot": "bottom" } },
+    { "id": "E10", "row": 5, "col": 2, "category": "BTM", "difficulty": "easy", "solveMode": "TBD", "reward": { "id": "BTM_02", "name": "TBD", "slot": "bottom" } }
+  ],
+
+  "openDecisions": [
+    "자물쇠함 20버튼의 램프가 개별 제어 가능한가 (가능하면 해금=녹/미해금=적으로 진행도를 물리 표시)",
+    "로딩바 토막 개수 (IN 채널 수 확정에 필요)",
+    "인풋보드 + 게이밍보드 2대 분리 여부 (현재 조작부 합계가 32ch 초과)",
+    "저난도 10종의 풀이 방식 배분"
+  ]
+}
