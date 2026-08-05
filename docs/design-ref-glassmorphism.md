@@ -3,9 +3,12 @@
 _저장: 2026-07-30 · 대표 지시로 보관. 용도: 핌런처 허브·툴의 '리퀴드 글래스' 방향 참고._
 _원본 이미지(PNG)는 붙여넣기 뷰라 여기 임베드 불가 — Drive 레퍼런스 폴더에 두면 파일명을 아래 §0에 링크._
 
-## 0. 원본
+## 0. 원본 (Drive 아카이브)
 - 출처: 게임 콘솔형 런처 홈 화면 "Arko Station 0.1 ALPHA" (가로 카드 캐러셀).
-- 원본 파일: _(Drive 레퍼런스 폴더에 저장 후 파일명 기입)_
+- **Drive 폴더**: `글래스모피즘 레퍼런스` (id `10ZncxdAO5Igkp7YCS7ZYtJQEwddL0U5y`) — https://drive.google.com/drive/folders/10ZncxdAO5Igkp7YCS7ZYtJQEwddL0U5y
+- **이미지 파일** (image/png):
+  - `ive-made-my-own-gaming-console-ui-v0-z4vancfzkraf1.png` (id `1unhkaHvkw78h0k7D0R7YTfcLA3ARWrOi`) — 아래 §1~§7 분석 대상(포르쉐 NFS 카드 버전) · https://drive.google.com/file/d/1unhkaHvkw78h0k7D0R7YTfcLA3ARWrOi/view
+  - `ive-made-my-own-gaming-console-ui-v0-kn7ivhlzkraf1.png` (id `1J6qCx5zZR5CXh50gMVqwUcliiEY_aq3i`) — 동일 UI 변형본 · https://drive.google.com/file/d/1J6qCx5zZR5CXh50gMVqwUcliiEY_aq3i/view
 
 ## 1. 첫인상 (한 줄)
 **칠흑 배경 + 전기빛 파란 오로라(유체 광선) + 그 위에 뜬 프로스티드 글래스 카드들.** 카드는 반투명이라 뒤 오로라 색이 비쳐 카드마다 은은히 다른 색조를 띤다. 선택 카드만 흰 테두리로 또렷.
