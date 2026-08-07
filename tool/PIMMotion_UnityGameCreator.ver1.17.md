@@ -1,4 +1,6 @@
-# 코워크 핸드오프 — 피모션 게임크리에이터 전기능 레퍼런스 (PIMMotion_UnityGameCreator ver1.15)
+# 코워크 핸드오프 — 피모션 게임크리에이터 전기능 레퍼런스 (PIMMotion_UnityGameCreator ver1.17)
+
+> ver1.16~1.17 변경: 줌 2%~1600%(픽셀 확인)·PS/일러 감도, 스페이스바 팬(손커서) 복구, 시퀀스 +버튼=빈 추가, **Tab=레이아웃↔타임라인 전환**, **시퀀스 스크립트(seqNote) 신설**(export 최상위).
 
 _발신: coworking-review 세션 → 수신: 코워크(핌플레이어 빌드 + 플러그인 유니티 스킬) · 2026-07-30_
 _목적: 게임크리에이터가 **제공하는 모든 기능·용어·동작 + 내보내는 데이터**를 코워크가 정확히 이해하도록. 팀원 매뉴얼로도 그대로 사용 가능._
@@ -140,10 +142,11 @@ _원칙: **툴 내부 라벨·툴팁·도움말·단축키·메뉴 기준(없는
 
 ---
 
-# Part J — 씬 스크립트 / 메모 (ver1.15)
+# Part J — 씬 스크립트 / 시퀀스 스크립트 (ver1.15·1.17)
 
-- **📝 씬 스크립트** 버튼(레이아웃 툴바, ✂️ 클리핑박스 우측) — 지금 편집 중인 씬 전반 설명·이벤트·흐름을 정리. 씬 인스펙터의 ‘씬 스크립트’와 **같은 내용**(`sceneNote`). **코워크가 빌드 시 읽음.**
-- 미션/씬 단위 메모로 활용. (모달 또는 씬 인스펙터에서 편집, 실시간 저장.)
+- **📝 씬 스크립트** 버튼(레이아웃 툴바) — 지금 편집 중인 **씬 전반** 설명·이벤트·흐름. 씬 인스펙터 ‘씬 스크립트’와 같은 내용(`sceneNote` · `scenes[].sceneNote`로 export).
+- **📜 시퀀스 스크립트** 버튼(그 옆, ver1.17) — 지금 **시퀀스(게임 한 편) 전반**의 기획·흐름·규칙. 시퀀스 인스펙터 ‘시퀀스 스크립트’와 같은 내용(`seqNote` · export **최상위** `seqNote`).
+- 둘 다 모달 또는 인스펙터에서 편집·실시간 저장. **코워크가 빌드 시 읽음**(시퀀스 스크립트=게임 전체 맥락, 씬 스크립트=씬별 맥락).
 
 ---
 
@@ -214,7 +217,8 @@ _원칙: **툴 내부 라벨·툴팁·도움말·단축키·메뉴 기준(없는
 - Delete — 삭제(확인) · 방향키 / Shift+방향키 — 1px / 10px 이동(nudge)
 
 **보기**
-- Ctrl+휠 / ＋ － — 줌 인·아웃 · Space+드래그 / 중간버튼 — 팬
+- **Tab — 레이아웃 ↔ 타임라인 뷰 전환** (ver1.17)
+- Ctrl+휠 / ＋ － — 줌 인·아웃(2%~1600%, 픽셀단위 · ver1.16) · Space+드래그 / 중간버튼 — 팬(손커서)
 - 우클릭 — 컨텍스트 메뉴 · **?** (또는 Ctrl+/) — 도움말 열기/닫기(재매핑·기본복원 지원)
 
 ---
@@ -241,7 +245,7 @@ _원칙: **툴 내부 라벨·툴팁·도움말·단축키·메뉴 기준(없는
 - (선택) `encode/<SEQ#>.pimmgame.json` = 위를 임베드한 자체완결 번들(에셋 data URI 포함).
 
 ## Q-2. 레이아웃 JSON 스키마 (요지)
-최상위: `sequenceId, phaseId, seqLabel, resolution:[1920,1080], background, bgm, prefabs[], activeSceneId, scenes[]{sceneId,name,order,sceneNote,boxes[]}, interactions[]{id,label,note,action}, boxes[](활성씬·하위호환)`.
+최상위: `sequenceId, phaseId, seqLabel, seqNote(시퀀스 전체 스크립트·ver1.17), resolution:[1920,1080], background, bgm, prefabs[], activeSceneId, scenes[]{sceneId,name,order,sceneNote,boxes[]}, interactions[]{id,label,note,action}, boxes[](활성씬·하위호환)`.
 
 박스 1개(`encodeHandoffBox`):
 - `index,id,type,x,y,w,h`(정수·1920×1080), `opacity,locked,hidden`, **`unity`**(anchorMin/Max — **Y-flip 완료**, 그대로 사용), `role`
